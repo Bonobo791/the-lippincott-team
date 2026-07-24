@@ -15,14 +15,27 @@ import type { TinaRichTextContent } from '@tinacms/astro';
 import { requestWithMetadata } from '@tinacms/astro/data';
 import client from '../../tina/__generated__/client';
 
+/**
+ * Reject slugs that could escape the content directory when interpolated
+ * into a relativePath (the /tina-island endpoint takes these from the URL).
+ */
+const assertSafePath = (value: string) => {
+	if (value.includes('..') || value.includes('\\') || value.startsWith('/'))
+		throw new Error(`Unsafe content path: ${value}`);
+};
+
 export const getConfig = () =>
 	requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
 
-export const getPage = (slug: string) =>
-	requestWithMetadata(client.queries.page({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+export const getPage = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.page({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
 
-export const getBlog = (slug: string) =>
-	requestWithMetadata(client.queries.blog({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+export const getBlog = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.blog({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
 
 export async function listPages() {
 	const result = await client.queries.pageConnection();
@@ -41,8 +54,10 @@ export async function listBlogs() {
 		});
 }
 
-export const getTeamMember = (slug: string) =>
-	requestWithMetadata(client.queries.team({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+export const getTeamMember = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.team({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
 
 export async function listTeam() {
 	const result = await client.queries.teamConnection();
@@ -51,8 +66,10 @@ export async function listTeam() {
 		.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
-export const getCommunity = (path: string) =>
-	requestWithMetadata(client.queries.community({ relativePath: `${path}.mdx` }), { priority: 'primary' });
+export const getCommunity = (path: string) => {
+	assertSafePath(path);
+	return requestWithMetadata(client.queries.community({ relativePath: `${path}.mdx` }), { priority: 'primary' });
+};
 
 export async function listCommunities() {
 	const result = await client.queries.communityConnection();

@@ -3,6 +3,7 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { Icon } from 'astro-icon/components';
 import type { CmsTeam } from '../../lib/data';
+import { telHref } from '../../lib/url';
 import { mdxComponents } from '../mdx/components';
 
 interface Props { data?: CmsTeam | null }
@@ -20,7 +21,7 @@ const { data } = Astro.props;
 				{data.role && <p data-tina-field={tinaField(data, 'role')} class="mt-1 text-lg text-muted-foreground">{data.role}</p>}
 				<div class="mt-4 flex flex-col gap-2 text-sm">
 					{data.phone && (
-						<a href={`tel:${data.phone}`} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
+						<a href={telHref(data.phone)} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
 							<Icon name="tabler:phone" class="size-4" />{data.phone}
 						</a>
 					)}

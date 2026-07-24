@@ -528,7 +528,7 @@ if (!data) return new Response('Not Found', { status: 404 });
 </Base>
 ```
 
-**Step 4 — `src/pages/northwest-houston-schools-real-estate/[...slug].astro`:** identical to Step 3 except `const PREFIX = 'northwest-houston-schools-real-estate';`.
+**Step 4 — `src/pages/northwest-houston-schools-real-estate/[...slug].astro`:** identical to Step 3 except BOTH `const PREFIX` at module level and the local `const prefix` inside `getStaticPaths` change to `'northwest-houston-schools-real-estate'` (Astro's isolated `getStaticPaths` scope is why the literal appears twice — miss either one and the routes and the page lookup disagree).
 
 **Step 5 — `src/lib/islands.ts`:** add `CommunityQuery` to the generated-types import, `CmsCommunity` to the data import, `getCommunity` to the loaders import, `CommunityBody` import, and this entry after `team`:
 

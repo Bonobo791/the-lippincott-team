@@ -72,7 +72,9 @@ above rather than bare `astro build`.
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
   CommunityGrid). **Convention: each block
   is a pair** — `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
-  `Template` schema). Add a new block by creating the pair and registering the
+  `Template` schema). Multi-word blocks use camelCase template filenames
+  (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
+  GraphQL typenames. Add a new block by creating the pair and registering the
   template in `tina/collections/page.ts`.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
   registry; `src/components/ui/` — reusable UI components (including
@@ -82,7 +84,7 @@ above rather than bare `astro build`.
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
   hierarchies), `blog/`, `rss.xml.ts`, `404.astro`, `tina-island/[name].ts`.
 - `src/content/` — Tina-managed content: `blog/*.mdx`, `page/*.mdx`,
-  `config/config.json`.
+  `team/*.mdx`, `community/**/*.mdx` (nested hierarchies), `config/config.json`.
 - `src/styles/global.css` — Tailwind v4 entry (`@import 'tailwindcss'`, theme
   tokens, `.dark`-class dark variant).
 

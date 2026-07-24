@@ -15,7 +15,7 @@ const members = await listTeam();
 	<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 		{members.map((member) => (
 			<a href={`/about/${member._sys.filename}/`} class="group rounded-2xl border p-6 text-center transition-shadow hover:shadow-lg">
-				{member.photo && <img src={member.photo} alt={member.name ?? ''} width={300} height={300} class="mx-auto size-32 rounded-full object-cover" />}
+				{member.photo && <img src={member.photo} alt={member.name ?? ''} width={300} height={300} loading="lazy" decoding="async" class="mx-auto size-32 rounded-full object-cover" />}
 				<h3 class="mt-4 text-lg font-semibold transition-colors group-hover:text-primary">{member.name}</h3>
 				{member.role && <p class="mt-1 text-sm text-muted-foreground">{member.role}</p>}
 			</a>

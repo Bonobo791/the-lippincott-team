@@ -25,7 +25,7 @@ const data = entry.data?.community;
 if (!data) return new Response('Not Found', { status: 404 });
 ---
 
-<Base title={`${data.title ?? ''} | The Lippincott Team`} description={data.description ?? ''}>
+<Base title={data.title ? `${data.title} | The Lippincott Team` : 'The Lippincott Team'} description={data.description ?? ''}>
 	<TinaIsland name="community" wrapper={islands.community.wrapper} params={{ path }} primary>
 		<CommunityBody data={data} />
 	</TinaIsland>

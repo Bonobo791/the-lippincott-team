@@ -20,7 +20,7 @@ const entries = (await listCommunities())
 	<div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{entries.map(({ node, path }) => (
 			<a href={`/${path}/`} class="group overflow-hidden rounded-2xl border transition-shadow hover:shadow-lg">
-				{node.heroImage && <img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} class="aspect-[3/2] w-full object-cover" />}
+				{node.heroImage && <img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} loading="lazy" decoding="async" class="aspect-[3/2] w-full object-cover" />}
 				<div class="p-5">
 					<h3 class="text-lg font-semibold transition-colors group-hover:text-primary">{node.title}</h3>
 					{node.description && <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{node.description}</p>}
