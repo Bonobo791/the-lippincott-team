@@ -8,7 +8,7 @@ import { calloutBlockSchema } from '../../src/components/blocks/callout.template
 import { contentBlockSchema } from '../../src/components/blocks/content.template';
 import { videoBlockSchema } from '../../src/components/blocks/video.template';
 import { splitBlockSchema } from '../../src/components/blocks/split.template';
-import { teamGridBlockSchema } from '../../src/components/blocks/team_grid.template';
+import { teamGridBlockSchema } from '../../src/components/blocks/teamGrid.template';
 
 export const PageCollection: Collection = {
 	name: 'page',

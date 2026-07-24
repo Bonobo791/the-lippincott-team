@@ -1,7 +1,7 @@
 import type { Template } from 'tinacms';
 
 export const teamGridBlockSchema: Template = {
-	name: 'team_grid',
+	name: 'teamGrid',
 	label: 'Team Roster Grid',
 	fields: [
 		{ type: 'string', label: 'Title', name: 'title' },
