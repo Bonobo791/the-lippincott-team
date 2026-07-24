@@ -1,0 +1,41 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { Icon } from 'astro-icon/components';
+import type { CmsTeam } from '../../lib/data';
+import { mdxComponents } from '../mdx/components';
+
+interface Props { data?: CmsTeam | null }
+
+const { data } = Astro.props;
+---
+{data && (
+	<div class="mx-auto max-w-4xl px-6 py-12">
+		<div class="flex flex-col items-start gap-8 md:flex-row">
+			{data.photo && (
+				<img src={data.photo} alt={data.name ?? ''} width={400} height={400} data-tina-field={tinaField(data, 'photo')} class="w-full max-w-xs rounded-2xl border object-cover" />
+			)}
+			<div class="flex-1">
+				<h1 data-tina-field={tinaField(data, 'name')} class="text-4xl font-semibold tracking-tight">{data.name}</h1>
+				{data.role && <p data-tina-field={tinaField(data, 'role')} class="mt-1 text-lg text-muted-foreground">{data.role}</p>}
+				<div class="mt-4 flex flex-col gap-2 text-sm">
+					{data.phone && (
+						<a href={`tel:${data.phone}`} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
+							<Icon name="tabler:phone" class="size-4" />{data.phone}
+						</a>
+					)}
+					{data.email && (
+						<a href={`mailto:${data.email}`} data-tina-field={tinaField(data, 'email')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
+							<Icon name="tabler:mail" class="size-4" />{data.email}
+						</a>
+					)}
+				</div>
+			</div>
+		</div>
+		{data.bio && (
+			<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg mt-10 max-w-none">
+				<TinaMarkdown content={data.bio} components={mdxComponents} />
+			</div>
+		)}
+	</div>
+)}
