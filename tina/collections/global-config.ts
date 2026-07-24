@@ -80,6 +80,35 @@ export const GlobalConfigCollection: Collection = {
           type: "string",
           required: true
 
+        },
+        {
+          name: "children",
+          label: "Dropdown Links",
+          description:
+            "Optional. When set, this nav item shows a dropdown of these links instead of being a plain link.",
+          type: "object",
+          list: true,
+          ui: {
+            itemProps: (item) => {
+              return {
+                label: item.title
+              };
+            },
+          },
+          fields: [
+            {
+              name: "title",
+              label: "Link Label",
+              type: "string",
+              required: true
+            },
+            {
+              name: "link",
+              label: "Link URL",
+              type: "string",
+              required: true
+            }
+          ]
         }
       ]
     },

@@ -59,6 +59,7 @@ export type VideoBlock = Extract<PageBlock, { __typename: 'PageBlocksVideo' }>;
 export type SplitBlock = Extract<PageBlock, { __typename: 'PageBlocksSplit' }>;
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
+export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;
 export type CmsConfigContactLink = NonNullable<NonNullable<CmsConfig['contactLinks']>[number]>;
 export type CmsConfigSeo = NonNullable<CmsConfig['seo']>;
 
