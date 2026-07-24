@@ -6,3 +6,8 @@
   command = "pnpm build:local"
   # @astrojs/netlify (auto-selected by astro.config.mjs via the NETLIFY env
   # var) configures the publish directory and function routing automatically.
+
+[build.environment]
+  # `tinacms build` (the local-content indexer) exceeds Node's default ~2 GB
+  # heap in Netlify's build container. Give V8 more headroom.
+  NODE_OPTIONS = "--max-old-space-size=4096"
