@@ -87,6 +87,9 @@ above rather than bare `astro build`.
   `team/*.mdx`, `community/**/*.mdx` (nested hierarchies), `config/config.json`.
 - `src/styles/global.css` — Tailwind v4 entry (`@import 'tailwindcss'`, theme
   tokens, `.dark`-class dark variant).
+- `scripts/migrate/` — one-off WordPress→Tina migration pipeline, kept for
+  provenance. `data/` (cached WP API responses) is gitignored; run scripts
+  with `node scripts/migrate/<name>.mjs`.
 
 ## Key conventions
 
