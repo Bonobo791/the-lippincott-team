@@ -187,14 +187,49 @@ export function htmlToMarkdown(html) {
 				[...(el.childNodes ?? [])].flatMap((c) =>
 					c.nodeType === 1 ? [c, ...descendants(c)] : [],
 				);
-			const rows = descendants(node)
+			// textContent glues adjacent block descendants ("parks and trailsNew
+			// construction"), so walk recursively and join block-level elements
+			// with a space while inline content keeps its natural spacing.
+			const BLOCK = new Set([
+				'P',
+				'DIV',
+				'UL',
+				'OL',
+				'LI',
+				'BLOCKQUOTE',
+				'H1',
+				'H2',
+				'H3',
+				'H4',
+				'H5',
+				'H6',
+			]);
+			const joinBlocks = (el) => {
+				const parts = [];
+				let inline = '';
+				for (const c of el.childNodes ?? []) {
+					if (c.nodeType === 1 && BLOCK.has(c.nodeName)) {
+						if (inline.trim()) parts.push(inline);
+						inline = '';
+						parts.push(joinBlocks(c));
+					} else {
+						inline += c.textContent;
+					}
+				}
+				if (inline.trim()) parts.push(inline);
+				return parts.join(' ');
+			};
+			const cellText = (cell) =>
+				joinBlocks(cell)
+					.replace(/\s+/g, ' ')
+					.trim()
+					.replace(/\|/g, '\\|');
+		const rows = descendants(node)
 				.filter((n) => n.nodeName === 'TR')
 				.map((tr) =>
 					descendants(tr)
 						.filter((n) => n.nodeName === 'TH' || n.nodeName === 'TD')
-						.map((cell) =>
-							cell.textContent.replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|'),
-						),
+						.map(cellText),
 				);
 			if (rows.length === 0 || rows[0].length === 0) return '';
 			const header = rows[0];
