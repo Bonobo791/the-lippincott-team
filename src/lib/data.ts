@@ -51,10 +51,25 @@ export async function listTeam() {
 		.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
+export const getCommunity = (path: string) =>
+	requestWithMetadata(client.queries.community({ relativePath: `${path}.mdx` }), { priority: 'primary' });
+
+export async function listCommunities() {
+	const result = await client.queries.communityConnection();
+	return (result.data.communityConnection.edges ?? [])
+		.flatMap((edge) => (edge?.node ? [edge.node] : []));
+}
+
+/** Public URL path of a community doc, e.g. "northwest-houston-real-estate/cypress-tx-real-estate". */
+export const communityPath = (node: { _sys: { breadcrumbs: string[] } }) => node._sys.breadcrumbs.join('/');
+
 export type CmsConfig = Awaited<ReturnType<typeof getConfig>>['data']['config'];
 export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsBlog = Awaited<ReturnType<typeof getBlog>>['data']['blog'];
 export type CmsTeam = Awaited<ReturnType<typeof getTeamMember>>['data']['team'];
+
+export type CmsCommunity = Awaited<ReturnType<typeof getCommunity>>['data']['community'];
+export type CommunityFaq = NonNullable<NonNullable<CmsCommunity['faqs']>[number]>;
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type PageBlockTypename = PageBlock['__typename'];

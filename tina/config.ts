@@ -1,5 +1,6 @@
 import { defineConfig } from "tinacms";
 import { BlogCollection } from "./collections/blog";
+import { CommunityCollection } from "./collections/community";
 import { GlobalConfigCollection } from "./collections/global-config";
 import { PageCollection } from "./collections/page";
 import { TeamCollection } from "./collections/team";
@@ -37,6 +38,7 @@ export default defineConfig({
       BlogCollection,
       PageCollection,
       TeamCollection,
+      CommunityCollection,
       GlobalConfigCollection,
     ],
   },
