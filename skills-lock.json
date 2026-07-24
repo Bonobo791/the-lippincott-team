@@ -7,6 +7,36 @@
       "skillPath": "skills/astro/SKILL.md",
       "computedHash": "ebefe26b231d32379c14e41a46c2de7b4b0184543bedab7febdabe4fb21fba4e"
     },
+    "netlify-config": {
+      "source": "netlify/context-and-tools",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-config/SKILL.md",
+      "computedHash": "fb65a814b7bb2fa3ede3d8985d7dbe22e7c47dbda5f1b3d55422f5ee9c9bd0f7"
+    },
+    "netlify-deploy": {
+      "source": "netlify/context-and-tools",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-deploy/SKILL.md",
+      "computedHash": "246157ea76b04f083b038080869bcff9c4b3ecb3ef78e38f1da7c787e9e6fe44"
+    },
+    "netlify-edge-functions": {
+      "source": "netlify/context-and-tools",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-edge-functions/SKILL.md",
+      "computedHash": "2578f1adc0e1e2753a09427f44fb84792bf69550c2ed88e3168d25ebdc6438e6"
+    },
+    "netlify-frameworks": {
+      "source": "netlify/context-and-tools",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-frameworks/SKILL.md",
+      "computedHash": "e30c83706cf0d448339a799f338616c81e59b99967ddcb1226ce66d16cb64c95"
+    },
+    "netlify-functions": {
+      "source": "netlify/context-and-tools",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-functions/SKILL.md",
+      "computedHash": "0741181c958ca802ea4383050dea63ff48f383d3b8b0e45e15c48b53d0f8a95c"
+    },
     "tinacms": {
       "source": "ovachiever/droid-tings",
       "sourceType": "github",

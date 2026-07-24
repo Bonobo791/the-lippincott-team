@@ -28,6 +28,11 @@ before working in these areas:
 - `.agents/skills/tinacms` — TinaCMS schema (`tina/config.ts`), collections,
   visual editing, and common errors (build ordering, field naming, path
   mismatches). See its `references/` for troubleshooting.
+- `.agents/skills/netlify-*` — official Netlify skills (from
+  `netlify/context-and-tools`): `netlify-deploy` (deploying sites),
+  `netlify-config` (`netlify.toml` / build config), `netlify-functions`,
+  `netlify-edge-functions`, `netlify-frameworks`. Consult these when working
+  on Netlify deployment or configuration.
 
 ## Build and dev commands
 
