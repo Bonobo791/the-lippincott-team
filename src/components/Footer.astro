@@ -20,7 +20,7 @@ const today = new Date();
 <footer class="bg-foreground text-background/70">
 	<div class="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
 		<div class="space-y-4">
-			{seo?.logo && <img src={seo.logo} alt={seo.title ?? 'Logo'} class="h-10 w-auto" />}
+			{seo?.logo && <img src={seo.logo} alt={seo.title ?? 'Logo'} width="191" height="55" class="h-10 w-auto" />}
 			{config?.footerBlurb && (
 				<p class="text-sm leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
 			)}

@@ -113,7 +113,7 @@
 }
 
 /* Prose (blog body) follows the theme tokens so it inverts in dark mode and
-   keeps the indigo tint, rather than the plugin's default zero-chroma grays.
+   tracks the brand color tokens, rather than the plugin's default zero-chroma grays.
    Unlayered so it overrides the typography plugin's layered variables. */
 .prose {
 	--tw-prose-body: var(--foreground);
