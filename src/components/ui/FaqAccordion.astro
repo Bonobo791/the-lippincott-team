@@ -5,6 +5,8 @@ import { mdxComponents } from '../mdx/components';
 import type { RichText } from '../../lib/data';
 
 interface FaqLike {
+	// Index signature so items can be passed to tinaField (Record<string, unknown>).
+	[key: string]: unknown;
 	question?: string | null;
 	answer?: RichText | null;
 }

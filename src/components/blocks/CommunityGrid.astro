@@ -1,0 +1,31 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import Section from '../ui/Section.astro';
+import { communityPath, listCommunities } from '../../lib/data';
+import type { CommunityGridBlock } from '../../lib/data';
+
+interface Props { data: CommunityGridBlock }
+
+const { data } = Astro.props;
+const prefix = data.prefix ?? 'northwest-houston-real-estate';
+// Direct children of the prefix (one level deep), sorted by title.
+const entries = (await listCommunities())
+	.map((node) => ({ node, path: communityPath(node) }))
+	.filter(({ path }) => path.startsWith(`${prefix}/`) && path.slice(prefix.length + 1).split('/').length === 1)
+	.sort((a, b) => (a.node.title ?? '').localeCompare(b.node.title ?? ''));
+---
+<Section>
+	{data.title && <h2 data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-semibold tracking-tight">{data.title}</h2>}
+	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
+	<div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+		{entries.map(({ node, path }) => (
+			<a href={`/${path}/`} class="group overflow-hidden rounded-2xl border transition-shadow hover:shadow-lg">
+				{node.heroImage && <img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} class="aspect-[3/2] w-full object-cover" />}
+				<div class="p-5">
+					<h3 class="text-lg font-semibold transition-colors group-hover:text-primary">{node.title}</h3>
+					{node.description && <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{node.description}</p>}
+				</div>
+			</a>
+		))}
+	</div>
+</Section>

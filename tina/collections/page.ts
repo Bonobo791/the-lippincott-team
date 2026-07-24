@@ -10,6 +10,7 @@ import { videoBlockSchema } from '../../src/components/blocks/video.template';
 import { splitBlockSchema } from '../../src/components/blocks/split.template';
 import { teamGridBlockSchema } from '../../src/components/blocks/teamGrid.template';
 import { faqBlockSchema } from '../../src/components/blocks/faq.template';
+import { communityGridBlockSchema } from '../../src/components/blocks/communityGrid.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -49,6 +50,7 @@ export const PageCollection: Collection = {
 				splitBlockSchema,
 				teamGridBlockSchema,
 				faqBlockSchema,
+				communityGridBlockSchema,
 			],
 		},
 	],

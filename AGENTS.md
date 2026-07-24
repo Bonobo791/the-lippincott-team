@@ -56,8 +56,8 @@ above rather than bare `astro build`.
 - `tina/config.ts` — TinaCMS config (branch detection from host env vars, admin
   built to `public/admin`, media in `public/`).
 - `tina/collections/` — Tina collections: `blog.ts`, `page.ts`,
-  `global-config.ts`. The page collection's block list imports per-block
-  template schemas.
+  `global-config.ts`, `team.ts`, `community.ts`. The page collection's block
+  list imports per-block template schemas.
 - `tina/__generated__/` — generated Tina client/types; regenerate via the
   dev/build scripts after any schema change. Do not hand-edit.
 - `src/lib/data.ts` — per-collection data loaders over the generated client,
@@ -69,15 +69,18 @@ above rather than bare `astro build`.
   editable region = adding one entry here; `src/pages/tina-island/[name].ts`
   picks it up automatically.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
-  Stats, Testimonial, Callout, Content, Split, Video). **Convention: each block
+  Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
+  CommunityGrid). **Convention: each block
   is a pair** — `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Add a new block by creating the pair and registering the
   template in `tina/collections/page.ts`.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
-  registry; `src/components/ui/`, `src/components/mdx/` — reusable UI and MDX
-  components.
-- `src/pages/` — routes: `[...slug].astro` (pages), `blog/`, `rss.xml.ts`,
-  `404.astro`, `tina-island/[name].ts`.
+  registry; `src/components/ui/` — reusable UI components (including
+  `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
+- `src/pages/` — routes: `[...slug].astro` (pages), `about/[...slug].astro`
+  (team bios), `northwest-houston-real-estate/[...slug].astro` and
+  `northwest-houston-schools-real-estate/[...slug].astro` (community/school
+  hierarchies), `blog/`, `rss.xml.ts`, `404.astro`, `tina-island/[name].ts`.
 - `src/content/` — Tina-managed content: `blog/*.mdx`, `page/*.mdx`,
   `config/config.json`.
 - `src/styles/global.css` — Tailwind v4 entry (`@import 'tailwindcss'`, theme

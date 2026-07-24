@@ -1,6 +1,7 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
 import Callout from './Callout.astro';
+import CommunityGrid from './CommunityGrid.astro';
 import Content from './Content.astro';
 import Cta from './Cta.astro';
 import Faq from './Faq.astro';
@@ -24,6 +25,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 	const rendered = (() => {
 		switch (block.__typename) {
 			case 'PageBlocksCallout': return <Callout data={block} />;
+			case 'PageBlocksCommunityGrid': return <CommunityGrid data={block} />;
 			case 'PageBlocksContent': return <Content data={block} />;
 			case 'PageBlocksCta': return <Cta data={block} />;
 			case 'PageBlocksFaq': return <Faq data={block} />;
