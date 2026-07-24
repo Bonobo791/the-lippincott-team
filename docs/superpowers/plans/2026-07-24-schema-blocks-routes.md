@@ -503,12 +503,15 @@ import { islands } from '../../lib/islands';
 
 const PREFIX = 'northwest-houston-real-estate';
 
+// NOTE: Astro compiles getStaticPaths in an isolated scope — module-level
+// consts like PREFIX are unavailable there, so the literal is repeated locally.
 export async function getStaticPaths() {
+	const prefix = 'northwest-houston-real-estate';
 	const entries = await listCommunities();
 	return entries
 		.map((node) => communityPath(node))
-		.filter((path) => path.startsWith(`${PREFIX}/`))
-		.map((path) => ({ params: { slug: path.slice(PREFIX.length + 1) } }));
+		.filter((path) => path.startsWith(`${prefix}/`))
+		.map((path) => ({ params: { slug: path.slice(prefix.length + 1) } }));
 }
 
 const rest = (Astro.params.slug ?? '').toString();
