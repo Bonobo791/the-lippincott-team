@@ -50,6 +50,8 @@ import {
 	frontmatter,
 	normalizeMediaUrl,
 	drainStrippedVideos,
+	decode,
+	stripExternalImages,
 } from './lib/convert.mjs';
 
 const MIGRATE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -65,8 +67,6 @@ const heads = readJson('heads.json');
 const media = readJson('media.json');
 const urlMap = new Map(Object.entries(readJson('url-map.json')));
 const mediaById = new Map(media.map((m) => [m.id, m]));
-
-const decode = (s) => parse(s ?? '').text.trim();
 
 // The 13 targets: descendants of the two hub pages (hubs excluded), ordered
 // by menu_order within each level for deterministic output.
@@ -156,15 +156,6 @@ function heroImageFor(page, images) {
 	const first = images.find((img) => urlMap.has(img.src));
 	if (first) return urlMap.get(first.src);
 	return undefined;
-}
-
-// Remove any image still pointing at an absolute http(s) URL after
-// resolution, same contract as blog.mjs / team.mjs.
-function stripExternalImages(markdown, slug) {
-	return markdown.replace(/!\[[^\]]*\]\((https?:[^)\s]+)[^)]*\)/g, (_match, url) => {
-		console.log(`  STRIPPED external image in ${slug}: ${url}`);
-		return '';
-	});
 }
 
 let written = 0;

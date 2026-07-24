@@ -19,18 +19,25 @@ const API = `${SITE}/wp-json/wp/v2`;
 const UA =
 	'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), 'data');
+const FETCH_TIMEOUT_MS = 30_000;
 
 const HUB_SLUGS = ['northwest-houston-real-estate', 'northwest-houston-schools-real-estate'];
 const LEGAL_SLUGS = ['privacy-policy', 'terms-and-conditions'];
 
 async function fetchJson(url) {
-	const res = await fetch(url, { headers: { 'User-Agent': UA } });
+	const res = await fetch(url, {
+		headers: { 'User-Agent': UA },
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+	});
 	if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
 	return { body: await res.json(), headers: res.headers };
 }
 
 async function fetchText(url) {
-	const res = await fetch(url, { headers: { 'User-Agent': UA } });
+	const res = await fetch(url, {
+		headers: { 'User-Agent': UA },
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+	});
 	if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
 	return res.text();
 }
@@ -114,7 +121,8 @@ function migratedUrls(pages, posts) {
 		}
 	}
 	for (const post of posts) urls.push(post.link);
-	return urls.sort();
+	// Code-unit comparator: identical ordering to the default sort.
+	return urls.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 function extractHead(html) {
@@ -188,10 +196,13 @@ const main = async () => {
 	console.log(`head entries: ${Object.keys(heads).length}`);
 	console.log(`mp4s: ${mp4s.length}`);
 	console.log(`pages referencing mp4: ${referencing.length}`);
-	console.log(`GTM container: ${gtmId ?? `none (GA4 only: ${ga4Id ?? 'none found'})`}`);
+	const gtmSummary = gtmId ?? `none (GA4 only: ${ga4Id ?? 'none found'})`;
+	console.log(`GTM container: ${gtmSummary}`);
 };
 
-main().catch((err) => {
+try {
+	await main();
+} catch (err) {
 	console.error(err);
 	process.exit(1);
-});
+}

@@ -41,6 +41,8 @@ import {
 	frontmatter,
 	normalizeMediaUrl,
 	drainStrippedVideos,
+	decode,
+	stripExternalImages,
 } from './lib/convert.mjs';
 
 const MIGRATE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -57,8 +59,6 @@ const media = readJson('media.json');
 const urlMap = new Map(Object.entries(readJson('url-map.json')));
 const mediaById = new Map(media.map((m) => [m.id, m]));
 
-const decode = (s) => parse(s ?? '').text.trim();
-
 const about = pages.find((p) => p.slug === 'about');
 if (!about) throw new Error('about page not found in pages.json');
 const bios = pages.filter((p) => p.parent === about.id);
@@ -67,7 +67,7 @@ if (bios.length !== 12) console.log(`WARNING: expected 12 bios, found ${bios.len
 const PHONE = /\(?\d{3}\)?[-. ]\d{3}[-. ]\d{4}/;
 // Template tagline repeated verbatim across the bios — team-voice marketing,
 // not bio prose. Dropped (see header comment).
-const BOILERPLATE_PARA = /^We combine market expertise with a personal touch/;
+const BOILERPLATE_PREFIX = 'We combine market expertise with a personal touch';
 // Hero meta-title is the member's role only when it names one; the rest say
 // just "The Lippincott Team" (site chrome, not a role).
 const GENERIC_ROLE = /^the lippincott team$/i;
@@ -91,15 +91,6 @@ function photoFor(page, root) {
 	return undefined;
 }
 
-// Remove any image still pointing at an absolute http(s) URL after
-// resolution, same contract as blog.mjs.
-function stripExternalImages(markdown, slug) {
-	return markdown.replace(/!\[[^\]]*\]\((https?:[^)\s]+)[^)]*\)/g, (_match, url) => {
-		console.log(`  STRIPPED external image in ${slug}: ${url}`);
-		return '';
-	});
-}
-
 let written = 0;
 for (const page of bios) {
 	const root = parse(page.content.rendered);
@@ -110,7 +101,7 @@ for (const page of bios) {
 	// Body: only the .uc-paras prose, minus the repeated template tagline.
 	const paras = root
 		.querySelectorAll('.uc-main .uc-paras p')
-		.filter((p) => !BOILERPLATE_PARA.test(p.text.trim()));
+		.filter((p) => !p.text.trim().startsWith(BOILERPLATE_PREFIX));
 	const fragment = paras.map((p) => p.toString()).join('\n');
 	const { markdown, images } = htmlToMarkdown(fragment);
 	const resolved = resolveImages(markdown, urlMap, images);

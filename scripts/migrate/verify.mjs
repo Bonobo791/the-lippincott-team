@@ -14,6 +14,9 @@
 //    at lippincottteam.com or is root-relative must resolve to a built
 //    page (or an existing file for asset-style paths like /uploads/...).
 //
+// C. Frontmatter images — every heroImage/photo frontmatter path in those
+//    same MDX files must exist as a file under public/uploads/.
+//
 // Known gaps are reported but do NOT fail the run:
 // - /opt-out-preferences/ — fetched WP page, deliberately unmigrated;
 //   Plan 4 ships it as a redirect.
@@ -116,7 +119,9 @@ const files = [
 // Markdown links [text](target); image embeds ![alt](src) are stripped
 // first so only real links are checked. Link targets with a title
 // ("url "title"") are not produced by the converter and not handled.
-const LINK_RE = /\[[^\]]*\]\(([^)\s]+)\)/g;
+// The text class excludes `[` so a failed match can't rescan nested
+// brackets (super-linear backtracking guard).
+const LINK_RE = /\[[^\][]*\]\(([^)\s]+)\)/g;
 let linksChecked = 0;
 let linksSkippedExternal = 0;
 
@@ -155,10 +160,34 @@ console.log(
 );
 if (knownGapHits.size > 0) {
 	console.log('   Known gaps (reported, not failures):');
-	for (const [gap, count] of [...knownGapHits.entries()].sort()) {
+	for (const [gap, count] of [...knownGapHits.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
 		console.log(`   - ${gap} (${count} link${count === 1 ? '' : 's'})`);
 	}
 }
+
+// --- Check C: frontmatter images exist under public/uploads/ ---------------
+
+// heroImage (blog/community) and photo (team) must point at a downloaded
+// file; an unmapped or typo'd path would silently render a broken image.
+const PUBLIC = join(ROOT, 'public');
+let fmImagesChecked = 0;
+for (const file of files) {
+	const text = readFileSync(file, 'utf8');
+	const fm = text.match(/^---\n([\s\S]*?)\n---/)?.[1];
+	if (!fm) continue;
+	const rel = file.slice(ROOT.length + 1);
+	for (const line of fm.split('\n')) {
+		const m = line.match(/^(heroImage|photo):\s*(\S+)\s*$/);
+		if (!m) continue;
+		const value = m[2].replace(/^["']|["']$/g, '');
+		if (!value.startsWith('/uploads/')) continue; // only local uploads are verified
+		fmImagesChecked++;
+		if (!existsSync(join(PUBLIC, value))) {
+			fail(`missing frontmatter image in ${rel}: ${value}`);
+		}
+	}
+}
+console.log(`C. Frontmatter images: ${fmImagesChecked} heroImage/photo path(s) verified`);
 
 // --- Result ----------------------------------------------------------------
 

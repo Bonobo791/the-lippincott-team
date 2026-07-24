@@ -8,7 +8,7 @@
 //   const { markdown, images } = htmlToMarkdown(wpItem.content.rendered);
 //   // images: [{ token: '__IMG_0__', src, alt }] — tokens are left in the
 //   // markdown so Task 3 can download files first and then rewrite URLs:
-//   const resolved = resolveImages(markdown, urlMap);   // Map<srcUrl, localPath>
+//   const resolved = resolveImages(markdown, urlMap, images); // Map<srcUrl, localPath>
 //   const safe = mdxEscape(resolved);                   // escape MDX hazards
 //   const file = frontmatter(fmObject) + '\n' + safe;
 //
@@ -56,6 +56,29 @@ export function drainStrippedVideos() {
 }
 
 // ---------------------------------------------------------------------------
+// Shared caller helpers (hoisted from the Task 4–7 scripts)
+// ---------------------------------------------------------------------------
+
+// Decode HTML entities (and drop any stray tags) via node-html-parser.
+export const decode = (s) => parse(s ?? '').text.trim();
+
+// An image embed whose URL is still absolute http(s) after resolution
+// (unmapped or external, e.g. Gravatar comment avatars). The URL token must
+// come first inside the parens; anything after it (a title) is dropped too.
+const EXTERNAL_IMAGE = /!\[[^\]]*\]\((https?:[^)]*)\)/g;
+
+// Remove external images from converted markdown (migrated output must
+// contain zero unresolved external images). Returns the cleaned markdown;
+// logs each strip.
+export function stripExternalImages(markdown, slug) {
+	return markdown.replace(EXTERNAL_IMAGE, (_match, target) => {
+		const url = target.split(/\s/, 1)[0];
+		console.log(`  STRIPPED external image in ${slug}: ${url}`);
+		return '';
+	});
+}
+
+// ---------------------------------------------------------------------------
 // stripElementor
 // ---------------------------------------------------------------------------
 
@@ -70,23 +93,36 @@ const EMPTY_DROPPABLE = new Set(['DIV', 'SPAN', 'P', 'A', 'SUP', 'SUB', 'SECTION
 // Elementor/uichemy wrapper markup removed but semantic content kept.
 export function stripElementor(html) {
 	const root = parse(html, { blockTextElements: { script: true, style: true, noscript: true } });
+	dropNonContentTags(root);
+	collectVideos(root);
+	rewriteIframes(root);
+	dropDecorativeImages(root);
+	unwrapSpans(root);
+	dropEmptyWrappers(root);
+	return root.toString();
+}
 
-	// Drop non-content tags outright.
+// Drop non-content tags outright.
+function dropNonContentTags(root) {
 	for (const el of root.querySelectorAll('style, script, noscript, template')) el.remove();
+}
 
-	// <video>: record the src for the videos.txt handoff, then drop.
+// <video>: record the src for the videos.txt handoff, then drop.
+function collectVideos(root) {
 	for (const el of root.querySelectorAll('video')) {
 		const source = el.querySelector('source');
 		const src = normalizeMediaUrl(el.getAttribute('src') ?? source?.getAttribute('src'));
 		if (src) strippedVideos.push(src);
 		el.remove();
 	}
+}
 
-	// Iframes: YouTube → placeholder we can turn into an MDX tag; Vimeo →
-	// placeholder for a plain link; everything else (e.g. the Google Maps
-	// commute widget) is dropped. The placeholder keeps the video URL as its
-	// text: turndown routes empty elements to its blankRule before custom
-	// rules, and the URL doubles as a graceful fallback if the rule misses.
+// Iframes: YouTube → placeholder we can turn into an MDX tag; Vimeo →
+// placeholder for a plain link; everything else (e.g. the Google Maps
+// commute widget) is dropped. The placeholder keeps the video URL as its
+// text: turndown routes empty elements to its blankRule before custom
+// rules, and the URL doubles as a graceful fallback if the rule misses.
+function rewriteIframes(root) {
 	for (const el of root.querySelectorAll('iframe')) {
 		const src = el.getAttribute('src') ?? '';
 		const yt = src.match(YOUTUBE_IFRAME);
@@ -99,20 +135,26 @@ export function stripElementor(html) {
 			el.remove();
 		}
 	}
+}
 
-	// Decorative icon images: 32-hex-char-named SVGs (Elementor/uichemy icons)
-	// and images with no usable src.
+// Decorative icon images: 32-hex-char-named SVGs (Elementor/uichemy icons)
+// and images with no usable src.
+function dropDecorativeImages(root) {
 	for (const el of root.querySelectorAll('img')) {
 		const src = el.getAttribute('src') ?? '';
 		if (!src || DECORATIVE_SVG.test(src) || src.startsWith('data:')) el.remove();
 	}
+}
 
-	// Unwrap all spans (uc-accent headings, badge rows, icon spans) — keep the
-	// text, lose the styling hooks.
+// Unwrap all spans (uc-accent headings, badge rows, icon spans) — keep the
+// text, lose the styling hooks.
+function unwrapSpans(root) {
 	for (const el of root.querySelectorAll('span')) el.replaceWith(...el.childNodes);
+}
 
-	// Drop empty wrappers (repeat: removing inner empties makes outer ones
-	// empty). Keep anything that still holds media or a hard break.
+// Drop empty wrappers (repeat: removing inner empties makes outer ones
+// empty). Keep anything that still holds media or a hard break.
+function dropEmptyWrappers(root) {
 	const hasContent = (el) =>
 		el.querySelector('img, video, iframe, br, hr') !== null || el.text.trim() !== '';
 	let changed = true;
@@ -125,13 +167,77 @@ export function stripElementor(html) {
 			}
 		}
 	}
-
-	return root.toString();
 }
 
 // ---------------------------------------------------------------------------
 // htmlToMarkdown
 // ---------------------------------------------------------------------------
+
+// Block-level tags inside table cells: their flattened text is joined with a
+// space (plain textContent would glue them: "parks and trailsNew construction").
+const CELL_BLOCK = new Set([
+	'P',
+	'DIV',
+	'UL',
+	'OL',
+	'LI',
+	'BLOCKQUOTE',
+	'H1',
+	'H2',
+	'H3',
+	'H4',
+	'H5',
+	'H6',
+]);
+
+// Convert an inline node inside a table cell to markdown, preserving links
+// and basic emphasis that plain textContent would lose.
+function cellInlineMd(node) {
+	if (node.nodeType === 3) return node.textContent;
+	if (node.nodeType !== 1) return '';
+	const inner = (node.childNodes ?? []).map(cellInlineMd).join('');
+	switch (node.nodeName) {
+		case 'A': {
+			const href = node.getAttribute('href') ?? '';
+			const text = inner.trim();
+			return href && text ? `[${text}](${href})` : inner;
+		}
+		case 'STRONG':
+		case 'B':
+			return inner.trim() ? `**${inner.trim()}**` : inner;
+		case 'EM':
+		case 'I':
+			return inner.trim() ? `*${inner.trim()}*` : inner;
+		case 'CODE':
+			return inner.trim() ? `\`${inner.trim()}\`` : inner;
+		default:
+			return inner;
+	}
+}
+
+// Flatten a cell node's content: inline nodes become markdown (keeps their
+// natural spacing), block-level children are flattened recursively and the
+// pieces joined with a space.
+function cellBlocksMd(el) {
+	const parts = [];
+	let inline = '';
+	for (const c of el.childNodes ?? []) {
+		if (c.nodeType === 1 && CELL_BLOCK.has(c.nodeName)) {
+			if (inline.trim()) parts.push(inline);
+			inline = '';
+			parts.push(cellBlocksMd(c));
+		} else {
+			inline += cellInlineMd(c);
+		}
+	}
+	if (inline.trim()) parts.push(inline);
+	return parts.join(' ');
+}
+
+// One table cell → one markdown-safe line fragment.
+function tableCellText(cell) {
+	return cellBlocksMd(cell).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
+}
 
 // Convert WP content HTML to markdown. Returns { markdown, images } where
 // every content image is replaced by an `__IMG_<n>__` token and described in
@@ -178,58 +284,21 @@ export function htmlToMarkdown(html) {
 	});
 
 	// GFM-style tables (turndown core flattens them). Reads the DOM directly
-	// instead of the already-converted cell content. Domino's NodeLists are
-	// not iterable, so descend via childNodes manually.
+	// instead of the already-converted cell content.
 	turndown.addRule('gfmTable', {
 		filter: 'table',
 		replacement: (_content, node) => {
+			// Domino's NodeLists are not iterable, so descend via childNodes.
 			const descendants = (el) =>
 				[...(el.childNodes ?? [])].flatMap((c) =>
 					c.nodeType === 1 ? [c, ...descendants(c)] : [],
 				);
-			// textContent glues adjacent block descendants ("parks and trailsNew
-			// construction"), so walk recursively and join block-level elements
-			// with a space while inline content keeps its natural spacing.
-			const BLOCK = new Set([
-				'P',
-				'DIV',
-				'UL',
-				'OL',
-				'LI',
-				'BLOCKQUOTE',
-				'H1',
-				'H2',
-				'H3',
-				'H4',
-				'H5',
-				'H6',
-			]);
-			const joinBlocks = (el) => {
-				const parts = [];
-				let inline = '';
-				for (const c of el.childNodes ?? []) {
-					if (c.nodeType === 1 && BLOCK.has(c.nodeName)) {
-						if (inline.trim()) parts.push(inline);
-						inline = '';
-						parts.push(joinBlocks(c));
-					} else {
-						inline += c.textContent;
-					}
-				}
-				if (inline.trim()) parts.push(inline);
-				return parts.join(' ');
-			};
-			const cellText = (cell) =>
-				joinBlocks(cell)
-					.replace(/\s+/g, ' ')
-					.trim()
-					.replace(/\|/g, '\\|');
-		const rows = descendants(node)
+			const rows = descendants(node)
 				.filter((n) => n.nodeName === 'TR')
 				.map((tr) =>
 					descendants(tr)
 						.filter((n) => n.nodeName === 'TH' || n.nodeName === 'TD')
-						.map(cellText),
+						.map(tableCellText),
 				);
 			if (rows.length === 0 || rows[0].length === 0) return '';
 			const header = rows[0];
@@ -242,12 +311,11 @@ export function htmlToMarkdown(html) {
 	const markdown = turndown
 		.turndown(cleaned)
 		.replace(/\u00A0/g, ' ') // &nbsp; → plain space
-		.replace(/^(\s*(?:[-*+]|\d+\.))[ \t]+/gm, '$1 ') // '-   x' → '- x'
-		.replace(/[ \t]+\n/g, '\n') // trailing whitespace
+		.replace(/^([ \t]*(?:[-*+]|\d+\.))[ \t]+/gm, '$1 ') // '-   x' → '- x'
+		.replace(/[ \t]+$/gm, '') // trailing whitespace
 		.replace(/\n{3,}/g, '\n\n') // collapse blank runs
 		.trim();
 
-	lastImages = images;
 	return { markdown, images };
 }
 
@@ -255,15 +323,15 @@ export function htmlToMarkdown(html) {
 // resolveImages
 // ---------------------------------------------------------------------------
 
-// The most recent htmlToMarkdown() image list, so resolveImages can be called
-// with the brief's 2-arg form. Callers doing batch work should resolve each
-// document before converting the next (or pass `images` explicitly).
-let lastImages = [];
-
 // Replace __IMG_<n>__ tokens with markdown images. `urlMap` maps the original
-// source URL to a local path (Task 3's download map). Unmapped tokens fall
-// back to the original URL so output is never broken.
-export function resolveImages(markdown, urlMap, images = lastImages) {
+// source URL to a local path (Task 3's download map). `images` is the list
+// htmlToMarkdown returned alongside the markdown — required, so a missing
+// argument fails loudly instead of silently resolving against stale state.
+// Unmapped tokens fall back to the original URL so output is never broken.
+export function resolveImages(markdown, urlMap, images) {
+	if (!Array.isArray(images)) {
+		throw new Error('resolveImages requires the images array returned by htmlToMarkdown');
+	}
 	return markdown.replace(/__IMG_(\d+)__/g, (match, n) => {
 		const img = images[Number(n)];
 		if (!img) return match;
@@ -283,7 +351,7 @@ export function resolveImages(markdown, urlMap, images = lastImages) {
 // components freely — anything matching /<[A-Z]/ is preserved.
 export function mdxEscape(markdown) {
 	const protectedTags = [];
-	const staged = markdown.replace(/<\/?[A-Z][\w]*(?:\s[^<>]*?)?\s*\/?>/g, (tag) => {
+	const staged = markdown.replace(/<\/?[A-Z]\w*(?:\s[^<>]*)?\/?>/g, (tag) => {
 		protectedTags.push(tag);
 		return `MDXTAG${protectedTags.length - 1}ENDMDXTAG`;
 	});
@@ -348,21 +416,34 @@ function emitArrayItem(lines, item, indent) {
 	// Object item: first key on the `- ` line, the rest aligned under it.
 	const entries = Object.entries(item).filter(([, v]) => v !== undefined && v !== null && v !== '');
 	entries.forEach(([k, v], i) => {
-		if (i === 0 && typeof v !== 'object') {
-			if (typeof v === 'string' && v.includes('\n')) {
-				lines.push(`${pad}- ${k}: |`);
-				for (const line of v.split('\n')) lines.push(`${pad}    ${line}`);
-			} else {
-				lines.push(`${pad}- ${k}: ${yamlScalar(v)}`);
-			}
-		} else if (i === 0) {
-			lines.push(`${pad}- ${k}:`);
-			if (Array.isArray(v)) for (const sub of v) emitArrayItem(lines, sub, indent + 4);
-			else for (const [sk, sv] of Object.entries(v)) emitEntry(lines, sk, sv, indent + 4);
-		} else {
-			emitEntry(lines, k, v, indent + 2);
-		}
+		if (i === 0) emitFirstArrayEntry(lines, k, v, indent);
+		else emitEntry(lines, k, v, indent + 2);
 	});
+}
+
+// The first key of an object array item rides on the `- ` line; its value is
+// a scalar (inline or `|` block) or a nested collection indented under it.
+function emitFirstArrayEntry(lines, key, value, indent) {
+	const pad = ' '.repeat(indent);
+	if (typeof value !== 'object') {
+		emitFirstScalarEntry(lines, key, value, pad);
+		return;
+	}
+	lines.push(`${pad}- ${key}:`);
+	if (Array.isArray(value)) {
+		for (const sub of value) emitArrayItem(lines, sub, indent + 4);
+	} else {
+		for (const [sk, sv] of Object.entries(value)) emitEntry(lines, sk, sv, indent + 4);
+	}
+}
+
+function emitFirstScalarEntry(lines, key, value, pad) {
+	if (typeof value === 'string' && value.includes('\n')) {
+		lines.push(`${pad}- ${key}: |`);
+		for (const line of value.split('\n')) lines.push(`${pad}    ${line}`);
+		return;
+	}
+	lines.push(`${pad}- ${key}: ${yamlScalar(value)}`);
 }
 
 // Serialize an object to a full `---`-fenced YAML frontmatter block (trailing

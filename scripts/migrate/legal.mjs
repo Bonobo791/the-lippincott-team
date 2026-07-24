@@ -25,13 +25,14 @@ import { writeFile } from 'node:fs/promises';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parse } from 'node-html-parser';
 import {
 	htmlToMarkdown,
 	resolveImages,
 	mdxEscape,
 	frontmatter,
 	drainStrippedVideos,
+	decode,
+	stripExternalImages,
 } from './lib/convert.mjs';
 
 const MIGRATE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -46,23 +47,12 @@ const pages = readJson('pages.json');
 const heads = readJson('heads.json');
 const urlMap = new Map(Object.entries(readJson('url-map.json')));
 
-const decode = (s) => parse(s ?? '').text.trim();
-
 const SLUGS = ['privacy-policy', 'terms-and-conditions'];
 const targets = SLUGS.map((slug) => {
 	const page = pages.find((p) => p.slug === slug);
 	if (!page) throw new Error(`page not found in pages.json: ${slug}`);
 	return page;
 });
-
-// Remove any image still pointing at an absolute http(s) URL after
-// resolution, same contract as blog.mjs / team.mjs / community.mjs.
-function stripExternalImages(markdown, slug) {
-	return markdown.replace(/!\[[^\]]*\]\((https?:[^)\s]+)[^)]*\)/g, (_match, url) => {
-		console.log(`  STRIPPED external image in ${slug}: ${url}`);
-		return '';
-	});
-}
 
 let written = 0;
 let skipped = 0;

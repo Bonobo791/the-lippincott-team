@@ -25,7 +25,7 @@ const iso = (wpGmt) => new Date(`${wpGmt}Z`).toISOString();
 
 function run(label, item, fm) {
 	const { markdown, images } = htmlToMarkdown(item.content.rendered);
-	const resolved = resolveImages(markdown, new Map()); // no map yet: original URLs
+	const resolved = resolveImages(markdown, new Map(), images); // no map yet: original URLs
 	const safe = mdxEscape(resolved);
 	console.log('='.repeat(78));
 	console.log(`### ${label} — ${item.slug}`);
@@ -59,7 +59,8 @@ run('COMMUNITY', bridgeland, {
 // Blog post (WP blocks). Task 4 will prefer heads.json meta descriptions;
 // here the WP excerpt is entity-decoded and stripped of tags for the preview.
 const post = posts.find((p) => p.slug === 'how-real-estate-agents-price-homes');
-const excerptText = parse(post.excerpt.rendered).text.trim().replace(/\s*\[…\]$/, '');
+const rawExcerpt = parse(post.excerpt.rendered).text.trim();
+const excerptText = rawExcerpt.endsWith('[…]') ? rawExcerpt.slice(0, -'[…]'.length).trimEnd() : rawExcerpt;
 run('BLOG', post, {
 	title: post.title.rendered,
 	description: excerptText,

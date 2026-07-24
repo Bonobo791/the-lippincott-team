@@ -26,7 +26,6 @@ import { writeFile } from 'node:fs/promises';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parse } from 'node-html-parser';
 import {
 	htmlToMarkdown,
 	resolveImages,
@@ -34,6 +33,8 @@ import {
 	frontmatter,
 	normalizeMediaUrl,
 	drainStrippedVideos,
+	decode,
+	stripExternalImages,
 } from './lib/convert.mjs';
 
 const MIGRATE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -50,15 +51,13 @@ const media = readJson('media.json');
 const urlMap = new Map(Object.entries(readJson('url-map.json')));
 const mediaById = new Map(media.map((m) => [m.id, m]));
 
-// Decode HTML entities (and drop any stray tags) via node-html-parser, same
-// trick smoke-convert.mjs uses for excerpts.
-const decode = (s) => parse(s ?? '').text.trim();
-
-// WP's gmt datetime → ISO-8601 with Z (matches the starter's frontmatter style).
-const iso = (wpGmt) => new Date(`${wpGmt}Z`).toISOString();
+// WP's gmt datetime → ISO-8601 with Z (matches the starter's frontmatter
+// style). Missing dates yield undefined (the field is simply omitted).
+const iso = (wpGmt) => (wpGmt ? new Date(`${wpGmt}Z`).toISOString() : undefined);
 
 function excerptFallback(post) {
-	return decode(post.excerpt.rendered).replace(/\s*\[…\]$/, '');
+	const text = decode(post.excerpt.rendered);
+	return text.endsWith('[…]') ? text.slice(0, -'[…]'.length).trimEnd() : text;
 }
 
 // heads.json descriptions are scraped from the live <meta> tags and two
@@ -78,21 +77,22 @@ function descriptionFor(post) {
 	return head;
 }
 
-function heroImageFor(post) {
-	if (!post.featured_media) return undefined;
-	const item = mediaById.get(post.featured_media);
-	if (!item?.source_url) return undefined;
-	return urlMap.get(normalizeMediaUrl(item.source_url));
-}
-
-// Remove any image still pointing at an absolute http(s) URL after resolution
-// (unmapped or external, e.g. Gravatar comment avatars). Returns the cleaned
-// markdown; logs each strip.
-function stripExternalImages(markdown, slug) {
-	return markdown.replace(/!\[[^\]]*\]\((https?:[^)\s]+)[^)]*\)/g, (_match, url) => {
-		console.log(`  STRIPPED external image in ${slug}: ${url}`);
-		return '';
-	});
+// Featured image via url-map; falls back to the first resolvable content
+// image (same pattern as community.mjs / team.mjs).
+function heroImageFor(post, images) {
+	if (post.featured_media) {
+		const item = mediaById.get(post.featured_media);
+		if (item?.source_url) {
+			const local = urlMap.get(normalizeMediaUrl(item.source_url));
+			if (local) return local;
+			console.log(
+				`  NOTE ${post.slug}: featured_media ${post.featured_media} not in url-map, using first content image`,
+			);
+		}
+	}
+	const first = images.find((img) => urlMap.has(img.src));
+	if (first) return urlMap.get(first.src);
+	return undefined;
 }
 
 let written = 0;
@@ -117,7 +117,7 @@ for (const post of posts) {
 			description,
 			pubDate: iso(post.date_gmt),
 			updatedDate: iso(post.modified_gmt),
-			heroImage: heroImageFor(post),
+			heroImage: heroImageFor(post, images),
 		}) + `\n${body}\n`;
 
 	await writeFile(target, file);
