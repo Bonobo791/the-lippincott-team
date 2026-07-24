@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import CommunityBody from '../../components/islands/CommunityBody.astro';
+import { communityPath, getCommunity, listCommunities } from '../../lib/data';
+import { islands } from '../../lib/islands';
+
+const PREFIX = 'northwest-houston-real-estate';
+
+export async function getStaticPaths() {
+	// NOTE: getStaticPaths runs in an isolated scope — it cannot reference
+	// the module-level PREFIX, so the prefix literal is repeated here.
+	const prefix = 'northwest-houston-real-estate';
+	const entries = await listCommunities();
+	return entries
+		.map((node) => communityPath(node))
+		.filter((path) => path.startsWith(`${prefix}/`))
+		.map((path) => ({ params: { slug: path.slice(prefix.length + 1) } }));
+}
+
+const rest = (Astro.params.slug ?? '').toString();
+const path = `${PREFIX}/${rest}`;
+const entry = await getCommunity(path);
+const data = entry.data?.community;
+if (!data) return new Response('Not Found', { status: 404 });
+---
+
+<Base title={`${data.title ?? ''} | The Lippincott Team`} description={data.description ?? ''}>
+	<TinaIsland name="community" wrapper={islands.community.wrapper} params={{ path }} primary>
+		<CommunityBody data={data} />
+	</TinaIsland>
+</Base>

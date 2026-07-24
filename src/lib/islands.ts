@@ -7,14 +7,15 @@
 import type { IslandRegistry } from '@tinacms/astro/experimental';
 import type { QueryResult } from '@tinacms/astro/data';
 
-import type { BlogQuery, ConfigQuery, PageQuery, TeamQuery } from '../../tina/__generated__/types';
-import type { CmsBlog, CmsConfig, CmsPage, CmsTeam } from './data';
+import type { BlogQuery, CommunityQuery, ConfigQuery, PageQuery, TeamQuery } from '../../tina/__generated__/types';
+import type { CmsBlog, CmsCommunity, CmsConfig, CmsPage, CmsTeam } from './data';
 import PageBody from '../components/islands/PageBody.astro';
 import BlogBody from '../components/islands/BlogBody.astro';
 import TeamBody from '../components/islands/TeamBody.astro';
+import CommunityBody from '../components/islands/CommunityBody.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getBlog, getConfig, getPage, getTeamMember } from './data';
+import { getBlog, getCommunity, getConfig, getPage, getTeamMember } from './data';
 
 export const islands: IslandRegistry = {
 	page: {
@@ -39,6 +40,14 @@ export const islands: IslandRegistry = {
 		wrapper: { tag: 'article' },
 		propsFromData: (data) => ({
 			data: (data as QueryResult<TeamQuery>).data?.team as CmsTeam | undefined,
+		}),
+	},
+	community: {
+		fetch: (_request, params) => getCommunity(params.get('path') ?? ''),
+		component: CommunityBody,
+		wrapper: { tag: 'article' },
+		propsFromData: (data) => ({
+			data: (data as QueryResult<CommunityQuery>).data?.community as CmsCommunity | undefined,
 		}),
 	},
 	global: {
