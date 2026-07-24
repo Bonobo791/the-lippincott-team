@@ -41,9 +41,20 @@ export async function listBlogs() {
 		});
 }
 
+export const getTeamMember = (slug: string) =>
+	requestWithMetadata(client.queries.team({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+
+export async function listTeam() {
+	const result = await client.queries.teamConnection();
+	return (result.data.teamConnection.edges ?? [])
+		.flatMap((edge) => (edge?.node ? [edge.node] : []))
+		.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (a.name ?? '').localeCompare(b.name ?? ''));
+}
+
 export type CmsConfig = Awaited<ReturnType<typeof getConfig>>['data']['config'];
 export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsBlog = Awaited<ReturnType<typeof getBlog>>['data']['blog'];
+export type CmsTeam = Awaited<ReturnType<typeof getTeamMember>>['data']['team'];
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type PageBlockTypename = PageBlock['__typename'];
