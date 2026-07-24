@@ -54,5 +54,10 @@
       "icon": "tabler:brand-facebook"
     }
   ],
+  "contact": {
+    "address": "17803 W Cypress Hill Circle\nCypress, TX 77433",
+    "phone": "713-494-1818",
+    "email": "amy@lippincottteam.com"
+  },
   "footerBlurb": "The Lippincott Team at eXp Realty provides buying, selling, rental, and relocation services across Northwest Houston — backed by a proven track record and 9 Houston Business Journal Residential Real Estate Awards."
 }

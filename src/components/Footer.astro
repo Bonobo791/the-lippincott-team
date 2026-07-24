@@ -1,7 +1,7 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig, CmsConfigContactLink } from '../lib/data';
-import { safeHref } from '../lib/url';
+import { safeHref, telHref } from '../lib/url';
 import IconLink from "./IconLink.astro";
 
 interface Props {
@@ -15,6 +15,7 @@ const contactLinks = (config?.contactLinks ?? []).filter(
 	(item): item is CmsConfigContactLink => item !== null,
 );
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+const contact = config?.contact ?? null;
 const today = new Date();
 ---
 
@@ -61,9 +62,15 @@ const today = new Date();
 		<div>
 			<h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.175em] text-background">Contact</h2>
 			<address class="space-y-2 text-sm not-italic">
-				<p>17803 W Cypress Hill Circle<br />Cypress, TX 77433</p>
-				<p><a href="tel:+17134941818" class="transition-colors hover:text-background">713-494-1818</a></p>
-				<p><a href="mailto:amy@lippincottteam.com" class="transition-colors hover:text-background">amy@lippincottteam.com</a></p>
+				{contact?.address && (
+					<p>{contact.address.split('\n').map((line, i) => (<>{i > 0 && <br />}{line}</>))}</p>
+				)}
+				{contact?.phone && (
+					<p><a href={telHref(contact.phone)} class="transition-colors hover:text-background">{contact.phone}</a></p>
+				)}
+				{contact?.email && (
+					<p><a href={`mailto:${contact.email}`} class="transition-colors hover:text-background">{contact.email}</a></p>
+				)}
 			</address>
 		</div>
 	</div>

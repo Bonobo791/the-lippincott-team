@@ -144,6 +144,36 @@ export const GlobalConfigCollection: Collection = {
       ],
     },
     {
+      name: "contact",
+      label: "Contact Info",
+      description:
+        "Office address, phone, and email. Shown in the footer Contact section; the phone also appears in the header top bar.",
+      type: "object",
+      fields: [
+        {
+          name: "address",
+          label: "Office Address",
+          type: "string",
+          description: "One line per address line — lines render separated by a line break.",
+          ui: {
+            component: "textarea"
+          }
+        },
+        {
+          name: "phone",
+          label: "Phone Number",
+          type: "string",
+          description: "Display format, e.g. 713-494-1818. The tel: link is derived from the digits."
+        },
+        {
+          name: "email",
+          label: "Email",
+          type: "string",
+          description: "Shown in the footer Contact section."
+        }
+      ],
+    },
+    {
       name: "footerBlurb",
       label: "Footer Blurb",
       description: "Short brokerage/about paragraph shown in the site footer.",

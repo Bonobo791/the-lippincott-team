@@ -10,3 +10,11 @@ export function safeHref(href?: string | null): string | undefined {
 	const value = href.trim();
 	return SAFE_URL.test(value) ? value : undefined;
 }
+
+/** Build a `tel:` href from a display phone number (US 10-digit numbers get the leading 1). */
+export function telHref(phone?: string | null): string | undefined {
+	if (!phone) return undefined;
+	const digits = phone.replace(/\D/g, '');
+	if (!digits) return undefined;
+	return `tel:+${digits.length === 10 ? '1' : ''}${digits}`;
+}
