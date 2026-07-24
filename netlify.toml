@@ -1,9 +1,10 @@
 # netlify.toml takes precedence over the Netlify UI for these settings.
 [build]
-  # Fully local build (tinacms build --local) — no TinaCloud credentials
-  # needed. Switch to "pnpm build" if you later wire up TinaCloud
-  # (PUBLIC_TINA_CLIENT_ID + TINA_TOKEN in the Netlify UI).
-  command = "pnpm build:local"
+  # Builds against TinaCloud — requires PUBLIC_TINA_CLIENT_ID and TINA_TOKEN
+  # set in the Netlify UI (Site settings → Environment variables). The build
+  # fails fast with ERR_MISSING_CLOUD_CREDS if they're missing; use
+  # "pnpm build:local" instead for a credential-free local-content build.
+  command = "pnpm build"
   # @astrojs/netlify (auto-selected by astro.config.mjs via the NETLIFY env
   # var) configures the publish directory and function routing automatically.
 
