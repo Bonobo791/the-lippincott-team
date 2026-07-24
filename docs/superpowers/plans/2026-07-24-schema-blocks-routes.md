@@ -20,7 +20,7 @@
 - `Base` layout props: `{ title: string; description: string; image?: string }`.
 - Nested Tina files: `_sys.breadcrumbs` = path segments relative to collection root, last = filename (no extension). For `src/content/community/northwest-houston-real-estate/cypress-tx-real-estate.mdx` → `['northwest-houston-real-estate', 'cypress-tx-real-estate']`. URL = `'/' + breadcrumbs.join('/') + '/'`.
 - Routing: the new prefix routes (`about/[...slug].astro` etc.) only generate their member paths in `getStaticPaths`, so `/about/` and `/northwest-houston-real-estate/` themselves remain owned by the flat page collection — no conflicts.
-- Block pair convention: `src/components/blocks/<Name>.astro` + `<name>.template.ts` exporting `const <name>BlockSchema: Template`; registered in `tina/collections/page.ts` `templates` array; dispatched in `Blocks.astro` switch on `__typename` (`PageBlocks<PascalCase>`); `__typename` for `team_grid` → `PageBlocksTeamGrid`, `community_grid` → `PageBlocksCommunityGrid`, `faq` → `PageBlocksFaq`.
+- Block pair convention: `src/components/blocks/<Name>.astro` + `<name>.template.ts` exporting `const <name>BlockSchema: Template`; registered in `tina/collections/page.ts` `templates` array; dispatched in `Blocks.astro` switch on `__typename` (`PageBlocks<PascalCase>`); `__typename` for `teamGrid` → `PageBlocksTeamGrid`, `communityGrid` → `PageBlocksCommunityGrid`, `faq` → `PageBlocksFaq`.
 - Existing UI: `Section.astro` (`<Section class="...">`, props `background?`), `cn()` at `src/lib/cn`, `mdxComponents` at `src/components/mdx/components.ts`, `Icon` from `astro-icon/components` (Tabler names).
 - `tsconfig.json` excludes `tina/collections` — loose typing in template `itemProps` is fine.
 - Tina field names: letters/numbers/underscores only. Verification: `pnpm build:local` exit 0 (regenerates gitignored `tina/__generated__/`). No test suite.
@@ -237,18 +237,18 @@ if (!data) return new Response('Not Found', { status: 404 });
 
 **Files:**
 - Create: `src/components/blocks/TeamGrid.astro`
-- Create: `src/components/blocks/team_grid.template.ts`
+- Create: `src/components/blocks/teamGrid.template.ts`
 - Modify: `tina/collections/page.ts` (register template)
 - Modify: `src/components/blocks/Blocks.astro` (dispatch)
 - Modify: `src/lib/data.ts` (types)
 
-**Step 1 — `src/components/blocks/team_grid.template.ts`:**
+**Step 1 — `src/components/blocks/teamGrid.template.ts`:**
 
 ```ts
 import type { Template } from 'tinacms';
 
 export const teamGridBlockSchema: Template = {
-	name: 'team_grid',
+	name: 'teamGrid',
 	label: 'Team Roster Grid',
 	fields: [
 		{ type: 'string', label: 'Title', name: 'title' },
@@ -287,7 +287,7 @@ const members = await listTeam();
 </Section>
 ```
 
-**Step 3 — register:** in `tina/collections/page.ts`, import `teamGridBlockSchema` from `../../src/components/blocks/team_grid.template` and add it to the `templates` array.
+**Step 3 — register:** in `tina/collections/page.ts`, import `teamGridBlockSchema` from `../../src/components/blocks/teamGrid.template` and add it to the `templates` array.
 
 **Step 4 — dispatch:** in `Blocks.astro`, add `import TeamGrid from './TeamGrid.astro';` and `case 'PageBlocksTeamGrid': return <TeamGrid data={block} />;`.
 
@@ -625,19 +625,19 @@ export type FaqItem = NonNullable<NonNullable<FaqBlock['items']>[number]>;
 
 **Files:**
 - Create: `src/components/blocks/CommunityGrid.astro`
-- Create: `src/components/blocks/community_grid.template.ts`
+- Create: `src/components/blocks/communityGrid.template.ts`
 - Modify: `tina/collections/page.ts`
 - Modify: `src/components/blocks/Blocks.astro`
 - Modify: `src/lib/data.ts`
 - Modify: `AGENTS.md`
 
-**Step 1 — `src/components/blocks/community_grid.template.ts`:**
+**Step 1 — `src/components/blocks/communityGrid.template.ts`:**
 
 ```ts
 import type { Template } from 'tinacms';
 
 export const communityGridBlockSchema: Template = {
-	name: 'community_grid',
+	name: 'communityGrid',
 	label: 'Community Card Grid',
 	fields: [
 		{ type: 'string', label: 'Title', name: 'title' },
