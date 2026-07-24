@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from 'astro/types';
 import { tv, type VariantProps } from 'tailwind-variants';
 import { cn } from '../../lib/cn';
+import { safeHref } from '../../lib/url';
 
 const button = tv({
 	base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] shrink-0",
@@ -32,10 +33,11 @@ type Props = VariantProps<typeof button> &
 
 const { variant, size, href, class: className, ...rest } = Astro.props;
 const classes = cn(button({ variant, size }), className);
+const safeUrl = safeHref(href);
 ---
 
-{href ? (
-	<a href={href} class={classes} {...rest as HTMLAttributes<'a'>}><slot /></a>
+{safeUrl ? (
+	<a href={safeUrl} class={classes} {...rest as HTMLAttributes<'a'>}><slot /></a>
 ) : (
 	<button class={classes} {...rest as HTMLAttributes<'button'>}><slot /></button>
 )}

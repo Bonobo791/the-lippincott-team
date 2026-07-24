@@ -1,6 +1,7 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig, CmsConfigContactLink } from '../lib/data';
+import { safeHref } from '../lib/url';
 import IconLink from "./IconLink.astro";
 
 interface Props {
@@ -20,7 +21,11 @@ const today = new Date();
 <footer class="bg-foreground text-background/70">
 	<div class="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
 		<div class="space-y-4">
-			{seo?.logo && <img src={seo.logo} alt={seo.title ?? 'Logo'} width="191" height="55" class="h-10 w-auto" />}
+			{seo?.logo ? (
+				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="191" height="55" class="h-10 w-auto" />
+			) : (
+				<span class="text-sm font-semibold uppercase tracking-[0.175em] text-background">{seo?.title ?? 'Home'}</span>
+			)}
 			{config?.footerBlurb && (
 				<p class="text-sm leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
 			)}
@@ -43,7 +48,7 @@ const today = new Date();
 				{nav.map((item) => (
 					<li>
 						<a
-							href={item.link}
+							href={safeHref(item.link)}
 							class="transition-colors hover:text-background"
 							{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 						>
