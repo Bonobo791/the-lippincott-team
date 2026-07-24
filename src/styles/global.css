@@ -135,11 +135,3 @@
 	--tw-prose-th-borders: var(--border);
 	--tw-prose-td-borders: var(--border);
 }
-
-@keyframes twinkle {
-	0%, 100% { opacity: 0.25; }
-	50% { opacity: 0.9; }
-}
-@media (prefers-reduced-motion: no-preference) {
-	.star-twinkle { animation: twinkle var(--twinkle-dur, 4s) ease-in-out infinite; animation-delay: var(--d, 0s); }
-}
