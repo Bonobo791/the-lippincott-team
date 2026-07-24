@@ -1,8 +1,8 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig, CmsConfigContactLink } from '../lib/data';
+import { safeHref, telHref } from '../lib/url';
 import IconLink from "./IconLink.astro";
-import Starfield from './space/Starfield.astro';
 
 interface Props {
 	config?: CmsConfig | null;
@@ -10,40 +10,80 @@ interface Props {
 
 const { config } = Astro.props;
 const seo = config?.seo ?? null;
+const nav = (config?.nav ?? []).filter(item => item !== null);
 const contactLinks = (config?.contactLinks ?? []).filter(
 	(item): item is CmsConfigContactLink => item !== null,
 );
+const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+const contact = config?.contact ?? null;
 const today = new Date();
 ---
-<footer class="border-t bg-background py-12 text-center text-sm text-muted-foreground relative overflow-hidden">
-	{config?.footerStarfield !== false && <Starfield count={50} class="text-foreground/15" />}
-	<div class="relative flex flex-col items-center gap-6">
-		{contactLinks.length > 0 && (
-			<div class="flex justify-center gap-4">
-				{contactLinks.map((link) => (
-					<IconLink
-						title={link.title}
-						link={link.link}
-						icon={link.icon}
-						data-tina-field={tinaField(link, "title")}
-					/>
+
+<footer class="bg-foreground text-background/70">
+	<div class="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
+		<div class="space-y-4">
+			{seo?.logo ? (
+				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="191" height="55" class="h-10 w-auto" />
+			) : (
+				<span class="text-sm font-semibold uppercase tracking-[0.175em] text-background">{seo?.title ?? 'Home'}</span>
+			)}
+			{config?.footerBlurb && (
+				<p class="text-sm leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
+			)}
+			{contactLinks.length > 0 && (
+				<div class="flex gap-4">
+					{contactLinks.map((link) => (
+						<IconLink
+							title={link.title}
+							link={link.link}
+							icon={link.icon}
+							data-tina-field={tinaField(link, "title")}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+		<nav aria-label="Footer">
+			<h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.175em] text-background">Quick Links</h2>
+			<ul class="space-y-2 text-sm">
+				{nav.map((item) => (
+					<li>
+						<a
+							href={safeHref(item.link)}
+							class="transition-colors hover:text-background"
+							{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+						>
+							{item.title}
+						</a>
+					</li>
 				))}
-			</div>
-		)}
-		<p>
-			&copy; {today.getFullYear()}
-			<span data-tina-field={seo ? tinaField(seo, "siteOwner") : undefined}>{seo?.siteOwner}</span>. All rights reserved.
-		</p>
-		<a
-			href="https://tina.io"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="group inline-flex items-center gap-2.5 rounded-full border bg-card/60 py-1.5 pl-1.5 pr-4 text-xs font-medium text-muted-foreground shadow-xs transition-colors duration-200 hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-		>
-			<span class="flex size-6 items-center justify-center rounded-full bg-primary transition-transform duration-300 group-hover:scale-105">
-				<img src="/llama.svg" alt="" aria-hidden="true" class="size-3.5" />
-			</span>
-			<span>Powered by <span class="font-semibold text-foreground">TinaCMS</span></span>
-		</a>
+			</ul>
+		</nav>
+		<div>
+			<h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.175em] text-background">Contact</h2>
+			<address class="space-y-2 text-sm not-italic">
+				{contact?.address && (
+					<p>{contact.address.split('\n').map((line, i) => (<>{i > 0 && <br />}{line}</>))}</p>
+				)}
+				{contact?.phone && (
+					<p><a href={telHref(contact.phone)} class="transition-colors hover:text-background">{contact.phone}</a></p>
+				)}
+				{contact?.email && (
+					<p><a href={`mailto:${contact.email}`} class="transition-colors hover:text-background">{contact.email}</a></p>
+				)}
+			</address>
+		</div>
+	</div>
+	<div class="border-t border-background/10">
+		<div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-5 text-xs sm:flex-row">
+			<p>
+				&copy; {today.getFullYear()}{' '}
+				<span data-tina-field={seo ? tinaField(seo, "siteOwner") : undefined}>{seo?.siteOwner}</span>. All rights reserved.
+			</p>
+			<p class="flex gap-4">
+				<a href="/privacy-policy/" class="transition-colors hover:text-background">Privacy Policy</a>
+				<a href="/terms-and-conditions/" class="transition-colors hover:text-background">Terms &amp; Conditions</a>
+			</p>
+		</div>
 	</div>
 </footer>

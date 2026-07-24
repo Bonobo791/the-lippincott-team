@@ -74,8 +74,8 @@ above rather than bare `astro build`.
   `Template` schema). Add a new block by creating the pair and registering the
   template in `tina/collections/page.ts`.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
-  registry; `src/components/ui/`, `src/components/mdx/`, `src/components/space/`
-  — reusable UI, MDX components, and decorative space-theme components.
+  registry; `src/components/ui/`, `src/components/mdx/` — reusable UI and MDX
+  components.
 - `src/pages/` — routes: `[...slug].astro` (pages), `blog/`, `rss.xml.ts`,
   `404.astro`, `tina-island/[name].ts`.
 - `src/content/` — Tina-managed content: `blog/*.mdx`, `page/*.mdx`,

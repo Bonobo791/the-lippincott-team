@@ -4,8 +4,6 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
-import Aurora from '../space/Aurora.astro';
-import Starfield from '../space/Starfield.astro';
 import type { HeroBlock } from '../../lib/data';
 
 interface Props { data: HeroBlock }
@@ -14,8 +12,6 @@ const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);
 ---
 <Section class="relative overflow-hidden">
-	<Aurora />
-	{data.starfield !== false && <Starfield count={70} class="text-foreground/20" />}
 	<div class="relative text-center sm:mx-auto lg:mr-auto">
 		<div data-tina-field={tinaField(data, 'image')} class="mx-auto mb-6 size-56 md:size-72">
 			{data.image?.src
