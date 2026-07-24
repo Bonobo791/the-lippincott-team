@@ -53,11 +53,9 @@ node_modules/
 # Astro
 .astro
 
-# TODO: After scaffolding from this template, DELETE the block below so your
-# chosen lockfile (we recommend pnpm-lock.yaml) is committed. See README → "Commit your lockfile".
-# Package Manager Lock Files
+# Package Manager Lock Files (pnpm-lock.yaml IS committed — it's what makes
+# Netlify/CI detect pnpm instead of falling back to npm)
 package-lock.json
-pnpm-lock.yaml
 yarn.lock
 .yarn/cache
 bun.lockb

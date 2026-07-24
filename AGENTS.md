@@ -115,6 +115,12 @@ standalone Node server (`node ./dist/server/entry.mjs`). Force one with
 Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 `node:async_hooks`).
 
+**Netlify**: `netlify.toml` pins the build command (`pnpm build:local`;
+switch to `pnpm build` when TinaCloud creds are configured). The committed
+`pnpm-lock.yaml` and the `packageManager` field in `package.json` are what
+make Netlify install with pnpm instead of npm — do not re-ignore the
+lockfile.
+
 Environment variables (see `.env.example`):
 
 - `SITE_URL` — production URL for sitemap/RSS/OpenGraph. Most platforms inject
