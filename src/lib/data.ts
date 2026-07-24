@@ -68,6 +68,7 @@ export type ContentBlock = Extract<PageBlock, { __typename: 'PageBlocksContent' 
 export type TestimonialBlock = Extract<PageBlock, { __typename: 'PageBlocksTestimonial' }>;
 export type VideoBlock = Extract<PageBlock, { __typename: 'PageBlocksVideo' }>;
 export type SplitBlock = Extract<PageBlock, { __typename: 'PageBlocksSplit' }>;
+export type TeamGridBlock = Extract<PageBlock, { __typename: 'PageBlocksTeamGrid' }>;
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
 export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;
