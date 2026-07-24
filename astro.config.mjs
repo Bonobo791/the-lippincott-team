@@ -57,6 +57,10 @@ export default defineConfig({
 	output: 'static',
 	adapter: await getAdapter(),
 	redirects: { '/home': '/' },
+	// Astro 7 changed the default from `true` (HTML-aware: keep a single space
+	// between inline elements) to `'jsx'` (strip whitespace per JSX rules,
+	// which can glue adjacent inline elements together). Pin the v6 behavior.
+	compressHTML: true,
 	integrations: [mdx(), sitemap(), icon(), tina()],
 	build: {
 		// Inline the (~10 KiB) bundled CSS into a <style> in <head> instead of a

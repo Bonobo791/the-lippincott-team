@@ -68,3 +68,5 @@ deno.lock
 .netlify
 .wrangler
 dist
+.serena
+.idea
