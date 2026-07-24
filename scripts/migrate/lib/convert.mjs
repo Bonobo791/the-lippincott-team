@@ -34,10 +34,13 @@ import { parse } from 'node-html-parser';
 // URL normalization
 // ---------------------------------------------------------------------------
 
-// Strip zero-width spaces and media fragments (`#t=0`) from a media URL.
+// Strip zero-width spaces and media fragments (`#t=0`) from a media URL. The
+// zero-width space (U+200B) shows up both literally (media.json source_urls)
+// and percent-encoded as %E2%80%8B (some content img srcs) — the server keeps
+// it in those filenames, but map keys and local filenames must be clean.
 export function normalizeMediaUrl(url) {
 	if (!url) return url;
-	return url.replace(/\u200B/g, '').replace(/#t=[\d.]*$/, '');
+	return url.replace(/\u200B/g, '').replace(/%e2%80%8b/gi, '').replace(/#t=[\d.]*$/, '');
 }
 
 // ---------------------------------------------------------------------------
