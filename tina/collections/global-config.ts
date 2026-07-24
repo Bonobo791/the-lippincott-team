@@ -143,6 +143,15 @@ export const GlobalConfigCollection: Collection = {
         }
       ],
     },
+    {
+      name: "footerBlurb",
+      label: "Footer Blurb",
+      description: "Short brokerage/about paragraph shown in the site footer.",
+      type: "string",
+      ui: {
+        component: "textarea"
+      }
+    },
 
     // Add other config fields here...
   ]
