@@ -11,7 +11,7 @@ const { data } = Astro.props;
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
 ---
 {data && (
-	<article>
+	<>
 		{data.heroImage && (
 			<div data-tina-field={tinaField(data, 'heroImage')} class="mx-auto max-w-5xl px-6">
 				<img src={data.heroImage} alt={data.title ?? ''} width={1020} height={510} class="w-full rounded-2xl border object-cover shadow-lg" />
@@ -34,5 +34,5 @@ const faqs = (data?.faqs ?? []).filter(f => f !== null);
 				</div>
 			)}
 		</div>
-	</article>
+	</>
 )}
