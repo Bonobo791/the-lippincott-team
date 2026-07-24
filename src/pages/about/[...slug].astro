@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import TeamBody from '../../components/islands/TeamBody.astro';
+import { getTeamMember, listTeam } from '../../lib/data';
+import { islands } from '../../lib/islands';
+
+export async function getStaticPaths() {
+	const members = await listTeam();
+	return members.map((node) => ({ params: { slug: node._sys.filename } }));
+}
+
+const slug = (Astro.params.slug ?? '').toString();
+const member = await getTeamMember(slug);
+const data = member.data?.team;
+if (!data) return new Response('Not Found', { status: 404 });
+---
+
+<Base title={`${data.name ?? 'Team Member'} | The Lippincott Team`} description={data.description ?? ''}>
+	<TinaIsland name="team" wrapper={islands.team.wrapper} params={{ slug }} primary>
+		<TeamBody data={data} />
+	</TinaIsland>
+</Base>

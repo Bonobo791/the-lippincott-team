@@ -1,7 +1,9 @@
 import { defineConfig } from "tinacms";
 import { BlogCollection } from "./collections/blog";
+import { CommunityCollection } from "./collections/community";
 import { GlobalConfigCollection } from "./collections/global-config";
 import { PageCollection } from "./collections/page";
+import { TeamCollection } from "./collections/team";
 
 // Your hosting provider likely exposes this as an environment variable
 const branch =
@@ -35,6 +37,8 @@ export default defineConfig({
     collections: [
       BlogCollection,
       PageCollection,
+      TeamCollection,
+      CommunityCollection,
       GlobalConfigCollection,
     ],
   },

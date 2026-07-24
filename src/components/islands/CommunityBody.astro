@@ -1,0 +1,38 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { CmsCommunity } from '../../lib/data';
+import { mdxComponents } from '../mdx/components';
+import FaqAccordion from '../ui/FaqAccordion.astro';
+
+interface Props { data?: CmsCommunity | null }
+
+const { data } = Astro.props;
+const faqs = (data?.faqs ?? []).filter(f => f !== null);
+---
+{data && (
+	<>
+		{data.heroImage && (
+			<div data-tina-field={tinaField(data, 'heroImage')} class="mx-auto max-w-5xl px-6">
+				<img src={data.heroImage} alt={data.title ?? ''} width={1020} height={510} class="w-full rounded-2xl border object-cover shadow-lg" />
+			</div>
+		)}
+		<div class="mx-auto max-w-3xl px-6 py-12">
+			<h1 data-tina-field={tinaField(data, 'title')} class="text-4xl font-semibold tracking-tight lg:text-5xl">{data.title}</h1>
+			{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-4 text-lg text-muted-foreground">{data.intro}</p>}
+			{data.body && (
+				<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg mt-8 max-w-none">
+					<TinaMarkdown content={data.body} components={mdxComponents} />
+				</div>
+			)}
+			{faqs.length > 0 && (
+				<div class="mt-12">
+					<h2 class="text-2xl font-semibold tracking-tight">Frequently Asked Questions</h2>
+					<div class="mt-6" data-tina-field={tinaField(data, 'faqs')}>
+						<FaqAccordion items={faqs} tinaFieldFor={(item) => tinaField(item)} />
+					</div>
+				</div>
+			)}
+		</div>
+	</>
+)}

@@ -1,12 +1,15 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
 import Callout from './Callout.astro';
+import CommunityGrid from './CommunityGrid.astro';
 import Content from './Content.astro';
 import Cta from './Cta.astro';
+import Faq from './Faq.astro';
 import Features from './Features.astro';
 import Hero from './Hero.astro';
 import Split from './Split.astro';
 import Stats from './Stats.astro';
+import TeamGrid from './TeamGrid.astro';
 import Testimonial from './Testimonial.astro';
 import Video from './Video.astro';
 import type { CmsPage } from '../../lib/data';
@@ -22,12 +25,15 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 	const rendered = (() => {
 		switch (block.__typename) {
 			case 'PageBlocksCallout': return <Callout data={block} />;
+			case 'PageBlocksCommunityGrid': return <CommunityGrid data={block} />;
 			case 'PageBlocksContent': return <Content data={block} />;
 			case 'PageBlocksCta': return <Cta data={block} />;
+			case 'PageBlocksFaq': return <Faq data={block} />;
 			case 'PageBlocksFeatures': return <Features data={block} />;
 			case 'PageBlocksHero': return <Hero data={block} />;
 			case 'PageBlocksSplit': return <Split data={block} />;
 			case 'PageBlocksStats': return <Stats data={block} />;
+			case 'PageBlocksTeamGrid': return <TeamGrid data={block} />;
 			case 'PageBlocksTestimonial': return <Testimonial data={block} />;
 			case 'PageBlocksVideo': return <Video data={block} />;
 		}

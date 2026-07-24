@@ -15,14 +15,27 @@ import type { TinaRichTextContent } from '@tinacms/astro';
 import { requestWithMetadata } from '@tinacms/astro/data';
 import client from '../../tina/__generated__/client';
 
+/**
+ * Reject slugs that could escape the content directory when interpolated
+ * into a relativePath (the /tina-island endpoint takes these from the URL).
+ */
+const assertSafePath = (value: string) => {
+	if (value.includes('..') || value.includes('\\') || value.startsWith('/'))
+		throw new Error(`Unsafe content path: ${value}`);
+};
+
 export const getConfig = () =>
 	requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
 
-export const getPage = (slug: string) =>
-	requestWithMetadata(client.queries.page({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+export const getPage = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.page({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
 
-export const getBlog = (slug: string) =>
-	requestWithMetadata(client.queries.blog({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+export const getBlog = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.blog({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
 
 export async function listPages() {
 	const result = await client.queries.pageConnection();
@@ -41,9 +54,39 @@ export async function listBlogs() {
 		});
 }
 
+export const getTeamMember = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.team({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
+
+export async function listTeam() {
+	const result = await client.queries.teamConnection();
+	return (result.data.teamConnection.edges ?? [])
+		.flatMap((edge) => (edge?.node ? [edge.node] : []))
+		.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (a.name ?? '').localeCompare(b.name ?? ''));
+}
+
+export const getCommunity = (path: string) => {
+	assertSafePath(path);
+	return requestWithMetadata(client.queries.community({ relativePath: `${path}.mdx` }), { priority: 'primary' });
+};
+
+export async function listCommunities() {
+	const result = await client.queries.communityConnection();
+	return (result.data.communityConnection.edges ?? [])
+		.flatMap((edge) => (edge?.node ? [edge.node] : []));
+}
+
+/** Public URL path of a community doc, e.g. "northwest-houston-real-estate/cypress-tx-real-estate". */
+export const communityPath = (node: { _sys: { breadcrumbs: string[] } }) => node._sys.breadcrumbs.join('/');
+
 export type CmsConfig = Awaited<ReturnType<typeof getConfig>>['data']['config'];
 export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsBlog = Awaited<ReturnType<typeof getBlog>>['data']['blog'];
+export type CmsTeam = Awaited<ReturnType<typeof getTeamMember>>['data']['team'];
+
+export type CmsCommunity = Awaited<ReturnType<typeof getCommunity>>['data']['community'];
+export type CommunityFaq = NonNullable<NonNullable<CmsCommunity['faqs']>[number]>;
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type PageBlockTypename = PageBlock['__typename'];
@@ -57,6 +100,10 @@ export type ContentBlock = Extract<PageBlock, { __typename: 'PageBlocksContent' 
 export type TestimonialBlock = Extract<PageBlock, { __typename: 'PageBlocksTestimonial' }>;
 export type VideoBlock = Extract<PageBlock, { __typename: 'PageBlocksVideo' }>;
 export type SplitBlock = Extract<PageBlock, { __typename: 'PageBlocksSplit' }>;
+export type TeamGridBlock = Extract<PageBlock, { __typename: 'PageBlocksTeamGrid' }>;
+export type FaqBlock = Extract<PageBlock, { __typename: 'PageBlocksFaq' }>;
+export type CommunityGridBlock = Extract<PageBlock, { __typename: 'PageBlocksCommunityGrid' }>;
+export type FaqItem = NonNullable<NonNullable<FaqBlock['items']>[number]>;
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
 export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;
