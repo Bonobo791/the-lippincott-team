@@ -1,5 +1,7 @@
 # Agent Guidance
 
+- NEVER develop on the default branch. Always make a new one.
+
 ## Project overview
 
 This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify: content
