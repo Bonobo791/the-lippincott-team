@@ -9,6 +9,7 @@ lerna-debug.log*
 
 # Tooling / agent output
 .playwright-mcp
+.playwright-cli
 .impeccable
 .prototools
 

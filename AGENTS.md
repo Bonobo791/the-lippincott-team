@@ -35,6 +35,10 @@ before working in these areas:
   `netlify-config` (`netlify.toml` / build config), `netlify-functions`,
   `netlify-edge-functions`, `netlify-frameworks`. Consult these when working
   on Netlify deployment or configuration.
+- `.agents/skills/visual-loop` — iterative visual QA: edit code, screenshot
+  with Playwright (`scripts/audit/shoot.mjs` / `probe-styles.mjs`), view the
+  PNGs, compare to spec/baseline, re-shoot until clean. Use for any frontend
+  change that must be verified visually.
 
 ## Build and dev commands
 
