@@ -18,15 +18,19 @@ interface Props {
 
 const { items, tinaFieldFor } = Astro.props;
 ---
-<div class="divide-y rounded-2xl border">
+<div class="divide-y divide-[#E5E7EB] rounded-3xl border border-[#E5E7EB] bg-white shadow-lg">
 	{items.map((item) => (
-		<details class="group px-6 py-4" data-tina-field={tinaFieldFor?.(item)}>
-			<summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+		<details class="group px-6 py-5 md:px-8" data-tina-field={tinaFieldFor?.(item)}>
+			<summary class="flex cursor-pointer list-none items-center gap-4 font-serif text-lg font-bold text-foreground md:text-xl [&::-webkit-details-marker]:hidden">
+				{/* +/− state glyph: pure CSS off the existing details/summary toggle. */}
+				<span class="flex size-6 shrink-0 items-center justify-center" aria-hidden="true">
+					<Icon name="tabler:plus" class="size-6 group-open:hidden" />
+					<Icon name="tabler:minus" class="hidden size-6 group-open:block" />
+				</span>
 				{item.question}
-				<Icon name="tabler:chevron-down" class="size-5 shrink-0 transition-transform group-open:rotate-180" />
 			</summary>
 			{item.answer && (
-				<div class="prose mt-3 max-w-none text-muted-foreground">
+				<div class="prose mt-2 max-w-none pl-10 [--tw-prose-body:var(--color-body)]">
 					<TinaMarkdown content={item.answer} components={mdxComponents} />
 				</div>
 			)}

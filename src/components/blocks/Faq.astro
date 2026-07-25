@@ -13,7 +13,7 @@ const items = (data.items ?? []).filter(i => i !== null);
 	{data.title && <h2 data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-semibold tracking-tight">{data.title}</h2>}
 	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 	{items.length > 0 && (
-		<div class="mx-auto mt-10 max-w-3xl">
+		<div class="mx-auto mt-10 max-w-4xl">
 			<FaqAccordion items={items} tinaFieldFor={(item) => tinaField(item)} />
 		</div>
 	)}

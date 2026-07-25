@@ -2,27 +2,53 @@
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
+import { getConfig } from '../../lib/data';
 import type { CtaBlock } from '../../lib/data';
 
 interface Props { data: CtaBlock }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);
+// Blocks.astro passes only block data, so the contact row pulls the config
+// contact details straight from the loader (build-time / island SSR).
+const contact = (await getConfig()).data?.config?.contact ?? null;
 ---
 <Section>
 	<div class="text-center">
-		<h2 class="text-balance text-4xl font-semibold lg:text-5xl" data-tina-field={tinaField(data, 'title')}>{data.title}</h2>
-		<p class="mt-4 text-muted-foreground" data-tina-field={tinaField(data, 'description')}>{data.description}</p>
+		{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold text-primary" class="text-balance text-4xl font-light tracking-tight lg:text-5xl" data-tina-field={tinaField(data, 'title')} />}
+		{data.description && <p class="mx-auto mt-4 max-w-2xl text-muted-foreground" data-tina-field={tinaField(data, 'description')}>{data.description}</p>}
 		<div class="mt-12 flex flex-wrap justify-center gap-4">
-			{actions.map((action) => (
-				<div class="bg-foreground/10 rounded-2xl border p-0.5" data-tina-field={tinaField(action)}>
-					<Button href={action.link} size="lg" variant={action.type === 'link' ? 'ghost' : 'default'} class="px-5">
+			{actions.map((action, index) => (
+				<div data-tina-field={tinaField(action)}>
+					<Button href={action.link} size="lg" variant={action.type === 'link' ? 'ghost' : index === 0 ? 'default' : 'secondary'} class="px-5">
 						{action.icon && <Icon name={action.icon} class="size-4" />}
 						<span class="text-nowrap">{action.label}</span>
 					</Button>
 				</div>
 			))}
 		</div>
+		{(contact?.phone || contact?.email) && (
+			<div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+				{contact?.phone && (
+					<a href={`tel:${contact.phone}`} class="flex items-center gap-3">
+						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">
+							<Icon name="phone" class="size-4 text-foreground" />
+						</span>
+						<span class="font-bold text-foreground">{contact.phone}</span>
+					</a>
+				)}
+				{contact?.phone && contact?.email && <span aria-hidden="true" class="h-5 w-px bg-border"></span>}
+				{contact?.email && (
+					<a href={`mailto:${contact.email}`} class="flex items-center gap-3">
+						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">
+							<Icon name="mail" class="size-4 text-foreground" />
+						</span>
+						<span class="font-bold text-foreground">{contact.email}</span>
+					</a>
+				)}
+			</div>
+		)}
 	</div>
 </Section>
