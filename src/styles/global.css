@@ -116,3 +116,18 @@
 	--tw-prose-th-borders: var(--border);
 	--tw-prose-td-borders: var(--border);
 }
+
+/* Tables in rich-text prose (community neighborhood comparisons): hairline
+   borders, comfortable cell padding, and a bold red first column. Unlayered
+   so it wins over the typography plugin's layered table styles. */
+.prose table th,
+.prose table td {
+	border: 1px solid var(--border);
+	padding: 0.75rem 1rem;
+}
+
+.prose table th:first-child,
+.prose table td:first-child {
+	font-weight: 700;
+	color: var(--primary);
+}

@@ -135,6 +135,17 @@ above rather than bare `astro build`.
   `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
 - Hero block: three `variant`s — `simple`, `photo`, `glass` — plus
   `backgroundImage` and `eyebrow` fields (eyebrow renders on photo/glass).
+- Split block: optional `eyebrow` renders as the red uppercase chip (same
+  styling as the Hero glass eyebrow) above the title.
+- Features block: optional `variant` — `cards` (default) or `editorial`
+  (borderless, ~70×3px red top-rule above each title, `md:grid-cols-2`, no
+  icon tile, spec pattern #12). Each item has an optional `action`
+  (`label`+`link`) rendering a full-width red Button pinned to the card
+  bottom; external http(s) links open in a new tab.
+- Prose tables (rich-text bodies, e.g. community neighborhood comparisons):
+  hairline `var(--border)` borders, padded cells, and a bold red first
+  column — styled globally under the `.prose` rules in
+  `src/styles/global.css`.
 - Sticky mobile click-to-call bar: a pure-CSS fixed bottom bar in
   `src/layouts/Base.astro` (`lg:hidden`, `bg-primary`, phone number from
   `config.contact.phone` as a `tel:` link, no JS). A `h-14 lg:hidden` spacer

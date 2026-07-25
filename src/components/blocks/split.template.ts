@@ -5,6 +5,7 @@ export const splitBlockSchema: Template = {
 	name: 'split',
 	label: 'Split (Text + Image)',
 	fields: [
+		{ type: 'string', label: 'Eyebrow', name: 'eyebrow' },
 		{ type: 'string', label: 'Title', name: 'title' },
 		{ type: 'rich-text', label: 'Body', name: 'body' },
 		{

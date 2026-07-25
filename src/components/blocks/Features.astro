@@ -5,6 +5,7 @@ import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
 import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
 import type { FeaturesBlock } from '../../lib/data';
 
 interface Props { data: Omit<FeaturesBlock, '__typename'> }
@@ -12,6 +13,10 @@ interface Props { data: Omit<FeaturesBlock, '__typename'> }
 const { data } = Astro.props;
 const items = (data.items ?? []).filter(it => it !== null);
 const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
+const isEditorial = data.variant === 'editorial';
+const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+const externalAttrs = (href?: string | null) =>
+	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 <Section>
 	<div class="mx-auto max-w-5xl px-6">
@@ -19,17 +24,41 @@ const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
 			<SplitHeading as="h2" text={data.title ?? ''} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-light lg:text-5xl" />
 			<p data-tina-field={tinaField(data, 'description')} class="mt-4 text-muted-foreground">{data.description}</p>
 		</div>
-		<div class="mt-8 grid gap-6 md:mt-16 md:grid-cols-3">
+		<div class={isEditorial ? 'mt-8 grid gap-10 md:mt-16 md:grid-cols-2' : 'mt-8 grid gap-6 md:mt-16 md:grid-cols-3'}>
 			{items.map((item, i) => (
-				<div data-tina-field={tinaField(item)} class="rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
-					<div data-tina-field={tinaField(item, 'icon')} class:list={['flex size-14 items-center justify-center rounded-[14px] text-white', tileColors[i % tileColors.length]]}>
-						{item.icon && <Icon name={item.icon} class="size-7" />}
+				isEditorial ? (
+					<div data-tina-field={tinaField(item)}>
+						<div class="h-[3px] w-[70px] bg-primary"></div>
+						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
+							<TinaMarkdown content={item.text} components={mdxComponents} />
+						</div>
+						{item.action?.label && item.action?.link && (
+							<div data-tina-field={tinaField(item, 'action')} class="mt-6">
+								<Button href={item.action.link} {...externalAttrs(item.action.link)} class="w-full">
+									<span class="text-nowrap">{item.action.label}</span>
+								</Button>
+							</div>
+						)}
 					</div>
-					<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
-					<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
-						<TinaMarkdown content={item.text} components={mdxComponents} />
+				) : (
+					<div data-tina-field={tinaField(item)} class={item.action?.label && item.action?.link ? 'flex flex-col rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]' : 'rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]'}>
+						<div data-tina-field={tinaField(item, 'icon')} class:list={['flex size-14 items-center justify-center rounded-[14px] text-white', tileColors[i % tileColors.length]]}>
+							{item.icon && <Icon name={item.icon} class="size-7" />}
+						</div>
+						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
+							<TinaMarkdown content={item.text} components={mdxComponents} />
+						</div>
+						{item.action?.label && item.action?.link && (
+							<div data-tina-field={tinaField(item, 'action')} class="mt-auto pt-6">
+								<Button href={item.action.link} {...externalAttrs(item.action.link)} class="w-full">
+									<span class="text-nowrap">{item.action.label}</span>
+								</Button>
+							</div>
+						)}
 					</div>
-				</div>
+				)
 			))}
 		</div>
 	</div>

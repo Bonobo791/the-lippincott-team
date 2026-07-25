@@ -8,12 +8,23 @@ export const featuresBlockSchema: Template = {
 		{ type: 'string', label: 'Title', name: 'title' },
 		{ type: 'string', label: 'Description', name: 'description' },
 		{
+			type: 'string', label: 'Variant', name: 'variant',
+			options: [{ label: 'Cards', value: 'cards' }, { label: 'Editorial', value: 'editorial' }],
+		},
+		{
 			type: 'object', label: 'Feature Items', name: 'items', list: true,
 			ui: { itemProps: (i: FeatureItem) => ({ label: i?.title ?? '' }), defaultItem: { title: "Here's a feature", text: 'Describe it here.' } },
 			fields: [
 				{ type: 'string', label: 'Icon (Tabler name)', name: 'icon' },
 				{ type: 'string', label: 'Title', name: 'title' },
 				{ type: 'rich-text', label: 'Text', name: 'text' },
+				{
+					type: 'object', label: 'Action', name: 'action',
+					fields: [
+						{ type: 'string', label: 'Label', name: 'label' },
+						{ type: 'string', label: 'Link', name: 'link' },
+					],
+				},
 			],
 		},
 	],
