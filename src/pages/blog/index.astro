@@ -11,26 +11,32 @@ const config = (await getConfig()).data?.config ?? null;
 	title={config?.seo?.title ?? 'Blog'}
 	description={config?.seo?.description ?? 'Welcome to my website!'}
 >
-	<main class="mx-auto max-w-5xl px-6 py-12">
-		<h1 class="mb-8 text-4xl font-semibold tracking-tight">Blog</h1>
-		<ul class="grid list-none gap-6 p-0 sm:grid-cols-2">
-			{posts.map((post) => (
-				<li>
-					<a href={`/blog/${post._sys.filename}/`} class="group block overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md">
-						{post.heroImage && (
-							<img width={720} height={360} src={post.heroImage} alt={post.title ?? ''} class="aspect-video w-full object-cover" />
-						)}
-						<div class="p-6">
-							<h2 class="font-semibold group-hover:underline">{post.title}</h2>
-							{post.pubDate && (
-								<p class="mt-1 text-sm text-muted-foreground">
-									<FormattedDate date={new Date(post.pubDate)} />
-								</p>
+	<main class="bg-section">
+		<div class="mx-auto max-w-6xl px-6 py-12">
+			<h1 class="mb-8 text-4xl font-semibold tracking-tight">Blog</h1>
+			<ul class="grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-3">
+				{posts.map((post) => (
+					<li class="h-full">
+						<a href={`/blog/${post._sys.filename}/`} class="group flex h-full flex-col overflow-hidden rounded-2xl bg-card shadow-[0_10px_40px_rgba(16,24,40,0.08)] transition-shadow hover:shadow-[0_16px_50px_rgba(16,24,40,0.12)]">
+							{post.heroImage && (
+								<img width={720} height={450} src={post.heroImage} alt={post.title ?? ''} class="aspect-[16/10] w-full object-cover" />
 							)}
-						</div>
-					</a>
-				</li>
-			))}
-		</ul>
+							<div class="flex flex-1 flex-col p-6">
+								<h2 class="text-[1.375rem] font-bold leading-snug text-primary">{post.title}</h2>
+								{post.description && (
+									<p class="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">{post.description}</p>
+								)}
+								<span class="mb-6 mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-primary">Read More »</span>
+								{post.pubDate && (
+									<p class="mt-auto border-t border-[#E5E7EB] pt-4 text-xs text-muted-foreground">
+										<FormattedDate date={new Date(post.pubDate)} />
+									</p>
+								)}
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
 	</main>
 </Base>

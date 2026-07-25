@@ -1,8 +1,9 @@
 ---
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
-import type { CmsBlog } from '../../lib/data';
+import { getTeamMember, type CmsBlog } from '../../lib/data';
 import FormattedDate from '../FormattedDate.astro';
+import Button from '../ui/Button.astro';
 import { mdxComponents } from '../mdx/components';
 
 interface Props {
@@ -10,6 +11,11 @@ interface Props {
 }
 
 const { data } = Astro.props;
+// Author box: the blog schema has no author field and every migrated post is
+// bylined to Amy on the live site, so her team doc is the source for
+// photo/name/role/bio. The sidebar card reuses the home page CTA copy
+// verbatim (live's "Looking to Buy?" copy exists nowhere in our content).
+const author = (await getTeamMember('amy-lippincott-2')).data?.team ?? null;
 ---
 {data?.heroImage && (
 	<div data-tina-field={tinaField(data, 'heroImage')} class="mx-auto max-w-4xl px-6">
@@ -17,8 +23,8 @@ const { data } = Astro.props;
 	</div>
 )}
 {data && (
-	<div class="mx-auto max-w-3xl px-6 py-12">
-		<div class="mb-8 text-center">
+	<div class="mx-auto max-w-6xl px-6 py-12">
+		<div class="mb-10 text-center">
 			{data.pubDate && (
 				<div data-tina-field={tinaField(data, 'pubDate')} class="text-sm text-muted-foreground">
 					<FormattedDate date={new Date(data.pubDate)} />
@@ -27,12 +33,44 @@ const { data } = Astro.props;
 					)}
 				</div>
 			)}
-			{data.title && <h1 data-tina-field={tinaField(data, 'title')} class="mt-2 text-4xl font-semibold tracking-tight lg:text-5xl">{data.title}</h1>}
+			{data.title && <h1 data-tina-field={tinaField(data, 'title')} class="mt-2 text-4xl font-semibold tracking-tight">{data.title}</h1>}
 		</div>
-		{data.body && (
-			<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
-				<TinaMarkdown content={data.body} components={mdxComponents} />
+		<div class="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-10">
+			<div class="w-full max-w-[665px]">
+				{data.body && (
+					<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
+						<TinaMarkdown content={data.body} components={mdxComponents} />
+					</div>
+				)}
+				{author && (
+					<div class="mt-12 rounded-2xl bg-section p-8">
+						<div class="flex flex-col gap-6 sm:flex-row">
+							{author.photo && (
+								<img src={author.photo} alt={author.name ?? ''} width={80} height={80} class="size-20 shrink-0 rounded-full object-cover" />
+							)}
+							<div>
+								<h2 class="text-xl font-bold text-foreground">About {author.name}</h2>
+								{author.role && <p class="mt-1 text-sm text-muted-foreground">{author.role}</p>}
+								{author.bio && (
+									<div class="prose mt-3 max-w-none text-sm text-muted-foreground">
+										<TinaMarkdown content={author.bio} components={mdxComponents} />
+									</div>
+								)}
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
-		)}
+			<aside class="w-full shrink-0 lg:w-[340px]">
+				<div class="rounded-2xl bg-secondary p-8 text-center shadow-xl">
+					<h2 class="text-2xl font-bold text-white">Ready to Start Your Home Journey?</h2>
+					<p class="mt-4 text-sm leading-relaxed text-stat-label">Let's discuss how we can help you achieve your real estate goals. Our team is ready to provide expert guidance and personalized service.</p>
+					<div class="mt-8 flex flex-col gap-4">
+						<Button href="/contact-us/" class="w-full">Schedule a Consultation</Button>
+						<Button href="https://www.thelippincottteam.com/featured-listings/" variant="outline" class="w-full rounded-2xl border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white">View Listings</Button>
+					</div>
+				</div>
+			</aside>
+		</div>
 	</div>
 )}
