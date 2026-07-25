@@ -12,6 +12,7 @@ import Split from './Split.astro';
 import Stats from './Stats.astro';
 import TeamGrid from './TeamGrid.astro';
 import Testimonial from './Testimonial.astro';
+import TrustStrip from './TrustStrip.astro';
 import Video from './Video.astro';
 import type { CmsPage, CmsCommunity } from '../../lib/data';
 
@@ -41,6 +42,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'Stats': return <Stats data={block as never} />;
 			case 'TeamGrid': return <TeamGrid data={block as never} />;
 			case 'Testimonial': return <Testimonial data={block as never} />;
+			case 'TrustStrip': return <TrustStrip data={block as never} />;
 			case 'Video': return <Video data={block as never} />;
 		}
 	})();

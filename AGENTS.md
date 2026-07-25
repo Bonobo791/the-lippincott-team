@@ -83,7 +83,7 @@ above rather than bare `astro build`.
   picks it up automatically.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
-  CommunityGrid). **Convention: each block
+  CommunityGrid, TrustStrip — page collection only). **Convention: each block
   is a pair** — `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
