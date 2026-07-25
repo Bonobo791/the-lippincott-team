@@ -16,7 +16,7 @@ const entries = (await listCommunities())
 	.filter(({ path }) => path.startsWith(`${prefix}/`) && path.slice(prefix.length + 1).split('/').length === 1)
 	.sort((a, b) => (a.node.title ?? '').localeCompare(b.node.title ?? ''));
 ---
-<Section>
+<Section id="communities">
 	{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-light tracking-tight" />}
 	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 	<div class="mt-10 grid gap-6 md:grid-cols-2">
