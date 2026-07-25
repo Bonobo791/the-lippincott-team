@@ -3,8 +3,10 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import { Icon } from 'astro-icon/components';
 import { getConfig } from '../lib/data';
 import { islands } from '../lib/islands';
+import { telHref } from '../lib/url';
 
 interface Props {
 	title: string;
@@ -29,5 +31,19 @@ const config = (await getConfig()).data?.config ?? null;
 		<TinaIsland name="global-footer" wrapper={islands['global-footer'].wrapper}>
 			<Footer config={config} />
 		</TinaIsland>
+		{config?.contact?.phone && (
+			<>
+				{/* Spacer keeps the fixed call bar from covering footer content on mobile. */}
+				<div aria-hidden="true" class="h-14 lg:hidden"></div>
+				{/* z-10: below the sticky header (z-20) so the open mobile menu panel paints over the bar. */}
+				<a
+					href={telHref(config.contact.phone)}
+					class="fixed inset-x-0 bottom-0 z-10 flex h-14 items-center justify-center gap-2 bg-primary text-sm font-bold uppercase tracking-[0.1em] text-primary-foreground lg:hidden"
+				>
+					<Icon name="tabler:phone" class="size-5" />
+					{config.contact.phone}
+				</a>
+			</>
+		)}
 	</body>
 </html>

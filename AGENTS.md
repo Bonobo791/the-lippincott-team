@@ -122,6 +122,23 @@ above rather than bare `astro build`.
   `src/components/ui/SplitHeading.astro` (parser in
   `src/lib/split-heading.ts`); the accent styling comes from its `accentClass`
   prop.
+- Fonts and tokens: the body font is **Montserrat** (Arimo was removed in the
+  design-fidelity pass); `--font-sans`/`--font-heading` are Montserrat,
+  `--font-serif` is Libre Baskerville. Brand theme tokens live in the
+  `@theme` block of `src/styles/global.css`: `--body`, `--secondary` (navy
+  `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
+- Hero block: three `variant`s — `simple`, `photo`, `glass` — plus
+  `backgroundImage` and `eyebrow` fields (eyebrow renders on photo/glass).
+- Sticky mobile click-to-call bar: a pure-CSS fixed bottom bar in
+  `src/layouts/Base.astro` (`lg:hidden`, `bg-primary`, phone number from
+  `config.contact.phone` as a `tel:` link, no JS). A `h-14 lg:hidden` spacer
+  after the footer keeps it from covering footer content; it sits at `z-10`,
+  below the sticky header (`z-20`) so the open mobile menu paints over it.
+- CommunityGrid cards link to the community's Sierra property-search URL
+  (external, new tab) when one exists — the `sierraLinks` map in
+  `src/components/blocks/CommunityGrid.astro` holds the URLs recovered from
+  the migrated community bodies; communities without one fall back to their
+  internal community page.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**
@@ -136,6 +153,12 @@ There is **no test suite, linter, or formatter configured** in this project
   any type/schema errors — the Tina codegen + Astro build is the de-facto check.
 - `npx astro check` is available via `@astrojs/check` for type-checking
   `.astro` files.
+- For visual iteration, run `npx astro dev` (not `pnpm dev`) and screenshot
+  against it — component/CSS edits hot-reload in under a second, no build per
+  round. Reserve `pnpm build:local` + `pnpm preview` for per-task gates, Tina
+  schema changes, production-only behavior (`compressHTML`, GA4 gating,
+  island endpoints), and final evidence shots. See the `visual-loop` skill
+  for the full loop.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud
