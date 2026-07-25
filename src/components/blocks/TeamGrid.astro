@@ -14,10 +14,18 @@ const members = await listTeam();
 	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 	<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 		{members.map((member) => (
-			<a href={`/about/${member._sys.filename}/`} class="group rounded-2xl border p-6 text-center transition-shadow hover:shadow-lg">
-				{member.photo && <img src={member.photo} alt={member.name ?? ''} width={300} height={300} loading="lazy" decoding="async" class="mx-auto size-32 rounded-full object-cover" />}
-				<h3 class="mt-4 text-lg font-semibold transition-colors group-hover:text-primary">{member.name}</h3>
-				{member.role && <p class="mt-1 text-sm text-muted-foreground">{member.role}</p>}
+			<a href={`/about/${member._sys.filename}/`} class="group overflow-hidden rounded-2xl bg-white shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)] transition-shadow hover:shadow-lg">
+				{member.photo && (
+					<div class="bg-section">
+						<img src={member.photo} alt={member.name ?? ''} width={400} height={300} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-contain" />
+					</div>
+				)}
+				<div class="p-6 text-center">
+					<h3 class="text-lg font-bold text-foreground transition-colors group-hover:text-primary">{member.name}</h3>
+					{member.role && <p class="mt-1 text-sm uppercase tracking-wide text-muted-foreground">{member.role}</p>}
+					<div aria-hidden class="mx-auto mt-4 h-0.5 w-[110px] bg-primary"></div>
+					{member.phone && <p class="mt-4 font-bold text-foreground">{member.phone}</p>}
+				</div>
 			</a>
 		))}
 	</div>

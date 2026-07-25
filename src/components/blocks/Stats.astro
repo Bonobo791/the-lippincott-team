@@ -14,11 +14,11 @@ const stats = (data.stats ?? []).filter(s => s !== null);
 			<h2 data-tina-field={tinaField(data, 'title')} class="text-4xl font-medium lg:text-5xl">{data.title}</h2>
 			<p data-tina-field={tinaField(data, 'description')} class="text-muted-foreground">{data.description}</p>
 		</div>
-		<div class="grid divide-y *:text-center md:grid-cols-3 md:divide-x md:divide-y-0">
+		<div class="grid gap-6 text-center md:grid-cols-3">
 			{stats.map((stat) => (
-				<div data-tina-field={tinaField(stat)} class="space-y-4 py-4">
-					<div data-tina-field={tinaField(stat, 'stat')} class="text-5xl font-bold">{stat.stat}</div>
-					<p data-tina-field={tinaField(stat, 'type')} class="text-muted-foreground">{stat.type}</p>
+				<div data-tina-field={tinaField(stat)} class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
+					<div data-tina-field={tinaField(stat, 'stat')} class="text-4xl font-extrabold text-foreground">{stat.stat}</div>
+					<p data-tina-field={tinaField(stat, 'type')} class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">{stat.type}</p>
 				</div>
 			))}
 		</div>
