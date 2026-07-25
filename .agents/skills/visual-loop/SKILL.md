@@ -29,6 +29,15 @@ which wraps the heavy Tina dev stack. Run it on a **separate port** (4322)
 so a `pnpm preview` gate server can live on 4321 at the same time; point
 `shoot.mjs --base` at whichever server the round targets.
 
+**Prerequisite:** the fast path only works when the generated Tina client
+points at TinaCloud. Both `pnpm dev` and `pnpm build:local` leave
+`tina/__generated__/client.ts` pinned to `http://localhost:4001/graphql`
+(the local content server only `tinacms dev` hosts) — bare `astro dev` then
+fails every query with `ECONNREFUSED` and pages 404. Check with
+`grep "url:" tina/__generated__/client.ts`. If it says `localhost:4001`,
+either run a credentialed `pnpm build` (regenerates the client against
+TinaCloud) or fall back to `pnpm dev` for that session.
+
 **Slow path — `pnpm build:local` + `pnpm preview` (gates only).** Still
 required, but only at specific moments:
 

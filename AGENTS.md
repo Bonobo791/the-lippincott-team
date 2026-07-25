@@ -176,7 +176,10 @@ There is **no test suite, linter, or formatter configured** in this project
   stay on 4321. Reserve `pnpm build:local` + `pnpm preview` for per-task
   gates, Tina schema changes, production-only behavior (`compressHTML`, GA4
   gating, island endpoints), and final evidence shots. See the `visual-loop`
-  skill for the full loop.
+  skill for the full loop. Caveat: bare `astro dev` only serves content when
+  `tina/__generated__/client.ts` points at TinaCloud — `pnpm dev` and
+  `pnpm build:local` both pin it to `localhost:4001`, so after either, run a
+  credentialed `pnpm build` (or use `pnpm dev`) before dev-server iteration.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud

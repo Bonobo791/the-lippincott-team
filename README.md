@@ -45,7 +45,7 @@ Verify frontend changes with a Playwright screenshot loop (see `.agents/skills/v
   node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/round-1
   ```
 
-  Iterate against the dev server (sub-second HMR, no rebuilds per round). Reserve `pnpm build:local` + `pnpm preview` (port 4321) for per-task gates and final evidence shots — see `.agents/skills/visual-loop` for the full fast-path/slow-path split.
+  Iterate against the dev server (sub-second HMR, no rebuilds per round). Reserve `pnpm build:local` + `pnpm preview` (port 4321) for per-task gates and final evidence shots — see `.agents/skills/visual-loop` for the full fast-path/slow-path split. Note: bare `astro dev` only serves content when the generated Tina client points at TinaCloud (`grep "url:" tina/__generated__/client.ts`); after `pnpm dev` or `pnpm build:local` it's pinned to `localhost:4001`, so run a credentialed `pnpm build` first or use `pnpm dev`.
 
 - `scripts/audit/probe-styles.mjs`: extracts exact `getComputedStyle()` values (colors, font sizes, spacing, container widths) from any base URL into JSON, for numeric comparison against a design spec or the live site.
 - Control the browser interactively (click through states, inspect elements) with `npx playwright cli --browser=chromium` (system Chrome is not installed; use the bundled Chromium).
