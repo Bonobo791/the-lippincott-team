@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`): content
+This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify: content
 is edited visually in the TinaCMS admin and shipped as static HTML. The site
 itself ships **zero React** — React appears only as a pinned devDependency for
 building the Tina admin UI (see `README.md` "A note on React" for why the pin
