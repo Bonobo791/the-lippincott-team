@@ -3,6 +3,7 @@ import { Icon } from 'astro-icon/components';
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig } from '../lib/data';
 import { safeHref, telHref } from '../lib/url';
+import { cn } from '../lib/cn';
 
 interface Props {
 	config?: CmsConfig | null;
@@ -15,15 +16,17 @@ const contact = config?.contact ?? null;
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
 	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href?: string | null) =>
+	!isExternal(href) && ((href ?? '/').replace(/\/+$/, '') || '/') === currentPath;
 ---
 
-<header class="sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur-xl">
-	<div class="bg-foreground text-background">
-		<div class="mx-auto flex max-w-6xl items-center justify-end px-6 py-2">
+<header class="header-zebra sticky top-0 z-20 w-full border-b backdrop-blur-xl">
+	<div class="bg-primary text-primary-foreground">
+		<div class="mx-auto flex max-w-6xl items-center justify-end px-6 py-2.5">
 			{contact?.phone && (
-				<a href={telHref(contact.phone)} class="inline-flex items-center gap-1.5 text-xs font-medium tracking-wider hover:opacity-80">
-					<Icon name="tabler:phone" class="size-3.5" />
-					<span>{contact.phone}</span>
+				<a href={telHref(contact.phone)} class="text-[15px] font-bold leading-5 tracking-wide hover:opacity-80">
+					{contact.phone}
 				</a>
 			)}
 		</div>
@@ -36,42 +39,54 @@ const externalAttrs = (href?: string | null) =>
 				<span class="text-sm font-semibold uppercase tracking-[0.175em]">{seo?.title ?? 'Home'}</span>
 			)}
 		</a>
-		<div class="hidden items-center gap-6 lg:flex">
-			{nav.map((item) => {
+		<div class="hidden items-center gap-5 lg:flex">
+			{nav.map((item, i) => {
 				const children = (item.children ?? []).filter(c => c !== null);
-				return children.length > 0 ? (
-					<div class="group relative" data-tina-field={tinaField(item, "title")}>
-						<a
-							href={safeHref(item.link)}
-							class="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.175em] text-foreground/80 transition-colors hover:text-primary"
-							{...externalAttrs(item.link)}
-						>
-							{item.title}
-							<Icon name="tabler:chevron-down" class="size-3.5" />
-						</a>
-						<div class="invisible absolute left-0 top-full z-30 min-w-56 pt-2 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-							<div class="rounded-md border bg-popover py-2 shadow-lg">
-								{children.map((child) => (
-									<a
-										href={safeHref(child.link)}
-										class="block px-4 py-2 text-sm text-popover-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
-										{...externalAttrs(child.link)}
-									>
-										{child.title}
-									</a>
-								))}
+				const current = isCurrent(item.link);
+				const linkClass = cn(
+					'text-[13px] font-semibold uppercase tracking-[0.1em] transition-colors',
+					current ? 'text-primary' : 'text-muted-foreground hover:text-primary',
+				);
+				return (
+					<>
+						{i > 0 && <span aria-hidden="true" class="select-none font-light text-muted-foreground/40">|</span>}
+						{children.length > 0 ? (
+							<div class="group relative" data-tina-field={tinaField(item, "title")}>
+								<a
+									href={safeHref(item.link)}
+									class={cn(linkClass, 'inline-flex items-center gap-1')}
+									aria-current={current ? 'page' : undefined}
+									{...externalAttrs(item.link)}
+								>
+									{item.title}
+									<Icon name="tabler:chevron-down" class="size-3.5" />
+								</a>
+								<div class="invisible absolute left-0 top-full z-30 min-w-56 pt-2 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+									<div class="rounded-md border bg-popover py-2 shadow-lg">
+										{children.map((child) => (
+											<a
+												href={safeHref(child.link)}
+												class="block px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+												{...externalAttrs(child.link)}
+											>
+												{child.title}
+											</a>
+										))}
+									</div>
+								</div>
 							</div>
-						</div>
-					</div>
-				) : (
-					<a
-						href={safeHref(item.link)}
-						class="text-xs font-semibold uppercase tracking-[0.175em] text-foreground/80 transition-colors hover:text-primary"
-						data-tina-field={tinaField(item, "title")}
-						{...externalAttrs(item.link)}
-					>
-						{item.title}
-					</a>
+						) : (
+							<a
+								href={safeHref(item.link)}
+								class={linkClass}
+								data-tina-field={tinaField(item, "title")}
+								aria-current={current ? 'page' : undefined}
+								{...externalAttrs(item.link)}
+							>
+								{item.title}
+							</a>
+						)}
+					</>
 				);
 			})}
 		</div>
@@ -121,6 +136,10 @@ const externalAttrs = (href?: string | null) =>
 	</div>
 </header>
 <style>
+	.header-zebra {
+		background-color: #ffffff;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M-1.5 13.5 L13.5 -1.5' stroke='%23f0f0f0' stroke-width='2'/%3E%3C/svg%3E");
+	}
 	#mobile-menu-toggle .icon-close { display: none; }
 	#mobile-menu-toggle[aria-expanded="true"] .icon-open { display: none; }
 	#mobile-menu-toggle[aria-expanded="true"] .icon-close { display: block; }
