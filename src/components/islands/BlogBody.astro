@@ -17,11 +17,6 @@ const { data } = Astro.props;
 // verbatim (live's "Looking to Buy?" copy exists nowhere in our content).
 const author = (await getTeamMember('amy-lippincott-2')).data?.team ?? null;
 ---
-{data?.heroImage && (
-	<div data-tina-field={tinaField(data, 'heroImage')} class="mx-auto max-w-4xl px-6">
-		<img width={1020} height={510} src={data.heroImage} alt="" class="w-full rounded-2xl border shadow-lg" />
-	</div>
-)}
 {data && (
 	<div class="mx-auto max-w-6xl px-6 py-12">
 		<div class="mb-10 text-center">
@@ -33,7 +28,7 @@ const author = (await getTeamMember('amy-lippincott-2')).data?.team ?? null;
 					)}
 				</div>
 			)}
-			{data.title && <h1 data-tina-field={tinaField(data, 'title')} class="mt-2 text-4xl font-semibold tracking-tight">{data.title}</h1>}
+			{data.title && <h1 data-tina-field={tinaField(data, 'title')} class="mt-2 text-4xl font-bold tracking-tight">{data.title}</h1>}
 		</div>
 		<div class="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-10">
 			<div class="w-full max-w-[665px]">

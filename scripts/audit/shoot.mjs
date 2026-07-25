@@ -76,6 +76,28 @@ async function main() {
 				await page.evaluate(() => document.fonts.ready);
 				await page.waitForTimeout(500);
 
+				// Scroll to the bottom in steps so loading="lazy" images below
+				// the fold load before the fullPage capture (fixes grey-card
+				// artifacts in the home/hub audits), then settle back at top.
+				await page.evaluate(
+					() =>
+						new Promise((resolve) => {
+							let y = 0;
+							const step = window.innerHeight;
+							const timer = setInterval(() => {
+								y += step;
+								window.scrollTo(0, y);
+								if (y >= document.documentElement.scrollHeight - window.innerHeight) {
+									clearInterval(timer);
+									resolve();
+								}
+							}, 120);
+						}),
+				);
+				await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
+				await page.evaluate(() => window.scrollTo(0, 0));
+				await page.waitForTimeout(300);
+
 				const shotFile = `${tpl.name}-${viewport.name}.png`;
 				await page.screenshot({ path: path.join(out, shotFile), fullPage: true });
 				entry.files.push(shotFile);

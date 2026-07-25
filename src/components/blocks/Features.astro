@@ -2,6 +2,7 @@
 import { tinaField } from '@tinacms/astro/tina-field';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
 import Icon from '../ui/Icon.astro';
 import type { FeaturesBlock } from '../../lib/data';
@@ -15,7 +16,7 @@ const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
 <Section>
 	<div class="mx-auto max-w-5xl px-6">
 		<div class="text-center">
-			<h2 data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-semibold lg:text-5xl">{data.title}</h2>
+			<SplitHeading as="h2" text={data.title ?? ''} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-light lg:text-5xl" />
 			<p data-tina-field={tinaField(data, 'description')} class="mt-4 text-muted-foreground">{data.description}</p>
 		</div>
 		<div class="mt-8 grid gap-6 md:mt-16 md:grid-cols-3">

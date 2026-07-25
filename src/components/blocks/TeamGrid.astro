@@ -2,6 +2,7 @@
 import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { listTeam } from '../../lib/data';
 import type { TeamGridBlock } from '../../lib/data';
 
@@ -11,7 +12,7 @@ const { data } = Astro.props;
 const members = await listTeam();
 ---
 <Section>
-	{data.title && <h2 data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-semibold tracking-tight">{data.title}</h2>}
+	{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-center text-4xl font-light tracking-tight lg:text-5xl" />}
 	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 	<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 		{members.map((member) => (

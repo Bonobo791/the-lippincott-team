@@ -2,7 +2,10 @@
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsCommunity } from '../../lib/data';
+import { communityPath } from '../../lib/data';
+import { sierraLinks } from '../../lib/sierra-links';
 import { mdxComponents } from '../mdx/components';
+import Button from '../ui/Button.astro';
 import CommunityFaqHeading from '../mdx/CommunityFaqHeading.astro';
 import CommunityFaqQuestion from '../mdx/CommunityFaqQuestion.astro';
 import FaqAccordion from '../ui/FaqAccordion.astro';
@@ -11,6 +14,9 @@ interface Props { data?: CmsCommunity | null }
 
 const { data } = Astro.props;
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
+// Red "View Listings" hero CTA links to the doc's Sierra property search
+// when one was recovered from the migrated body; unmapped docs get none.
+const sierraUrl = data ? (sierraLinks[communityPath(data)] ?? null) : null;
 // Community FAQs are static Q&A inside the rich-text body (no doc uses the
 // faqs frontmatter), so h2/h3 overrides restyle that section to the
 // accordion pattern. Docs that do use frontmatter FAQs get FaqAccordion.
@@ -29,6 +35,9 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 				<div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">
 					<h1 data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">{data.title}</h1>
 					{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/80">{data.intro}</p>}
+					{sierraUrl && (
+						<Button href={sierraUrl} target="_blank" rel="noopener noreferrer" size="lg" class="mt-10 px-8">View Listings</Button>
+					)}
 				</div>
 			</section>
 		) : (

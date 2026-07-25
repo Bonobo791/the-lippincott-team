@@ -18,16 +18,23 @@ const firstName = nameParts[0] ?? '';
 const splitName = nameParts.length > 1
 	? `**${firstName}** ${nameParts.slice(1).join(' ')}`
 	: `**${firstName}**`;
-// The team schema has no stats, social, address, or TREC fields, so the
-// contact card carries only photo + DIRECT CONTACT phone/email, and the
-// stats row is omitted. Eyebrow copy ("Meet Your Local Expert") comes from
+// The team schema has no social, address, or TREC fields, so the contact
+// card carries only photo + DIRECT CONTACT phone/email. The stats row
+// reuses the home page stats copy verbatim (live pattern; the team schema
+// has no stat fields). Eyebrow copy ("Meet Your Local Expert") comes from
 // the existing description field; "Our Proven Processes" / CTA labels are
 // live-site copy for this template.
 ---
 {data && (
 	<>
-		<section class="bg-secondary">
-			<div class="mx-auto max-w-6xl px-6 py-20 md:py-28">
+		<section class="relative overflow-hidden bg-secondary">
+			{data.photo && (
+				<div aria-hidden class="absolute inset-0">
+					<img src={data.photo} alt="" class="size-full object-cover" />
+					<div class="absolute inset-0 bg-secondary/90"></div>
+				</div>
+			)}
+			<div class="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
 				{data.description && (
 					<span data-tina-field={tinaField(data, 'description')} class="inline-block rounded-full bg-primary/20 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-red-100">{data.description}</span>
 				)}
@@ -75,6 +82,24 @@ const splitName = nameParts.length > 1
 							<TinaMarkdown content={data.bio} components={mdxComponents} />
 						</div>
 					)}
+				</div>
+			</div>
+		</section>
+		<section class="bg-section">
+			<div class="mx-auto max-w-6xl px-6 py-16">
+				<div class="grid gap-6 text-center md:grid-cols-3">
+					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
+						<div class="text-4xl font-extrabold text-foreground">1,463+</div>
+						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">Homes Sold</p>
+					</div>
+					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
+						<div class="text-4xl font-extrabold text-foreground">$400M+</div>
+						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">Volume Sold</p>
+					</div>
+					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
+						<div class="text-4xl font-extrabold text-foreground">750+</div>
+						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">5-Star Reviews</p>
+					</div>
 				</div>
 			</div>
 		</section>
