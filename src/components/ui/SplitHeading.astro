@@ -1,0 +1,26 @@
+---
+import type { HTMLTag } from 'astro/types';
+import { splitHeading } from '../../lib/split-heading';
+
+type Props = {
+	/** Raw heading string; `**accent**` segments render with `accentClass`. */
+	text: string;
+	/** Tag to render (h1, h2, ...). */
+	as?: HTMLTag;
+	/** Classes applied to `**accent**` segments, e.g. `font-extrabold` or `font-bold text-primary`. */
+	accentClass?: string;
+	class?: string;
+	[key: string]: unknown;
+};
+
+const { text, as: Tag = 'h2', accentClass = 'font-extrabold', class: className, ...rest } = Astro.props;
+const segments = splitHeading(text);
+---
+
+<Tag class={className} {...rest}>
+	{segments.map((segment) => (
+		segment.accent
+			? <span class={accentClass}>{segment.text}</span>
+			: <Fragment>{segment.text}</Fragment>
+	))}
+</Tag>

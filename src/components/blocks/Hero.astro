@@ -4,33 +4,89 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import type { HeroBlock } from '../../lib/data';
 
 interface Props { data: HeroBlock }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);
+// Full-bleed photo variants require a background image; without one the
+// block falls back to the original simple centered layout.
+const variant = data.backgroundImage ? (data.variant ?? 'photo') : 'simple';
 ---
-<Section>
-	<div class="text-center sm:mx-auto lg:mr-auto">
-		<div data-tina-field={tinaField(data, 'image')} class="mx-auto mb-6 size-56 md:size-72">
-			{data.image?.src
-				? <Image src={data.image.src} alt={data.image.alt ?? ''} width={576} height={576} sizes="(min-width: 768px) 288px, 224px" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full rounded-full object-cover" />
-				: ''}
+{variant === 'glass' && data.backgroundImage ? (
+	<section class="relative w-full overflow-hidden">
+		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
+			<Image src={data.backgroundImage} alt="" width={1920} height={976} sizes="100vw" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
+			<div class="absolute inset-0 bg-black/40"></div>
 		</div>
-		{data.headline && <h1 data-tina-field={tinaField(data, 'headline')} class="mt-8 text-balance text-6xl md:text-7xl xl:text-[5.25rem] font-semibold tracking-tight">{data.headline}</h1>}
-		{data.tagline && <p data-tina-field={tinaField(data, 'tagline')} class="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">{data.tagline}</p>}
-		{actions.length > 0 && (
-			<div class="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
-				{actions.map((action) => (
-					<div data-tina-field={tinaField(action)} class="">
-						<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="px-5">
-							{action.icon && <Icon name={action.icon} class="size-4" />}
-							<span class="text-nowrap">{action.label}</span>
-						</Button>
+		<div class="relative mx-auto flex max-w-6xl justify-center px-6 py-20 md:py-28">
+			<div class="w-[92%] max-w-[720px] rounded-3xl border border-white/20 bg-white/15 p-8 text-center shadow-2xl backdrop-blur-md md:p-12">
+				{data.eyebrow && <span data-tina-field={tinaField(data, 'eyebrow')} class="inline-block rounded-full bg-chip px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-primary">{data.eyebrow}</span>}
+				{data.headline && <SplitHeading as="h1" text={data.headline} accentClass="font-bold" data-tina-field={tinaField(data, 'headline')} class="mt-6 text-balance text-[2.5rem] font-light leading-none tracking-tight text-white md:text-[4.5rem] md:tracking-[-1.8px]" />}
+				{data.tagline && <p data-tina-field={tinaField(data, 'tagline')} class="mx-auto mt-6 max-w-xl text-balance text-lg text-white/80">{data.tagline}</p>}
+				{actions.length > 0 && (
+					<div class="mt-10 flex flex-col items-center justify-center gap-2 md:flex-row">
+						{actions.map((action) => (
+							<div data-tina-field={tinaField(action)} class="">
+								<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="px-5">
+									{action.icon && <Icon name={action.icon} class="size-4" />}
+									<span class="text-nowrap">{action.label}</span>
+								</Button>
+							</div>
+						))}
 					</div>
-				))}
+				)}
 			</div>
-		)}
-	</div>
-</Section>
+		</div>
+	</section>
+) : variant === 'photo' && data.backgroundImage ? (
+	<section class="relative w-full overflow-hidden">
+		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
+			<Image src={data.backgroundImage} alt="" width={1920} height={976} sizes="100vw" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
+			<div class="absolute inset-0 bg-black/50"></div>
+		</div>
+		<div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">
+			{data.eyebrow && <span data-tina-field={tinaField(data, 'eyebrow')} class="inline-block rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-white backdrop-blur-sm">{data.eyebrow}</span>}
+			{data.headline && <SplitHeading as="h1" text={data.headline} accentClass="font-bold" data-tina-field={tinaField(data, 'headline')} class="mt-6 text-balance text-4xl font-light leading-none tracking-tight text-white md:text-[3.75rem] xl:text-[4rem]" />}
+			{data.tagline && <p data-tina-field={tinaField(data, 'tagline')} class="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/80">{data.tagline}</p>}
+			{actions.length > 0 && (
+				<div class="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
+					{actions.map((action) => (
+						<div data-tina-field={tinaField(action)} class="">
+							<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="px-5">
+								{action.icon && <Icon name={action.icon} class="size-4" />}
+								<span class="text-nowrap">{action.label}</span>
+							</Button>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	</section>
+) : (
+	<Section>
+		<div class="text-center sm:mx-auto lg:mr-auto">
+			<div data-tina-field={tinaField(data, 'image')} class="mx-auto mb-6 size-56 md:size-72">
+				{data.image?.src
+					? <Image src={data.image.src} alt={data.image.alt ?? ''} width={576} height={576} sizes="(min-width: 768px) 288px, 224px" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full rounded-full object-cover" />
+					: ''}
+			</div>
+			{data.headline && <h1 data-tina-field={tinaField(data, 'headline')} class="mt-8 text-balance text-6xl md:text-7xl xl:text-[5.25rem] font-semibold tracking-tight">{data.headline}</h1>}
+			{data.tagline && <p data-tina-field={tinaField(data, 'tagline')} class="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">{data.tagline}</p>}
+			{actions.length > 0 && (
+				<div class="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
+					{actions.map((action) => (
+						<div data-tina-field={tinaField(action)} class="">
+							<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="px-5">
+								{action.icon && <Icon name={action.icon} class="size-4" />}
+								<span class="text-nowrap">{action.label}</span>
+							</Button>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	</Section>
+)}

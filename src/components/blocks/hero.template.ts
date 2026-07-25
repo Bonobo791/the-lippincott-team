@@ -5,7 +5,16 @@ export const heroBlockSchema: Template = {
 	name: 'hero',
 	label: 'Hero',
 	fields: [
-		{ type: 'string', label: 'Headline', name: 'headline' },
+		{
+			type: 'string', label: 'Variant', name: 'variant',
+			options: [
+				{ label: 'Photo (full-bleed photo, centered text)', value: 'photo' },
+				{ label: 'Glass (full-bleed photo, frosted-glass card)', value: 'glass' },
+			],
+		},
+		{ type: 'image', label: 'Background Image', name: 'backgroundImage' },
+		{ type: 'string', label: 'Eyebrow', name: 'eyebrow', description: 'Small pill label above the headline (photo/glass variants).' },
+		{ type: 'string', label: 'Headline', name: 'headline', description: 'Wrap a phrase in **double asterisks** to render it bold.' },
 		{ type: 'string', label: 'Tagline', name: 'tagline' },
 		{
 			type: 'object', label: 'Actions', name: 'actions', list: true,
@@ -27,6 +36,7 @@ export const heroBlockSchema: Template = {
 	],
 	ui: {
 		defaultItem: {
+			variant: 'photo',
 			tagline: "Here's some text above the other text",
 			headline: 'Astro + TinaCMS, ready to ship',
 		},

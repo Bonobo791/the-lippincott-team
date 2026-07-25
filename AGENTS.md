@@ -117,6 +117,11 @@ above rather than bare `astro build`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
+- Split headings: editors mark the accented phrase in plain Tina string fields
+  with `**...**` (the brand's light+bold heading device). Render them with
+  `src/components/ui/SplitHeading.astro` (parser in
+  `src/lib/split-heading.ts`); the accent styling comes from its `accentClass`
+  prop.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**
