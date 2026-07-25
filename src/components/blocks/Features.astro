@@ -28,7 +28,7 @@ const externalAttrs = (href?: string | null) =>
 			{items.map((item, i) => (
 				isEditorial ? (
 					<div data-tina-field={tinaField(item)}>
-						<div class="h-[3px] w-[70px] bg-primary"></div>
+						<div aria-hidden="true" class="h-[3px] w-[70px] bg-primary"></div>
 						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
 						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
 							<TinaMarkdown content={item.text} components={mdxComponents} />
@@ -43,9 +43,11 @@ const externalAttrs = (href?: string | null) =>
 					</div>
 				) : (
 					<div data-tina-field={tinaField(item)} class={item.action?.label && item.action?.link ? 'flex flex-col rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]' : 'rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]'}>
-						<div data-tina-field={tinaField(item, 'icon')} class:list={['flex size-14 items-center justify-center rounded-[14px] text-white', tileColors[i % tileColors.length]]}>
-							{item.icon && <Icon name={item.icon} class="size-7" />}
-						</div>
+						{item.icon && (
+							<div data-tina-field={tinaField(item, 'icon')} class:list={['flex size-14 items-center justify-center rounded-[14px] text-white', tileColors[i % tileColors.length]]}>
+								<Icon name={item.icon} class="size-7" />
+							</div>
+						)}
 						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
 						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
 							<TinaMarkdown content={item.text} components={mdxComponents} />
