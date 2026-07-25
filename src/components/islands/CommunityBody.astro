@@ -5,6 +5,7 @@ import type { CmsCommunity } from '../../lib/data';
 import { communityPath } from '../../lib/data';
 import { sierraLinks } from '../../lib/sierra-links';
 import { mdxComponents } from '../mdx/components';
+import Blocks from '../blocks/Blocks.astro';
 import Button from '../ui/Button.astro';
 import CommunityFaqHeading from '../mdx/CommunityFaqHeading.astro';
 import CommunityFaqQuestion from '../mdx/CommunityFaqQuestion.astro';
@@ -13,6 +14,7 @@ import FaqAccordion from '../ui/FaqAccordion.astro';
 interface Props { data?: CmsCommunity | null }
 
 const { data } = Astro.props;
+const blocks = (data?.blocks ?? []).filter(b => b !== null);
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
 // Red "View Listings" hero CTA links to the doc's Sierra property search
 // when one was recovered from the migrated body; unmapped docs get none.
@@ -25,6 +27,9 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 // white H1 + intro only (no invented copy).
 ---
 {data && (
+	blocks.length > 0 ? (
+		<Blocks data={data} />
+	) : (
 	<>
 		{data.heroImage ? (
 			<section class="relative w-full overflow-hidden">
@@ -62,4 +67,5 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 			</div>
 		)}
 	</>
+	)
 )}

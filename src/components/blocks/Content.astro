@@ -5,7 +5,7 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import { mdxComponents } from '../mdx/components';
 import type { ContentBlock } from '../../lib/data';
 
-interface Props { data: ContentBlock }
+interface Props { data: Omit<ContentBlock, '__typename'> }
 
 const { data } = Astro.props;
 ---

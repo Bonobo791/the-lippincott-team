@@ -7,7 +7,7 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import { getConfig } from '../../lib/data';
 import type { CtaBlock } from '../../lib/data';
 
-interface Props { data: CtaBlock }
+interface Props { data: Omit<CtaBlock, '__typename'> }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);

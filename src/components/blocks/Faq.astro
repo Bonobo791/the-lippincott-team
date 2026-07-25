@@ -4,7 +4,7 @@ import Section from '../ui/Section.astro';
 import FaqAccordion from '../ui/FaqAccordion.astro';
 import type { FaqBlock } from '../../lib/data';
 
-interface Props { data: FaqBlock }
+interface Props { data: Omit<FaqBlock, '__typename'> }
 
 const { data } = Astro.props;
 const items = (data.items ?? []).filter(i => i !== null);

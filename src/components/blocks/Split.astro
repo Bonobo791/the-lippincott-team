@@ -8,7 +8,7 @@ import Icon from '../ui/Icon.astro';
 import { cn } from '../../lib/cn';
 import type { SplitBlock } from '../../lib/data';
 
-interface Props { data: SplitBlock }
+interface Props { data: Omit<SplitBlock, '__typename'> }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);

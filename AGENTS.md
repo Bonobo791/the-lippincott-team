@@ -88,7 +88,13 @@ above rather than bare `astro build`.
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts`.
+  template in `tina/collections/page.ts`. The shared block templates serve
+  two collections: `page.ts` registers all of them, while
+  `tina/collections/community.ts` reuses a reduced 7-template set (hero,
+  split, features, stats, content, faq, cta) — Tina namespaces block
+  typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
+  and `Blocks.astro` dispatches on the suffix after stripping the
+  `Page|CommunityBlocks` prefix.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
   registry; `src/components/ui/` — reusable UI components (including
   `FaqAccordion.astro`); `src/components/mdx/` — MDX components.

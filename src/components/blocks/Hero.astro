@@ -7,7 +7,7 @@ import Icon from '../ui/Icon.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import type { HeroBlock } from '../../lib/data';
 
-interface Props { data: HeroBlock }
+interface Props { data: Omit<HeroBlock, '__typename'> }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);

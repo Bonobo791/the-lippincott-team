@@ -4,7 +4,7 @@ import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import type { StatsBlock } from '../../lib/data';
 
-interface Props { data: StatsBlock }
+interface Props { data: Omit<StatsBlock, '__typename'> }
 
 const { data } = Astro.props;
 const stats = (data.stats ?? []).filter(s => s !== null);
