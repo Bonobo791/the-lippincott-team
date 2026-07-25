@@ -25,10 +25,6 @@ Start the dev server, then edit visually at `localhost:4321/admin/`:
 pnpm dev
 ```
 
-![homepage](./public/home-page.png)
-
-**Figure: Homepage UI**
-
 ## Features 
 
 - Visual editing via [`@tinacms/astro`](https://www.npmjs.com/package/@tinacms/astro) — a vanilla-JS bridge, with no React in the page tree
