@@ -44,6 +44,8 @@ From `package.json`:
   Compiles against TinaCloud; **fails fast with `ERR_MISSING_CLOUD_CREDS` without
   `PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`** (get them at app.tina.io).
 - `pnpm build:local` — fully local/offline build, no TinaCloud auth needed.
+- `pnpm build:search` — `tinacms search-index`.
+- `pnpm preview` — `astro preview`.
 
 Both build scripts prefix the subcommand with `NODE_ENV=production` on purpose:
 the tinacms CLI bundles its config via Vite in-process, and Vite defaults
@@ -51,8 +53,6 @@ the tinacms CLI bundles its config via Vite in-process, and Vite defaults
 value leaks into `astro build` and flips `import.meta.env.PROD` to false
 (which would silently drop the production-only GA4 snippet in
 `src/components/BaseHead.astro`).
-- `pnpm build:search` — `tinacms search-index`.
-- `pnpm preview` — `astro preview`.
 
 **Build order matters**: `tinacms build` must run before `astro build` so the
 generated client/types in `tina/__generated__/` exist. Always use the scripts
@@ -128,11 +128,25 @@ standalone Node server (`node ./dist/server/entry.mjs`). Force one with
 Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 `node:async_hooks`).
 
-**Netlify**: `netlify.toml` pins the build command (`pnpm build:local`;
-switch to `pnpm build` when TinaCloud creds are configured). The committed
-`pnpm-lock.yaml` and the `packageManager` field in `package.json` are what
-make Netlify install with pnpm instead of npm — do not re-ignore the
-lockfile.
+**Netlify**: `netlify.toml` pins the build command (`pnpm build` — TinaCloud
+credentials `PUBLIC_TINA_CLIENT_ID`/`TINA_TOKEN` are configured in the Netlify
+UI; the build fails fast with `ERR_MISSING_CLOUD_CREDS` without them). It also
+sets `SITE_URL = "https://lippincottteam.com"` under
+`[context.production.environment]` so deploy previews keep their
+Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
+field in `package.json` are what make Netlify install with pnpm instead of
+npm — do not re-ignore the lockfile.
+
+Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
+`public/` verbatim into the publish dir): `/opt-out-preferences/*`,
+`/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
+All other migrated WP URLs map 1:1 onto existing routes.
+
+Analytics: GA4 loads via a direct gtag.js snippet in
+`src/components/BaseHead.astro`, gated on `import.meta.env.PROD` — see the
+`NODE_ENV=production` note under "Build and dev commands". Note that Netlify
+deploy previews build with `NODE_ENV=production`, so previews **do** send GA
+hits; only local dev is excluded.
 
 Environment variables (see `.env.example`):
 

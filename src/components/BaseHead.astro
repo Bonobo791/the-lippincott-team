@@ -18,7 +18,7 @@ const { title, description, image = '/logo.webp' } = Astro.props;
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 
-<!-- Google Analytics (GA4) — production builds only, so deploy previews and local dev send no hits. -->
+<!-- Google Analytics (GA4) — direct gtag.js snippet, gated on import.meta.env.PROD. Local dev sends no hits, but Netlify deploy previews DO: they build with NODE_ENV=production. Filter preview hosts in GA4 if their traffic matters. -->
 {
 	import.meta.env.PROD && (
 		<>
