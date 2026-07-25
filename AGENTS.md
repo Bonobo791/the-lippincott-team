@@ -103,6 +103,13 @@ above rather than bare `astro build`.
 - `scripts/migrate/` — one-off WordPress→Tina migration pipeline, kept for
   provenance. `data/` (cached WP API responses) is gitignored; run scripts
   with `node scripts/migrate/<name>.mjs`.
+- `scripts/audit/` — Playwright design-fidelity tooling used by the
+  `visual-loop` skill: `shoot.mjs` (screenshots of 10 templates at 3 viewports
+  + interaction shots + error manifest) and `probe-styles.mjs` (computed-style
+  extraction for numeric spec comparison). Run with
+  `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
+  gitignored `.launch/qa/`. For interactive browsing use
+  `npx playwright cli --browser=chromium` (no system Chrome installed).
 
 ## Key conventions
 
