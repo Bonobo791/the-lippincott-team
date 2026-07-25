@@ -11,10 +11,39 @@ frontend change done from reading code — only from viewed screenshots.
 ## Setup (once per session)
 
 1. Start the dev server in the background: `npx astro dev --port 4321`
-   (skip `pnpm dev` — TinaCMS is not needed for screenshots).
+   (skip `pnpm dev` — TinaCMS is not needed for screenshots). This is the
+   iteration target; see "Fast path vs slow path" below for when a production
+   build + preview server is required instead.
 2. Poll `curl -sf http://localhost:4321/` until it responds.
 3. Playwright + Chromium are already installed (`playwright` devDependency,
    browser verified working). No setup needed.
+
+## Fast path vs slow path
+
+**Fast path — iterate against `npx astro dev` (the default).** Component and
+CSS edits hot-reload in under a second; no build between screenshot rounds.
+This is the right target for styling/design iterations (edit → screenshot →
+view → fix). Use explicitly `npx astro dev --port 4321` — never `pnpm dev`,
+which wraps the heavy Tina dev stack. If port 4321 is occupied by a running
+`pnpm preview` server, use another port (`npx astro dev --port 4322`) and
+point `shoot.mjs --base` at it.
+
+**Slow path — `pnpm build:local` + `pnpm preview` (gates only).** Still
+required, but only at specific moments:
+
+- **Per-task commit gates** — the build must be green before committing; it
+  also type-checks via Tina codegen and catches content/schema errors that
+  dev mode tolerates.
+- **Tina schema changes** — regenerating `tina/__generated__/` and the lock
+  only happens through the Tina build.
+- **Production-only behavior** — `compressHTML` whitespace handling, GA4
+  snippet gating, island endpoint rendering. Dev mode is not a faithful
+  production render for these.
+- **Final evidence shots** — take them against the production build so the QA
+  evidence matches what ships.
+
+Rule of thumb: iterate on the dev server; build + preview once per task as
+the gate and for final shots.
 
 ## The loop
 
@@ -44,7 +73,9 @@ frontend change done from reading code — only from viewed screenshots.
 - Every affected template viewed as an image at desktop and mobile.
 - Spec values confirmed via probe-styles output where the spec is numeric.
 - Zero errors in the round's `manifest.json`.
-- Final screenshots left on disk under `.launch/qa/` as evidence.
+- Final evidence screenshots taken against the production build
+  (`pnpm build:local` + `pnpm preview`) and left on disk under `.launch/qa/`
+  as evidence.
 
 ## Notes
 
