@@ -24,7 +24,7 @@ const actions = (data.actions ?? []).filter(a => a !== null);
 			<div class="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
 				{actions.map((action) => (
 					<div data-tina-field={tinaField(action)} class="">
-						<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="rounded-xl px-5 text-base">
+						<Button href={action.link} size="lg" variant={action.type === 'link' ? 'outline' : 'default'} class="px-5">
 							{action.icon && <Icon name={action.icon} class="size-4" />}
 							<span class="text-nowrap">{action.label}</span>
 						</Button>

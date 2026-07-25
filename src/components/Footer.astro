@@ -74,7 +74,7 @@ const columns = [
 		</div>
 		{columns.map((column) => (
 			<nav aria-label={`Footer ${column.heading}`}>
-				<h2 class="mb-3 text-base font-semibold text-white">
+				<h2 class="mb-3 text-base font-bold text-white">
 					{column.href ? (
 						<a href={safeHref(column.href)} class="transition-colors hover:text-stat-label">{column.heading}</a>
 					) : (
