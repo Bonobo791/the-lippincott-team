@@ -40,10 +40,17 @@ From `package.json`:
 
 - `pnpm dev` — `tinacms dev -c "astro dev"`; site at `localhost:4321`, visual
   editor at `localhost:4321/admin/`.
-- `pnpm build` — `tinacms build --content=local -c "astro build"`. Compiles
-  against TinaCloud; **fails fast with `ERR_MISSING_CLOUD_CREDS` without
+- `pnpm build` — `tinacms build --content=local -c "NODE_ENV=production astro build"`.
+  Compiles against TinaCloud; **fails fast with `ERR_MISSING_CLOUD_CREDS` without
   `PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`** (get them at app.tina.io).
 - `pnpm build:local` — fully local/offline build, no TinaCloud auth needed.
+
+Both build scripts prefix the subcommand with `NODE_ENV=production` on purpose:
+the tinacms CLI bundles its config via Vite in-process, and Vite defaults
+`process.env.NODE_ENV` to `development` when unset — without the prefix that
+value leaks into `astro build` and flips `import.meta.env.PROD` to false
+(which would silently drop the production-only GA4 snippet in
+`src/components/BaseHead.astro`).
 - `pnpm build:search` — `tinacms search-index`.
 - `pnpm preview` — `astro preview`.
 

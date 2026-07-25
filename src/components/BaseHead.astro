@@ -17,6 +17,21 @@ const { title, description, image = '/logo.webp' } = Astro.props;
 
 <!-- Global Metadata -->
 <meta charset="utf-8" />
+
+<!-- Google Analytics (GA4) — production builds only, so deploy previews and local dev send no hits. -->
+{
+	import.meta.env.PROD && (
+		<>
+			<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-ZREVRSHYJB"></script>
+			<script is:inline>
+				window.dataLayer = window.dataLayer || [];
+				function gtag(){dataLayer.push(arguments);}
+				gtag('js', new Date());
+				gtag('config', 'G-ZREVRSHYJB');
+			</script>
+		</>
+	)
+}
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
