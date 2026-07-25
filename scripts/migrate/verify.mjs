@@ -17,20 +17,31 @@
 // C. Frontmatter images — every heroImage/photo frontmatter path in those
 //    same MDX files must exist as a file under public/uploads/.
 //
+// D. Full-site URL sweep — all 58 source URLs (the `link` fields of the 35
+//    pages + 23 posts in data/pages.json and data/posts.json) must resolve:
+//    /opt-out-preferences/ and /team-member-page-design/ must NOT be built
+//    but MUST have a rule in public/_redirects; every other URL (home, the
+//    hubs, /about/, /contact-us/, /blog/, and all migrated routes) must
+//    have dist/client/<path>/index.html.
+//
 // Known gaps are reported but do NOT fail the run:
 // - /opt-out-preferences/ — fetched WP page, deliberately unmigrated;
-//   Plan 4 ships it as a redirect.
-// - /contact-us/, /northwest-houston-real-estate/,
-//   /northwest-houston-schools-real-estate/ — fetched WP pages held back
-//   for Plan 4's hand-built pages (not part of the 50-URL content
-//   migration scope).
+//   shipped as a redirect in public/_redirects (asserted by check D).
 // - thelippincottteam.com links — external Sierra platform, not this site.
 // - The Complianz download.php link in terms-and-conditions — known dead
 //   link on the source site, flagged for editors.
 //
-// Exit code is non-zero if any migrated route is missing or any internal
-// link outside the known-gap list has no built target; every miss is
-// listed.
+// Exit code is non-zero if any migrated route is missing, any internal
+// link outside the known-gap list has no built target, or any source URL
+// fails its check-D rule; every miss is listed.
+//
+// Data dependency: checks A and D read the cached WordPress API responses
+// in scripts/migrate/data/ (heads.json, pages.json, posts.json), which are
+// gitignored. If that cache is absent (fresh clone) the script prints a
+// skip notice pointing at `node scripts/migrate/fetch.mjs` and exits 0 —
+// the checks are skipped rather than failing, so a fresh clone never sees
+// a raw ENOENT stack trace. To actually run the verification, fetch the
+// cache first.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,15 +53,25 @@ const CONTENT = join(ROOT, 'src', 'content');
 
 const SITE_ORIGIN = 'https://lippincottteam.com';
 
+// Up-front data guard: the migration cache is gitignored, so bail out
+// gracefully (exit 0, skip logged) instead of crashing with ENOENT.
+const REQUIRED_DATA_FILES = ['heads.json', 'pages.json', 'posts.json'];
+const missingData = REQUIRED_DATA_FILES.filter(
+	(file) => !existsSync(join(MIGRATE_DIR, 'data', file)),
+);
+if (missingData.length > 0) {
+	console.log(
+		`SKIP: migration cache missing (scripts/migrate/data/: ${missingData.join(', ')}).\n` +
+			'      Verification checks are being skipped (expected on a fresh clone).\n' +
+			'      To run them, fetch the cache first: node scripts/migrate/fetch.mjs',
+	);
+	process.exit(0);
+}
+
 // Paths a link may point at without a built page in this build — see the
 // header comment for why each is exempt. Compared after normalization
 // (fragment/query stripped, trailing slash enforced).
-const KNOWN_GAP_PATHS = new Set([
-	'/opt-out-preferences/',
-	'/contact-us/',
-	'/northwest-houston-real-estate/',
-	'/northwest-houston-schools-real-estate/',
-]);
+const KNOWN_GAP_PATHS = new Set(['/opt-out-preferences/']);
 
 // Individual dead links kept verbatim in the content for editors to fix.
 const KNOWN_DEAD_LINKS = new Set([
@@ -189,6 +210,54 @@ for (const file of files) {
 }
 console.log(`C. Frontmatter images: ${fmImagesChecked} heroImage/photo path(s) verified`);
 
+// --- Check D: all 58 source URLs from pages.json/posts.json ----------------
+
+// Redirect-only legacy URLs: must NOT be built, must be covered by a rule
+// in public/_redirects (Astro copies public/ verbatim into dist/client).
+const REDIRECT_ONLY_PATHS = new Set(['/opt-out-preferences/', '/team-member-page-design/']);
+
+const redirects = readFileSync(join(PUBLIC, '_redirects'), 'utf8')
+	.split('\n')
+	.map((line) => line.trim())
+	.filter((line) => line && !line.startsWith('#'))
+	.map((line) => line.split(/\s+/)[0]);
+
+function hasRedirectRule(path) {
+	return redirects.some((source) =>
+		source.endsWith('*') ? path.startsWith(source.slice(0, -1)) : source === path,
+	);
+}
+
+const sourceLinks = [];
+for (const file of ['pages.json', 'posts.json']) {
+	const items = JSON.parse(readFileSync(join(MIGRATE_DIR, 'data', file), 'utf8'));
+	for (const item of items) sourceLinks.push(item.link);
+}
+if (sourceLinks.length !== 58) {
+	fail(`expected 58 source URLs in pages.json + posts.json, found ${sourceLinks.length}`);
+}
+
+let sourceOk = 0;
+for (const url of sourceLinks) {
+	const path = toPath(url);
+	if (!path) {
+		fail(`could not normalize source URL: ${url}`);
+		continue;
+	}
+	if (REDIRECT_ONLY_PATHS.has(path)) {
+		if (builtPageExists(path)) fail(`redirect-only URL should not be built: ${url}`);
+		else if (!hasRedirectRule(path)) fail(`redirect-only URL has no rule in public/_redirects: ${url}`);
+		else sourceOk++;
+		continue;
+	}
+	if (builtPageExists(path)) sourceOk++;
+	else fail(`missing route: ${url} -> dist/client${path}index.html`);
+}
+console.log(
+	`D. Source URLs: ${sourceOk}/${sourceLinks.length} verified ` +
+		`(${[...REDIRECT_ONLY_PATHS].join(', ')} asserted on public/_redirects)`,
+);
+
 // --- Result ----------------------------------------------------------------
 
 if (errors.length > 0) {
@@ -196,4 +265,4 @@ if (errors.length > 0) {
 	for (const e of errors) console.error(`  - ${e}`);
 	process.exit(1);
 }
-console.log('\nOK: all migrated routes and internal links verified.');
+console.log('\nOK: all migrated routes, internal links, frontmatter images, and source URLs verified.');

@@ -12,3 +12,9 @@
   # `tinacms build` (the local-content indexer) exceeds Node's default ~2 GB
   # heap in Netlify's build container. Give V8 more headroom.
   NODE_OPTIONS = "--max-old-space-size=4096"
+
+[context.production.environment]
+  # Canonical production origin for sitemap/RSS/OpenGraph (Astro `site`).
+  # Applies to the production context only, so deploy previews keep their
+  # Netlify-injected URL. Correct after the DNS cutover to lippincottteam.com.
+  SITE_URL = "https://lippincottteam.com"

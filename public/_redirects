@@ -1,0 +1,14 @@
+# Legacy WordPress URLs that have no Astro equivalent — send them to the
+# closest live page. Netlify reads this file from the publish directory;
+# Astro copies `public/` verbatim, so it lands at dist/client/_redirects.
+# Every other WP URL from the migration (scripts/migrate/data/) maps 1:1 onto
+# an existing route and needs no redirect.
+
+# Cookie/consent opt-out page was dropped; the privacy policy covers it.
+/opt-out-preferences/*  /privacy-policy/  301
+
+# Old team-member template placeholder page, never real content.
+/team-member-page-design/  /about/  301
+
+# WordPress author archives (all posts are by the team).
+/author/*  /about/  301
