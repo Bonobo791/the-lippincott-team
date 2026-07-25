@@ -86,7 +86,7 @@ above rather than bare `astro build`.
 - `src/content/` — Tina-managed content: `blog/*.mdx`, `page/*.mdx`,
   `team/*.mdx`, `community/**/*.mdx` (nested hierarchies), `config/config.json`.
 - `src/styles/global.css` — Tailwind v4 entry (`@import 'tailwindcss'`, theme
-  tokens, `.dark`-class dark variant).
+  tokens).
 - `scripts/migrate/` — one-off WordPress→Tina migration pipeline, kept for
   provenance. `data/` (cached WP API responses) is gitignored; run scripts
   with `node scripts/migrate/<name>.mjs`.
@@ -97,8 +97,6 @@ above rather than bare `astro build`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
-- Dark mode is driven by a `.dark` class (see `src/styles/global.css`), not
-  `prefers-color-scheme`.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**

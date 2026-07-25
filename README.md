@@ -28,8 +28,7 @@ pnpm dev
 ## Features 
 
 - Visual editing via [`@tinacms/astro`](https://www.npmjs.com/package/@tinacms/astro) — a vanilla-JS bridge, with no React in the page tree
-- Tailwind CSS v4 block builder: Hero, CTA, Features, Stats, Testimonial, Callout, Content, Split, and Video
-- Light/dark theme toggle with a Tina-ember space theme
+- Tailwind CSS v4 block builder: Hero, CTA, Features, Stats, Testimonial, Callout, Content, Split, Video, FAQ, TeamGrid, CommunityGrid, and ContactForm
 - Markdown and MDX with `<TinaMarkdown>` rich-text rendering
 - Collections for Pages, Blog, and global Config
 - Astro view transitions, SEO meta, OpenGraph, sitemap, and RSS
