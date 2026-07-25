@@ -5,38 +5,91 @@ import { Icon } from 'astro-icon/components';
 import type { CmsTeam } from '../../lib/data';
 import { telHref } from '../../lib/url';
 import { mdxComponents } from '../mdx/components';
+import Button from '../ui/Button.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 
 interface Props { data?: CmsTeam | null }
 
 const { data } = Astro.props;
+// Two-tone name headline computed from the name field (no content edits):
+// first word = accent (red bold), rest = white light.
+const nameParts = (data?.name ?? '').trim().split(/\s+/).filter(Boolean);
+const firstName = nameParts[0] ?? '';
+const splitName = nameParts.length > 1
+	? `**${firstName}** ${nameParts.slice(1).join(' ')}`
+	: `**${firstName}**`;
+// The team schema has no stats, social, address, or TREC fields, so the
+// contact card carries only photo + DIRECT CONTACT phone/email, and the
+// stats row is omitted. Eyebrow copy ("Meet Your Local Expert") comes from
+// the existing description field; "Our Proven Processes" / CTA labels are
+// live-site copy for this template.
 ---
 {data && (
-	<div class="mx-auto max-w-4xl px-6 py-12">
-		<div class="flex flex-col items-start gap-8 md:flex-row">
-			{data.photo && (
-				<img src={data.photo} alt={data.name ?? ''} width={400} height={400} data-tina-field={tinaField(data, 'photo')} class="w-full max-w-xs rounded-2xl border object-cover" />
-			)}
-			<div class="flex-1">
-				<h1 data-tina-field={tinaField(data, 'name')} class="text-4xl font-semibold tracking-tight">{data.name}</h1>
-				{data.role && <p data-tina-field={tinaField(data, 'role')} class="mt-1 text-lg text-muted-foreground">{data.role}</p>}
-				<div class="mt-4 flex flex-col gap-2 text-sm">
-					{data.phone && (
-						<a href={telHref(data.phone)} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
-							<Icon name="tabler:phone" class="size-4" />{data.phone}
-						</a>
-					)}
-					{data.email && (
-						<a href={`mailto:${data.email}`} data-tina-field={tinaField(data, 'email')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
-							<Icon name="tabler:mail" class="size-4" />{data.email}
-						</a>
+	<>
+		<section class="bg-secondary">
+			<div class="mx-auto max-w-6xl px-6 py-20 md:py-28">
+				{data.description && (
+					<span data-tina-field={tinaField(data, 'description')} class="inline-block rounded-full bg-primary/20 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-red-100">{data.description}</span>
+				)}
+				<SplitHeading as="h1" text={splitName} accentClass="font-bold text-primary" data-tina-field={tinaField(data, 'name')} class="mt-6 text-balance text-5xl font-light leading-tight tracking-tight text-white md:text-6xl" />
+				{data.role && (
+					<div class="mt-8">
+						<div class="h-[3px] w-[70px] bg-primary" aria-hidden="true"></div>
+						<p data-tina-field={tinaField(data, 'role')} class="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-primary">{data.role}</p>
+					</div>
+				)}
+			</div>
+		</section>
+		<section>
+			<div class="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:grid-cols-[320px_1fr] md:py-24 lg:gap-16">
+				<div>
+					<div class="overflow-hidden rounded-2xl bg-white shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
+						{data.photo && (
+							<img src={data.photo} alt={data.name ?? ''} width={640} height={800} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full object-cover object-top" />
+						)}
+						{(data.phone || data.email) && (
+							<div class="p-8">
+								<p class="text-xs font-bold uppercase tracking-[0.1em] text-primary">Direct Contact</p>
+								<div class="mt-4 flex flex-col gap-3 text-sm">
+									{data.phone && (
+										<a href={telHref(data.phone)} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
+											<Icon name="tabler:phone" class="size-4" />{data.phone}
+										</a>
+									)}
+									{data.email && (
+										<a href={`mailto:${data.email}`} data-tina-field={tinaField(data, 'email')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
+											<Icon name="tabler:mail" class="size-4" />{data.email}
+										</a>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+				<div>
+					<p class="flex items-center gap-3 text-sm font-bold uppercase tracking-[0.7px] text-primary">
+						<span class="h-px w-8 bg-primary" aria-hidden="true"></span>Our Proven Processes
+					</p>
+					{data.bio && (
+						<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg mt-6 max-w-none">
+							<TinaMarkdown content={data.bio} components={mdxComponents} />
+						</div>
 					)}
 				</div>
 			</div>
-		</div>
-		{data.bio && (
-			<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg mt-10 max-w-none">
-				<TinaMarkdown content={data.bio} components={mdxComponents} />
+		</section>
+		<section>
+			<div class="mx-auto flex max-w-6xl flex-col gap-8 border-t px-6 py-16 md:flex-row md:items-center md:justify-between">
+				<div>
+					<div class="h-[3px] w-[70px] bg-primary" aria-hidden="true"></div>
+					<h2 class="mt-4 text-3xl font-light tracking-tight text-foreground md:text-4xl">Talk to {firstName} about your next home.</h2>
+					<div class="mt-4 flex flex-col gap-1 text-muted-foreground">
+						{data.email && <a href={`mailto:${data.email}`} class="transition-colors hover:text-primary">{data.email}</a>}
+						{data.phone && <a href={telHref(data.phone)} class="transition-colors hover:text-primary">{data.phone}</a>}
+					</div>
+				</div>
+				<Button href="/contact-us/" size="lg" class="shrink-0 px-8">Talk to Us About Selling</Button>
 			</div>
-		)}
-	</div>
+		</section>
+	</>
 )}

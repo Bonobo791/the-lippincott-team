@@ -1,0 +1,18 @@
+---
+/**
+ * Community-prose h2 override (registered only in CommunityBody's
+ * TinaMarkdown map). Community bodies carry their FAQ as static markdown —
+ * an `## ... FAQ` heading followed by `### question?` + answer pairs — so
+ * there is no `faqs` frontmatter to feed FaqAccordion. This restyles the
+ * FAQ section heading to the live pattern (red, bold, centered ~40px) while
+ * leaving every other h2 at prose defaults.
+ */
+const html = await Astro.slots.render('default');
+const text = html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
+const isFaq = /FAQ$/i.test(text);
+---
+{isFaq ? (
+	<h2 class="text-center text-3xl font-bold tracking-tight text-primary md:text-[2.5rem]" set:html={html} />
+) : (
+	<h2 set:html={html} />
+)}
