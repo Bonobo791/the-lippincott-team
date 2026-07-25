@@ -1,0 +1,399 @@
+{
+  "base": "https://lippincottteam.com",
+  "capturedAt": "2026-07-25T13:10:32.686Z",
+  "shots": [
+    {
+      "template": "home",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "home-desktop.png",
+        "home-desktop-nav-dropdown.png",
+        "home-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "about",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/about/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "about-desktop.png",
+        "about-desktop-nav-dropdown.png",
+        "about-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "team-bio",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/about/amy-lippincott-2/",
+      "errors": [
+        "console: Failed to load resource: the server responded with a status of 404 ()",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "team-bio-desktop.png",
+        "team-bio-desktop-nav-dropdown.png",
+        "team-bio-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "contact",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/contact-us/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "contact-desktop.png",
+        "contact-desktop-nav-dropdown.png",
+        "contact-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-communities",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-communities-desktop.png",
+        "hub-communities-desktop-nav-dropdown.png",
+        "hub-communities-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-schools",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-schools-desktop.png",
+        "hub-schools-desktop-nav-dropdown.png",
+        "hub-schools-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "community",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/cypress-tx-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "community-desktop.png",
+        "community-desktop-nav-dropdown.png",
+        "community-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "isd",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/katy-isd-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "isd-desktop.png",
+        "isd-desktop-nav-dropdown.png",
+        "isd-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-index",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/blog/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-index-desktop.png",
+        "blog-index-desktop-nav-dropdown.png",
+        "blog-index-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-post",
+      "viewport": "desktop",
+      "url": "https://lippincottteam.com/blog/bridgeland-breakdown-where-every-village-has-its-own-personality-and-splash-pad/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-post-desktop.png",
+        "blog-post-desktop-nav-dropdown.png",
+        "blog-post-desktop-faq-open.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "home",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "home-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "about",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/about/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "about-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "team-bio",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/about/amy-lippincott-2/",
+      "errors": [
+        "console: Failed to load resource: the server responded with a status of 404 ()",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "team-bio-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "contact",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/contact-us/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "contact-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-communities",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-communities-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-schools",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-schools-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "community",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/cypress-tx-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "community-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "isd",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/katy-isd-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "isd-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-index",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/blog/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-index-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-post",
+      "viewport": "tablet",
+      "url": "https://lippincottteam.com/blog/bridgeland-breakdown-where-every-village-has-its-own-personality-and-splash-pad/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-post-tablet.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "home",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "home-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "about",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/about/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "about-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "team-bio",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/about/amy-lippincott-2/",
+      "errors": [
+        "console: Failed to load resource: the server responded with a status of 404 ()",
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "team-bio-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "contact",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/contact-us/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "contact-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-communities",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-communities-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "hub-schools",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "hub-schools-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "community",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/northwest-houston-real-estate/cypress-tx-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "community-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "isd",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/northwest-houston-schools-real-estate/katy-isd-real-estate/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "isd-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-index",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/blog/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-index-mobile.png"
+      ],
+      "status": 200
+    },
+    {
+      "template": "blog-post",
+      "viewport": "mobile",
+      "url": "https://lippincottteam.com/blog/bridgeland-breakdown-where-every-village-has-its-own-personality-and-splash-pad/",
+      "errors": [
+        "console: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+      ],
+      "files": [
+        "blog-post-mobile.png"
+      ],
+      "status": 200
+    }
+  ]
+}
