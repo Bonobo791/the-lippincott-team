@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`): content
+This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify: content
 is edited visually in the TinaCMS admin and shipped as static HTML. The site
 itself ships **zero React** — React appears only as a pinned devDependency for
 building the Tina admin UI (see `README.md` "A note on React" for why the pin
@@ -40,12 +40,19 @@ From `package.json`:
 
 - `pnpm dev` — `tinacms dev -c "astro dev"`; site at `localhost:4321`, visual
   editor at `localhost:4321/admin/`.
-- `pnpm build` — `tinacms build --content=local -c "astro build"`. Compiles
-  against TinaCloud; **fails fast with `ERR_MISSING_CLOUD_CREDS` without
+- `pnpm build` — `tinacms build --content=local -c "NODE_ENV=production astro build"`.
+  Compiles against TinaCloud; **fails fast with `ERR_MISSING_CLOUD_CREDS` without
   `PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`** (get them at app.tina.io).
 - `pnpm build:local` — fully local/offline build, no TinaCloud auth needed.
 - `pnpm build:search` — `tinacms search-index`.
 - `pnpm preview` — `astro preview`.
+
+Both build scripts prefix the subcommand with `NODE_ENV=production` on purpose:
+the tinacms CLI bundles its config via Vite in-process, and Vite defaults
+`process.env.NODE_ENV` to `development` when unset — without the prefix that
+value leaks into `astro build` and flips `import.meta.env.PROD` to false
+(which would silently drop the production-only GA4 snippet in
+`src/components/BaseHead.astro`).
 
 **Build order matters**: `tinacms build` must run before `astro build` so the
 generated client/types in `tina/__generated__/` exist. Always use the scripts
@@ -86,7 +93,7 @@ above rather than bare `astro build`.
 - `src/content/` — Tina-managed content: `blog/*.mdx`, `page/*.mdx`,
   `team/*.mdx`, `community/**/*.mdx` (nested hierarchies), `config/config.json`.
 - `src/styles/global.css` — Tailwind v4 entry (`@import 'tailwindcss'`, theme
-  tokens, `.dark`-class dark variant).
+  tokens).
 - `scripts/migrate/` — one-off WordPress→Tina migration pipeline, kept for
   provenance. `data/` (cached WP API responses) is gitignored; run scripts
   with `node scripts/migrate/<name>.mjs`.
@@ -97,8 +104,6 @@ above rather than bare `astro build`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
-- Dark mode is driven by a `.dark` class (see `src/styles/global.css`), not
-  `prefers-color-scheme`.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**
@@ -123,11 +128,29 @@ standalone Node server (`node ./dist/server/entry.mjs`). Force one with
 Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 `node:async_hooks`).
 
-**Netlify**: `netlify.toml` pins the build command (`pnpm build:local`;
-switch to `pnpm build` when TinaCloud creds are configured). The committed
-`pnpm-lock.yaml` and the `packageManager` field in `package.json` are what
-make Netlify install with pnpm instead of npm — do not re-ignore the
-lockfile.
+**Netlify**: `netlify.toml` pins the build command (`pnpm build` — TinaCloud
+credentials `PUBLIC_TINA_CLIENT_ID`/`TINA_TOKEN` are configured in the Netlify
+UI; the build fails fast with `ERR_MISSING_CLOUD_CREDS` without them). It also
+sets `SITE_URL = "https://lippincottteam.com"` under
+`[context.production.environment]` so deploy previews keep their
+Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
+field in `package.json` are what make Netlify install with pnpm instead of
+npm — do not re-ignore the lockfile.
+
+Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
+`public/` verbatim into the publish dir): `/opt-out-preferences/*`,
+`/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
+All other migrated WP URLs map 1:1 onto existing routes.
+
+Analytics: GA4 loads via a direct gtag.js snippet in
+`src/components/BaseHead.astro`, gated on `import.meta.env.PROD` **and**
+Netlify's `CONTEXT` being `production` (or unset) — see the
+`NODE_ENV=production` note under "Build and dev commands". Netlify deploy
+previews build with `NODE_ENV=production` but get `CONTEXT=deploy-preview`,
+so preview traffic is **excluded**; only local dev is also excluded. The
+measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`), and
+the inline config script carries `data-astro-rerun` so `<ClientRouter/>`
+navigations keep sending pageviews.
 
 Environment variables (see `.env.example`):
 
@@ -135,4 +158,6 @@ Environment variables (see `.env.example`):
   a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**.
 - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials, required for
   `pnpm build`.
+- `PUBLIC_GA_ID` — optional GA4 measurement ID override (default
+  `G-ZREVRSHYJB`).
 - `DEPLOY_ADAPTER` — optional adapter override.

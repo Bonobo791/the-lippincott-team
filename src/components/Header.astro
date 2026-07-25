@@ -3,7 +3,6 @@ import { Icon } from 'astro-icon/components';
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig } from '../lib/data';
 import { safeHref, telHref } from '../lib/url';
-import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
 	config?: CmsConfig | null;
@@ -75,7 +74,6 @@ const externalAttrs = (href?: string | null) =>
 					</a>
 				);
 			})}
-			<ThemeToggle />
 		</div>
 		<button
 			id="mobile-menu-toggle"
@@ -119,9 +117,6 @@ const externalAttrs = (href?: string | null) =>
 					</>
 				);
 			})}
-			<div class="mt-4 flex items-center justify-end pt-2">
-				<ThemeToggle />
-			</div>
 		</div>
 	</div>
 </header>

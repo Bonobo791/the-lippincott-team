@@ -103,6 +103,7 @@ export type SplitBlock = Extract<PageBlock, { __typename: 'PageBlocksSplit' }>;
 export type TeamGridBlock = Extract<PageBlock, { __typename: 'PageBlocksTeamGrid' }>;
 export type FaqBlock = Extract<PageBlock, { __typename: 'PageBlocksFaq' }>;
 export type CommunityGridBlock = Extract<PageBlock, { __typename: 'PageBlocksCommunityGrid' }>;
+export type ContactFormBlock = Extract<PageBlock, { __typename: 'PageBlocksContactForm' }>;
 export type FaqItem = NonNullable<NonNullable<FaqBlock['items']>[number]>;
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
