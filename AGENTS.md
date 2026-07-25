@@ -120,6 +120,10 @@ There is **no test suite, linter, or formatter configured** in this project
   any type/schema errors — the Tina codegen + Astro build is the de-facto check.
 - `npx astro check` is available via `@astrojs/check` for type-checking
   `.astro` files.
+- CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
+  `main` and fails if `tina/tina-lock.json` is stale (schema changed without
+  regenerating the lock — a stale lock breaks the Netlify build's TinaCloud
+  cloud check).
 
 ## Deployment
 

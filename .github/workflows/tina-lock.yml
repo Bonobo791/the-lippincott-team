@@ -1,0 +1,25 @@
+name: Tina lock check
+
+# Fails PRs that change the Tina schema without regenerating tina/tina-lock.json.
+# A stale lock makes TinaCloud index main with an outdated schema, which fails
+# the `tinacms build` cloud check on Netlify (ERR_CLOUD_CHECK_FAILED).
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  tina-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build (regenerates Tina client + lock)
+        run: pnpm build:local
+      - name: Fail if tina-lock.json was not regenerated
+        run: git diff --exit-code tina/tina-lock.json
