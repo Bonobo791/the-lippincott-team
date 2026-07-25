@@ -10,11 +10,12 @@ frontend change done from reading code — only from viewed screenshots.
 
 ## Setup (once per session)
 
-1. Start the dev server in the background: `npx astro dev --port 4321`
-   (skip `pnpm dev` — TinaCMS is not needed for screenshots). This is the
-   iteration target; see "Fast path vs slow path" below for when a production
-   build + preview server is required instead.
-2. Poll `curl -sf http://localhost:4321/` until it responds.
+1. Start the dev server in the background: `npx astro dev --port 4322`
+   (skip `pnpm dev` — TinaCMS is not needed for screenshots). Use a **separate
+   port** (4322), leaving 4321 free for the `pnpm preview` gate server. This
+   is the iteration target; see "Fast path vs slow path" below for when a
+   production build + preview server is required instead.
+2. Poll `curl -sf http://localhost:4322/` until it responds.
 3. Playwright + Chromium are already installed (`playwright` devDependency,
    browser verified working). No setup needed.
 
@@ -23,10 +24,10 @@ frontend change done from reading code — only from viewed screenshots.
 **Fast path — iterate against `npx astro dev` (the default).** Component and
 CSS edits hot-reload in under a second; no build between screenshot rounds.
 This is the right target for styling/design iterations (edit → screenshot →
-view → fix). Use explicitly `npx astro dev --port 4321` — never `pnpm dev`,
-which wraps the heavy Tina dev stack. If port 4321 is occupied by a running
-`pnpm preview` server, use another port (`npx astro dev --port 4322`) and
-point `shoot.mjs --base` at it.
+view → fix). Use explicitly `npx astro dev --port 4322` — never `pnpm dev`,
+which wraps the heavy Tina dev stack. Run it on a **separate port** (4322)
+so a `pnpm preview` gate server can live on 4321 at the same time; point
+`shoot.mjs --base` at whichever server the round targets.
 
 **Slow path — `pnpm build:local` + `pnpm preview` (gates only).** Still
 required, but only at specific moments:
@@ -49,12 +50,12 @@ the gate and for final shots.
 
 1. **Baseline first.** Before editing, capture the current state so every later
    shot can be compared against it:
-   `node scripts/audit/shoot.mjs --base http://localhost:4321 --out .launch/qa/base`
+   `node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/base`
    If the spec is the live site, also shoot it once:
    `node scripts/audit/shoot.mjs --base https://lippincottteam.com --out .launch/qa/live`
 2. **Edit** the frontend code.
 3. **Re-shoot** into a fresh round dir:
-   `node scripts/audit/shoot.mjs --base http://localhost:4321 --out .launch/qa/round-N`
+   `node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/round-N`
 4. **View the PNGs with ReadMediaFile** — every changed template at desktop AND
    mobile. Reading manifest.json is not a substitute for looking at the images.
    Full-page shots are downsampled; re-read with the `region` parameter to

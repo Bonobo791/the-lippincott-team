@@ -170,12 +170,13 @@ There is **no test suite, linter, or formatter configured** in this project
   any type/schema errors — the Tina codegen + Astro build is the de-facto check.
 - `npx astro check` is available via `@astrojs/check` for type-checking
   `.astro` files.
-- For visual iteration, run `npx astro dev` (not `pnpm dev`) and screenshot
-  against it — component/CSS edits hot-reload in under a second, no build per
-  round. Reserve `pnpm build:local` + `pnpm preview` for per-task gates, Tina
-  schema changes, production-only behavior (`compressHTML`, GA4 gating,
-  island endpoints), and final evidence shots. See the `visual-loop` skill
-  for the full loop.
+- For visual iteration, run `npx astro dev --port 4322` (not `pnpm dev`) and
+  screenshot against it — component/CSS edits hot-reload in under a second,
+  no build per round. Use the separate port so a `pnpm preview` server can
+  stay on 4321. Reserve `pnpm build:local` + `pnpm preview` for per-task
+  gates, Tina schema changes, production-only behavior (`compressHTML`, GA4
+  gating, island endpoints), and final evidence shots. See the `visual-loop`
+  skill for the full loop.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud

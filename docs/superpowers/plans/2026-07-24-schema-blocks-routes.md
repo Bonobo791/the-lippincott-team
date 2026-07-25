@@ -27,7 +27,7 @@
 
 ## Global Constraints
 
-- pnpm only; `pnpm build:local` must pass after every task; `npx astro check` clean at the end. **Note:** `pnpm build:local` is a per-task *gate* only — visual/frontend iteration (screenshot fix-and-reshoot rounds) should run against `npx astro dev` (not `pnpm dev`), not rebuilds; see the `visual-loop` skill.
+- pnpm only; `pnpm build:local` must pass after every task; `npx astro check` clean at the end. **Note:** `pnpm build:local` is a per-task *gate* only — visual/frontend iteration (screenshot fix-and-reshoot rounds) should run against `npx astro dev --port 4322` (not `pnpm dev`; separate port, leaving 4321 for `pnpm preview` gates/final shots), not rebuilds; see the `visual-loop` skill.
 - Types in `src/lib/data.ts` are pure derivations — never hand-write content shapes.
 - Every editable element gets `data-tina-field={tinaField(data, 'fieldName')}`; list items get bare `tinaField(item)`; nullable Tina lists guarded with `?? []` + `.filter(x => x !== null)`.
 - `tina/__generated__/` is gitignored — never hand-edit, never commit.

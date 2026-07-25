@@ -41,9 +41,11 @@ Verify frontend changes with a Playwright screenshot loop (see `.agents/skills/v
 - `scripts/audit/shoot.mjs`: full-page screenshots of 10 page templates at desktop/tablet/mobile, plus interaction shots (nav dropdown, FAQ accordion, mobile menu); writes `manifest.json` with per-shot console/page errors:
 
   ```sh
-  npx astro dev --port 4321   # in another terminal
-  node scripts/audit/shoot.mjs --base http://localhost:4321 --out .launch/qa/round-1
+  npx astro dev --port 4322   # in another terminal — separate port, leaving 4321 free for `pnpm preview` gates
+  node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/round-1
   ```
+
+  Iterate against the dev server (sub-second HMR, no rebuilds per round). Reserve `pnpm build:local` + `pnpm preview` (port 4321) for per-task gates and final evidence shots — see `.agents/skills/visual-loop` for the full fast-path/slow-path split.
 
 - `scripts/audit/probe-styles.mjs`: extracts exact `getComputedStyle()` values (colors, font sizes, spacing, container widths) from any base URL into JSON, for numeric comparison against a design spec or the live site.
 - Control the browser interactively (click through states, inspect elements) with `npx playwright cli --browser=chromium` (system Chrome is not installed; use the bundled Chromium).
