@@ -60,14 +60,18 @@ Choose the stack from the brief:
 
 Implementation rules: realize the approved art direction exactly - do not downgrade reference techniques to save effort; use `.launch/copy.md` verbatim (adjust only for line breaks); every section from the brief is present; fonts must actually render the page's languages.
 
+Sub-agents: invoke the **subagent-driven-development** skill for the build - independent sections/pages are independent tasks, so implement them in separate sub-agents rather than one long main-context session. Fallback if absent: build sequentially in the main context.
+
 ## G4 - Screenshot QA (mandatory, non-negotiable)
+
+Sub-skill: **visual-loop** - read its SKILL.md and follow its edit -> capture -> view -> compare -> re-shoot loop for every fix round, including the baseline-first rule and numbered round dirs. Fallback if absent: run the same loop manually per the steps below.
 
 1. Serve the site locally (dev server, or `python3 -m http.server` for static HTML).
 2. Ensure screenshot capability exists - see "Screenshot capability" below.
-3. Capture: `python3 <skill-dir>/scripts/screenshot.py <url> --out .launch/qa` where `<skill-dir>` is the directory containing this SKILL.md (in Kimi Code CLI, `${KIMI_SKILL_DIR}` expands to it).
+3. Capture: `python3 <skill-dir>/scripts/screenshot.py <url> --out .launch/qa` where `<skill-dir>` is the directory containing this SKILL.md (in Kimi Code CLI, `${KIMI_SKILL_DIR}` expands to it). In projects that ship their own capture tooling (e.g. this repo's `scripts/audit/shoot.mjs`), prefer it - it already covers the template matrix and error manifest.
 4. View every PNG produced. Reading manifest.json is not a substitute for looking at the images.
 5. Audit against the G4 checklist in references/gates.md#G4: render integrity (fonts, images, overflow, contrast), CRO hierarchy (primary CTA above the fold on both viewports, proof adjacent to claims), and zero console/page errors in the manifest.
-6. Fix and re-shoot until clean at desktop and mobile. Typical loop is 2-4 rounds; do not cap rounds, cap is "clean".
+6. Fix and re-shoot until clean at desktop and mobile. Typical loop is 2-4 rounds; do not cap rounds, cap is "clean". Delegate fix-and-reshoot rounds to a sub-agent (subagent-driven-development) so screenshot dumps stay out of the main context.
 
 ## G5 - Ship
 

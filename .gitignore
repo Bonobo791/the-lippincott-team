@@ -14,7 +14,7 @@ lerna-debug.log*
 .prototools
 
 # Design-fidelity audit artifacts (Plan 5 / concept-to-launch) — not committed
-.launch/
+.launch
 
 # TinaCMS generated output (also covered by tina/.gitignore)
 tina/__generated__
