@@ -52,7 +52,9 @@ function readDoc(path) {
 	const fm = {};
 	for (const line of m[1].split('\n')) {
 		const kv = line.match(/^([A-Za-z_][\w]*):\s*(.*)$/);
-		if (!kv) throw new Error(`unsupported frontmatter line in ${path}: ${line}`);
+		// Non-flat frontmatter (a `blocks:` list from a prior conversion, or
+		// anything nested) marks the doc as already converted — caller skips.
+		if (!kv || kv[1] === 'blocks') return null;
 		let value = kv[2];
 		if (value.startsWith('"') && value.endsWith('"')) value = JSON.parse(value);
 		fm[kv[1]] = value;
@@ -350,7 +352,8 @@ function convertDoc(path, sierraLinks) {
 	const docKey = relative(COMMUNITY_DIR, path).replace(/\.mdx$/, '');
 	const overrides = DOC_OVERRIDES[slug] ?? {};
 	const waived = overrides.waived ?? [];
-	const { fm, body } = readDoc(path);
+	const { fm, body } = readDoc(path) ?? {};
+	if (!fm) return { report: { slug, path, alreadyConverted: true, mapped: [], unmatched: [], waived: [] }, output: null };
 	const report = { slug, path, mapped: [], unmatched: [], waived: [] };
 
 	const sierraCheck = (url) => {
@@ -434,6 +437,10 @@ function main() {
 	for (const path of docs) {
 		const { report, output } = convertDoc(path, sierraLinks);
 		console.log(`\n=== ${relative(ROOT, path)} ===`);
+		if (report.alreadyConverted) {
+			console.log('  SKIPPED   already converted (frontmatter has blocks:)');
+			continue;
+		}
 		for (const m of report.mapped) console.log(`  MAPPED    ${m}`);
 		for (const w of report.waived) console.log(`  WAIVED    ${w}`);
 		for (const u of report.unmatched) console.log(`  UNMATCHED ${u}`);
