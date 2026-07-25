@@ -53,9 +53,6 @@ node_modules/
 .yarn/install-state.gz
 .pnp.*
 
-# Astro
-.astro
-
 # Package Manager Lock Files (pnpm-lock.yaml IS committed — it's what makes
 # Netlify/CI detect pnpm instead of falling back to npm)
 package-lock.json
