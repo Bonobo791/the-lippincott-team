@@ -34,6 +34,14 @@
 // Exit code is non-zero if any migrated route is missing, any internal
 // link outside the known-gap list has no built target, or any source URL
 // fails its check-D rule; every miss is listed.
+//
+// Data dependency: checks A and D read the cached WordPress API responses
+// in scripts/migrate/data/ (heads.json, pages.json, posts.json), which are
+// gitignored. If that cache is absent (fresh clone) the script prints a
+// skip notice pointing at `node scripts/migrate/fetch.mjs` and exits 0 —
+// the checks are skipped rather than failing, so a fresh clone never sees
+// a raw ENOENT stack trace. To actually run the verification, fetch the
+// cache first.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,6 +52,21 @@ const DIST = join(ROOT, 'dist', 'client');
 const CONTENT = join(ROOT, 'src', 'content');
 
 const SITE_ORIGIN = 'https://lippincottteam.com';
+
+// Up-front data guard: the migration cache is gitignored, so bail out
+// gracefully (exit 0, skip logged) instead of crashing with ENOENT.
+const REQUIRED_DATA_FILES = ['heads.json', 'pages.json', 'posts.json'];
+const missingData = REQUIRED_DATA_FILES.filter(
+	(file) => !existsSync(join(MIGRATE_DIR, 'data', file)),
+);
+if (missingData.length > 0) {
+	console.log(
+		`SKIP: migration cache missing (scripts/migrate/data/: ${missingData.join(', ')}).\n` +
+			'      Verification checks are being skipped (expected on a fresh clone).\n' +
+			'      To run them, fetch the cache first: node scripts/migrate/fetch.mjs',
+	);
+	process.exit(0);
+}
 
 // Paths a link may point at without a built page in this build — see the
 // header comment for why each is exempt. Compared after normalization

@@ -143,10 +143,14 @@ Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
 All other migrated WP URLs map 1:1 onto existing routes.
 
 Analytics: GA4 loads via a direct gtag.js snippet in
-`src/components/BaseHead.astro`, gated on `import.meta.env.PROD` — see the
-`NODE_ENV=production` note under "Build and dev commands". Note that Netlify
-deploy previews build with `NODE_ENV=production`, so previews **do** send GA
-hits; only local dev is excluded.
+`src/components/BaseHead.astro`, gated on `import.meta.env.PROD` **and**
+Netlify's `CONTEXT` being `production` (or unset) — see the
+`NODE_ENV=production` note under "Build and dev commands". Netlify deploy
+previews build with `NODE_ENV=production` but get `CONTEXT=deploy-preview`,
+so preview traffic is **excluded**; only local dev is also excluded. The
+measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`), and
+the inline config script carries `data-astro-rerun` so `<ClientRouter/>`
+navigations keep sending pageviews.
 
 Environment variables (see `.env.example`):
 
@@ -154,4 +158,6 @@ Environment variables (see `.env.example`):
   a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**.
 - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials, required for
   `pnpm build`.
+- `PUBLIC_GA_ID` — optional GA4 measurement ID override (default
+  `G-ZREVRSHYJB`).
 - `DEPLOY_ADAPTER` — optional adapter override.
