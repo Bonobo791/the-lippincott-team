@@ -83,12 +83,18 @@ above rather than bare `astro build`.
   picks it up automatically.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
-  CommunityGrid, TrustStrip — page collection only). **Convention: each block
-  is a pair** — `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
+  CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner — page
+  collection only). **Convention: each block is a pair** — `<Name>.astro`
+  (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts`. The shared block templates serve
+  template in `tina/collections/page.ts`. **Watch field-name collisions across
+  the block union**: two templates in the same `blocks` field may not reuse a
+  field name with a different value type (e.g. `body` rich-text JSON vs
+  string, `image` object vs image string) — Tina's codegen fails with
+  "Fields ... conflict". Pick a distinct name (`summary`, `description`,
+  `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
   `tina/collections/community.ts` reuses a reduced 7-template set (hero,
   split, features, stats, content, faq, cta) — Tina namespaces block
@@ -122,6 +128,11 @@ above rather than bare `astro build`.
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
+- The generated client reads content from a **seeded cache**
+  (`tina/__generated__/.cache/<timestamp>`) written by the last Tina build —
+  plain `npx astro dev` keeps serving that snapshot. After editing content
+  files outside the Tina admin, rerun `pnpm build:local` and restart the dev
+  server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
 - Split headings: editors mark the accented phrase in plain Tina string fields
   with `**...**` (the brand's light+bold heading device). Render them with
@@ -133,8 +144,34 @@ above rather than bare `astro build`.
   `--font-serif` is Libre Baskerville. Brand theme tokens live in the
   `@theme` block of `src/styles/global.css`: `--body`, `--secondary` (navy
   `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
-- Hero block: three `variant`s — `simple`, `photo`, `glass` — plus
-  `backgroundImage` and `eyebrow` fields (eyebrow renders on photo/glass).
+- Hero block: four `variant`s — `simple`, `photo`, `glass`, `video` — plus
+  `backgroundImage`, `backgroundVideo` (MP4 URL, optional) and
+  `eyebrow` fields (eyebrow renders on photo/glass/video). The video variant
+  is the Apple-style full-viewport hero: bottom-left content, gradient scrim,
+  drifting light beams, and a masked-line headline reveal (editors split the
+  reveal lines with a line break in the headline). With no `backgroundVideo`
+  it renders `backgroundImage` as a full-bleed still. Video hosting plan:
+  ~2 MB silent 720p loops on Cloudflare R2 behind the CDN (URLs referenced
+  from Tina), poster-only on mobile — until then, stills only; don't commit
+  MP4s to the repo.
+- Apple-style homepage blocks (all render in the `.font-apple` system/Inter
+  stack with italic `**...**` accents via `SplitHeading`): `TrustStrip` (flat
+  parchment trust bar — title's plain segments = small label, accented = big
+  figure), `Stats` (near-black `--tile` count-up section), `TestimonialShowcase`
+  (video + dark quote-panel carousel), `Awards` (sticky intro + numbered
+  list), `TeamBanner` (crimson-gradient photo banner). Site chrome matches:
+  black 64px blur `Header.astro` and parchment `Footer.astro`.
+- Motion: `gsap` (npm dep, bundled via Astro `<script>` imports — never CDN)
+  drives the CommunityGrid `rail` variant's pinned horizontal pan and the
+  TestimonialShowcase clip-path reveal. Count-up stats, `.h2-mask` headline
+  reveals and magnetic `.btn-magnetic` CTAs are vanilla JS (shared inline
+  script in `src/layouts/Base.astro`). Everything must no-op under
+  `prefers-reduced-motion`.
+- Cta block: `variant` — `default` (light) or `crimson` (solid red, beams,
+  contact row from `config.contact`). CommunityGrid: `variant` — `grid` or
+  `rail`. Features: `services` variant (ink top-rule, crimson icon, arrow
+  link). Shared Apple tokens live in `src/styles/global.css`: `--tile`,
+  `--gold`, `--accent-on-dark`, `--ink`, `--hairline`.
 - Split block: optional `eyebrow` renders as the red uppercase chip (same
   styling as the Hero glass eyebrow) above the title.
 - Features block: optional `variant` — `cards` (default) or `editorial`

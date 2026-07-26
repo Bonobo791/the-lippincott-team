@@ -13,6 +13,9 @@ import { trustStripBlockSchema } from '../../src/components/blocks/trustStrip.te
 import { faqBlockSchema } from '../../src/components/blocks/faq.template';
 import { communityGridBlockSchema } from '../../src/components/blocks/communityGrid.template';
 import { contactFormBlockSchema } from '../../src/components/blocks/contactForm.template';
+import { testimonialShowcaseBlockSchema } from '../../src/components/blocks/testimonialShowcase.template';
+import { awardsBlockSchema } from '../../src/components/blocks/awards.template';
+import { teamBannerBlockSchema } from '../../src/components/blocks/teamBanner.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -55,6 +58,9 @@ export const PageCollection: Collection = {
 				faqBlockSchema,
 				communityGridBlockSchema,
 				contactFormBlockSchema,
+				testimonialShowcaseBlockSchema,
+				awardsBlockSchema,
+				teamBannerBlockSchema,
 			],
 		},
 	],

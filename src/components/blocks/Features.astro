@@ -14,10 +14,49 @@ const { data } = Astro.props;
 const items = (data.items ?? []).filter(it => it !== null);
 const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
 const isEditorial = data.variant === 'editorial';
+const isServices = data.variant === 'services';
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
 	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
+{isServices ? (
+	<section class="font-apple border-t border-hairline bg-background py-20 md:py-32">
+		<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+			{data.title && (
+				<div class="h2-mask">
+					<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+				</div>
+			)}
+			{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
+			<div class="mt-12 grid gap-10 md:mt-14 md:grid-cols-3 md:gap-16">
+				{items.map((item) => (
+					<div data-tina-field={tinaField(item)} class="border-t border-ink pt-[26px]">
+						{item.icon && (
+							<span data-tina-field={tinaField(item, 'icon')} class="mb-[18px] block text-primary">
+								<Icon name={item.icon} class="size-8" />
+							</span>
+						)}
+						<h3 data-tina-field={tinaField(item, 'title')} class="mb-2.5 text-[21px] font-semibold tracking-[-0.02em] text-ink">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mb-5 text-[17px] text-body [&_p]:m-0">
+							<TinaMarkdown content={item.text} components={mdxComponents} />
+						</div>
+						{item.action?.label && item.action?.link && (
+							<a
+								href={item.action.link}
+								data-tina-field={tinaField(item, 'action')}
+								{...externalAttrs(item.action.link)}
+								class="group/link inline-flex items-center gap-1.5 text-[17px] text-primary hover:underline"
+							>
+								{item.action.label}
+								<i class="not-italic transition-transform duration-300 group-hover/link:translate-x-1">→</i>
+							</a>
+						)}
+					</div>
+				))}
+			</div>
+		</div>
+	</section>
+) : (
 <Section>
 	<div class="mx-auto max-w-5xl px-6">
 		<div class="text-center">
@@ -65,3 +104,4 @@ const externalAttrs = (href?: string | null) =>
 		</div>
 	</div>
 </Section>
+)}

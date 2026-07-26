@@ -9,7 +9,11 @@ export const featuresBlockSchema: Template = {
 		{ type: 'string', label: 'Description', name: 'description' },
 		{
 			type: 'string', label: 'Variant', name: 'variant',
-			options: [{ label: 'Cards', value: 'cards' }, { label: 'Editorial', value: 'editorial' }],
+			options: [
+				{ label: 'Cards', value: 'cards' },
+				{ label: 'Editorial', value: 'editorial' },
+				{ label: 'Services (top-rule, icon, arrow link)', value: 'services' },
+			],
 		},
 		{
 			type: 'object', label: 'Feature Items', name: 'items', list: true,

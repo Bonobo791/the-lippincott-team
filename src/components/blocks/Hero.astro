@@ -5,6 +5,7 @@ import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
+import { splitHeading } from '../../lib/split-heading';
 import type { HeroBlock } from '../../lib/data';
 
 interface Props { data: Omit<HeroBlock, '__typename'> }
@@ -12,10 +13,83 @@ interface Props { data: Omit<HeroBlock, '__typename'> }
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);
 // Full-bleed photo variants require a background image; without one the
-// block falls back to the original simple centered layout.
-const variant = data.backgroundImage ? (data.variant ?? 'photo') : 'simple';
+// block falls back to the original simple centered layout. The video variant
+// plays backgroundVideo (backgroundImage is the poster), or renders
+// backgroundImage as a full-bleed still when no video URL is set.
+const variant = data.variant === 'video' && (data.backgroundVideo || data.backgroundImage)
+	? 'video'
+	: data.backgroundImage
+		? (data.variant === 'video' ? 'photo' : (data.variant ?? 'photo'))
+		: 'simple';
+const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+// Video variant: editors split the masked-line reveal with a line break.
+const headlineLines = (data.headline ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
 ---
-{variant === 'glass' && data.backgroundImage ? (
+{variant === 'video' ? (
+	<section class="font-apple relative flex min-h-[100svh] w-full items-end overflow-hidden text-white">
+		{data.backgroundVideo ? (
+			<video
+				class="hero-video absolute inset-0 size-full object-cover"
+				autoplay muted loop playsinline preload="metadata"
+				poster={data.backgroundImage ?? undefined}
+				aria-hidden="true"
+				data-tina-field={tinaField(data, 'backgroundVideo')}
+			>
+				<source src={data.backgroundVideo} type="video/mp4" />
+			</video>
+		) : data.backgroundImage ? (
+			<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
+				<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
+			</div>
+		) : null}
+		<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.42)_0%,rgba(0,0,0,.12)_40%,rgba(0,0,0,.55)_100%)]"></div>
+		<div class="beams" aria-hidden="true">
+			<div class="beam b1"></div>
+			<div class="beam b2"></div>
+			<div class="beam b3"></div>
+			<div class="beam b4"></div>
+		</div>
+		<div class="relative z-[3] mx-auto w-full max-w-[1200px] px-6 pb-[clamp(88px,13vh,140px)] md:px-12">
+			{data.eyebrow && (
+				<p data-tina-field={tinaField(data, 'eyebrow')} class="flex items-center gap-2.5 text-sm font-semibold tracking-[0.02em] text-white before:h-[7px] before:w-[7px] before:flex-none before:bg-primary before:content-['']">
+					{data.eyebrow}
+				</p>
+			)}
+			{headlineLines.length > 0 && (
+				<h1 data-tina-field={tinaField(data, 'headline')} class="my-[22px] mb-[18px] max-w-[25ch] text-[clamp(2.4rem,4.6vw,3.5rem)] font-semibold leading-[1.07] tracking-[-0.02em]">
+					{headlineLines.map((line) => (
+						<span class="mask-line">
+							<span>
+								{splitHeading(line).map((segment) => (
+									segment.accent
+										? <span class="font-normal italic">{segment.text}</span>
+										: <Fragment>{segment.text}</Fragment>
+								))}
+							</span>
+						</span>
+					))}
+				</h1>
+			)}
+			{data.tagline && <p data-tina-field={tinaField(data, 'tagline')} class="mb-9 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85">{data.tagline}</p>}
+			{actions.length > 0 && (
+				<div class="flex flex-wrap gap-3.5">
+					{actions.map((action, i) => (
+						<a
+							href={action.link ?? '#'}
+							data-tina-field={tinaField(action)}
+							{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							class={i === 0
+								? 'btn-magnetic inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-[#9e1e2c] active:scale-95'
+								: 'inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-white/12 active:scale-95'}
+						>
+							{action.label}
+						</a>
+					))}
+				</div>
+			)}
+		</div>
+	</section>
+) : variant === 'glass' && data.backgroundImage ? (
 	<section class="relative w-full overflow-hidden">
 		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
 			<Image src={data.backgroundImage} alt="" width={1920} height={976} sizes="100vw" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
@@ -89,4 +163,21 @@ const variant = data.backgroundImage ? (data.variant ?? 'photo') : 'simple';
 			)}
 		</div>
 	</Section>
+)}
+{variant === 'video' && (
+	<script is:inline>
+		if (!window.__heroVideoBound) {
+			window.__heroVideoBound = true;
+			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			document.querySelectorAll('.hero-video').forEach((vid) => {
+				if (reduced) {
+					vid.removeAttribute('autoplay');
+					vid.pause();
+				} else {
+					const p = vid.play();
+					if (p && p.catch) p.catch(() => {});
+				}
+			});
+		}
+	</script>
 )}

@@ -14,6 +14,9 @@ import TeamGrid from './TeamGrid.astro';
 import Testimonial from './Testimonial.astro';
 import TrustStrip from './TrustStrip.astro';
 import Video from './Video.astro';
+import TestimonialShowcase from './TestimonialShowcase.astro';
+import Awards from './Awards.astro';
+import TeamBanner from './TeamBanner.astro';
 import type { CmsPage, CmsCommunity } from '../../lib/data';
 
 interface Props {
@@ -44,6 +47,9 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'Testimonial': return <Testimonial data={block as never} />;
 			case 'TrustStrip': return <TrustStrip data={block as never} />;
 			case 'Video': return <Video data={block as never} />;
+			case 'TestimonialShowcase': return <TestimonialShowcase data={block as never} />;
+			case 'Awards': return <Awards data={block as never} />;
+			case 'TeamBanner': return <TeamBanner data={block as never} />;
 		}
 	})();
 	return <div data-tina-field={tinaField(block)}>{rendered}</div>;

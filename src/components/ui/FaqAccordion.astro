@@ -18,19 +18,19 @@ interface Props {
 
 const { items, tinaFieldFor } = Astro.props;
 ---
-<div class="divide-y divide-[#E5E7EB] rounded-3xl border border-[#E5E7EB] bg-white shadow-lg">
+<div class="border-y border-hairline">
 	{items.map((item) => (
-		<details class="group px-6 py-5 md:px-8" data-tina-field={tinaFieldFor?.(item)}>
-			<summary class="flex cursor-pointer list-none items-center gap-4 font-serif text-lg font-bold text-foreground md:text-xl [&::-webkit-details-marker]:hidden">
-				{/* +/− state glyph: pure CSS off the existing details/summary toggle. */}
-				<span class="flex size-6 shrink-0 items-center justify-center" aria-hidden="true">
-					<Icon name="tabler:plus" class="size-6 group-open:hidden" />
-					<Icon name="tabler:minus" class="hidden size-6 group-open:block" />
-				</span>
+		<details class="group border-b border-hairline last:border-b-0" data-tina-field={tinaFieldFor?.(item)}>
+			<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-[clamp(18px,1.6vw,21px)] font-semibold tracking-[-0.02em] text-ink [&::-webkit-details-marker]:hidden">
 				{item.question}
+				{/* Circle plus/minus: gray at rest, crimson when open (pure CSS off details/summary). */}
+				<span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#d2d2d7]/50 transition-colors duration-300 group-open:bg-primary" aria-hidden="true">
+					<Icon name="tabler:plus" class="size-4 text-ink group-open:hidden" />
+					<Icon name="tabler:minus" class="hidden size-4 text-white group-open:block" />
+				</span>
 			</summary>
 			{item.answer && (
-				<div class="prose mt-2 max-w-none pl-10 [--tw-prose-body:var(--color-body)]">
+				<div class="prose max-w-none pb-[26px] pr-[60px] text-body [--tw-prose-body:var(--color-body)]">
 					<TinaMarkdown content={item.answer} components={mdxComponents} />
 				</div>
 			)}

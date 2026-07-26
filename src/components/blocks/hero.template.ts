@@ -10,11 +10,13 @@ export const heroBlockSchema: Template = {
 			options: [
 				{ label: 'Photo (full-bleed photo, centered text)', value: 'photo' },
 				{ label: 'Glass (full-bleed photo, frosted-glass card)', value: 'glass' },
+				{ label: 'Video (full-viewport video, bottom-left text)', value: 'video' },
 			],
 		},
-		{ type: 'image', label: 'Background Image', name: 'backgroundImage' },
+		{ type: 'image', label: 'Background Image', name: 'backgroundImage', description: 'Full-bleed photo (photo/glass variants); video poster frame (video variant).' },
+		{ type: 'string', label: 'Background Video URL', name: 'backgroundVideo', description: 'MP4 URL for the video variant (e.g. a https:// media link). Leave empty for photo variants.' },
 		{ type: 'string', label: 'Eyebrow', name: 'eyebrow', description: 'Small pill label above the headline (photo/glass variants).' },
-		{ type: 'string', label: 'Headline', name: 'headline', description: 'Wrap a phrase in **double asterisks** to render it bold.' },
+		{ type: 'string', label: 'Headline', name: 'headline', description: 'Wrap a phrase in **double asterisks** to render it bold. Video variant: use a line break to split the animated reveal lines.', ui: { component: 'textarea' } },
 		{ type: 'string', label: 'Tagline', name: 'tagline' },
 		{
 			type: 'object', label: 'Actions', name: 'actions', list: true,

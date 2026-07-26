@@ -5,6 +5,13 @@ export const ctaBlockSchema: Template = {
 	name: 'cta',
 	label: 'CTA',
 	fields: [
+		{
+			type: 'string', label: 'Variant', name: 'variant',
+			options: [
+				{ label: 'Default (light, centered)', value: 'default' },
+				{ label: 'Crimson (solid red, contact row)', value: 'crimson' },
+			],
+		},
 		{ type: 'string', label: 'Title', name: 'title' },
 		{ type: 'string', label: 'Description', name: 'description', ui: { component: 'textarea' } },
 		{

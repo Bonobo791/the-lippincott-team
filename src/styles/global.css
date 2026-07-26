@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
 @import '@fontsource-variable/montserrat';
 @import '@fontsource/libre-baskerville/400.css';
 @import '@fontsource/libre-baskerville/700.css';
@@ -34,6 +35,11 @@
 	--color-chip: var(--chip);
 	--color-section: var(--section);
 	--color-stat-label: var(--stat-label);
+	--color-tile: var(--tile);
+	--color-gold: var(--gold);
+	--color-accent-on-dark: var(--accent-on-dark);
+	--color-ink: var(--ink);
+	--color-hairline: var(--hairline);
 	--color-chart-1: var(--chart-1);
 	--color-chart-2: var(--chart-2);
 	--color-chart-3: var(--chart-3);
@@ -65,6 +71,12 @@
 	--chip: #fbe9ec;
 	--section: #f5f5f6;
 	--stat-label: #99a1af;
+	/* Apple-style redesign tokens (homepage + chrome) */
+	--tile: #272729;
+	--gold: #f2b01e;
+	--accent-on-dark: #e8596b;
+	--ink: #1d1d1f;
+	--hairline: #e0e0e0;
 	--chart-1: oklch(0.646 0.222 41.116);
 	--chart-2: oklch(0.6 0.118 184.704);
 	--chart-3: oklch(0.398 0.07 227.392);
@@ -130,4 +142,146 @@
 .prose table td:first-child {
 	font-weight: 700;
 	color: var(--primary);
+}
+
+/* ---------------------------------------------------------------------------
+   Apple-style redesign (homepage blocks + site chrome). The `.font-apple`
+   stack mirrors the design's system/Inter font; Montserrat stays the global
+   default elsewhere.
+--------------------------------------------------------------------------- */
+.font-apple {
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', 'Inter',
+		'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Eyebrow: red tick + uppercase label (dark sections use --accent-on-dark). */
+.eyebrow {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--primary);
+}
+.eyebrow::before {
+	content: '';
+	width: 28px;
+	height: 2px;
+	background: var(--primary);
+	flex: none;
+}
+.eyebrow.on-dark {
+	color: var(--accent-on-dark);
+}
+.eyebrow.on-dark::before {
+	background: var(--accent-on-dark);
+}
+
+/* Masked headline reveals: h2 slides up when the shared observer adds .in. */
+.h2-mask {
+	overflow: hidden;
+}
+.h2-mask > * {
+	display: block;
+	transform: translateY(108%);
+	transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+}
+.h2-mask.in > * {
+	transform: translateY(0);
+}
+
+/* Hero masked-line reveal (CSS-only, plays on load). */
+.mask-line {
+	display: block;
+	overflow: hidden;
+}
+.mask-line > span {
+	display: block;
+	transform: translateY(112%);
+	animation: lineUp 1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+.mask-line:nth-child(2) > span {
+	animation-delay: 0.14s;
+}
+@keyframes lineUp {
+	to {
+		transform: translateY(0);
+	}
+}
+
+/* Drifting light beams (hero / final CTA atmosphere). */
+.beams {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+.beam {
+	position: absolute;
+	height: 7px;
+	width: 150vmax;
+	left: -25vmax;
+	background: rgba(255, 255, 255, 0.9);
+	transform-origin: center;
+}
+.beam.b1 {
+	top: 18%;
+	transform: rotate(-24deg);
+	animation: drift1 34s linear infinite;
+	opacity: 0.08;
+}
+.beam.b2 {
+	top: 64%;
+	transform: rotate(-24deg);
+	animation: drift1 46s linear infinite;
+	opacity: 0.06;
+	height: 5px;
+}
+.beam.b3 {
+	top: 40%;
+	transform: rotate(-52deg);
+	animation: drift2 52s linear infinite;
+	opacity: 0.1;
+	height: 9px;
+	background: var(--primary);
+}
+.beam.b4 {
+	top: 82%;
+	transform: rotate(-16deg);
+	animation: drift2 38s linear infinite;
+	opacity: 0.07;
+	height: 4px;
+}
+@keyframes drift1 {
+	from {
+		translate: -6vmax 0;
+	}
+	to {
+		translate: 6vmax 0;
+	}
+}
+@keyframes drift2 {
+	from {
+		translate: 5vmax 0;
+	}
+	to {
+		translate: -5vmax 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.beam {
+		animation: none;
+	}
+	.mask-line > span {
+		animation: none;
+		transform: none;
+	}
+	.h2-mask > * {
+		transform: none;
+		transition: none;
+	}
 }
