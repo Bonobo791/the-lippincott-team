@@ -17,6 +17,8 @@ const contactLinks = (config?.contactLinks ?? []).filter(
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const contact = config?.contact ?? null;
 const today = new Date();
+// CMS-provided URL — only allow http(s)/root-relative before rendering.
+const logoSrc = safeHref(seo?.logo);
 
 const childrenOf = (item: CmsConfigNav | null) =>
 	(item?.children ?? []).filter((child): child is CmsConfigNavChild => child !== null);
@@ -42,8 +44,8 @@ const columns = [
 	<div class="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-6 pt-[72px] lg:grid-cols-[1.6fr_repeat(4,1fr)]">
 		<div class="space-y-4">
 			<div class="flex items-center gap-3 text-white">
-				{seo?.logo ? (
-					<img src={seo.logo} alt="" width="34" height="34" class="size-[34px]" />
+				{logoSrc ? (
+					<img src={logoSrc} alt="" width="34" height="34" class="size-[34px]" />
 				) : null}
 				<div>
 					<p class="text-[15px] font-bold leading-[1.1]">{seo?.title ?? 'The Lippincott Team'}</p>

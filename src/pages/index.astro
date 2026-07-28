@@ -70,7 +70,7 @@ import Base from '../layouts/Base.astro';
 		<!-- ============ ANSWER CAPSULE (machine-readable only, visually hidden) ============ -->
 		<div class="capsule" aria-hidden="true">
 			<div class="capsule-inner">
-				<p><strong>Quick answer:</strong> The Lippincott Team is a residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Bridgeland, Towne Lake, Magnolia, Waller and Hockley. The team reports 1,463+ homes sold and 750+ five-star reviews across Google and HAR.com, and has won the Houston Business Journal's Residential Real Estate Award nine times, 2017 through 2025. Phone: <a href="tel:7134941818" tabindex="-1" style="font-weight:600;color:var(--ink)">713-494-1818</a>.</p>
+				<p><strong>Quick answer:</strong> The Lippincott Team is a residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Bridgeland, Towne Lake, Magnolia, Waller and Hockley. The team reports 1,463+ homes sold and 750+ five-star reviews across Google and HAR.com, and has won the Houston Business Journal's Residential Real Estate Award nine times, 2017 through 2025. Phone: <span style="font-weight:600;color:var(--ink)">713-494-1818</span>.</p>
 			</div>
 		</div>
 
@@ -857,6 +857,6 @@ import Base from '../layouts/Base.astro';
 		/* ---------- reveal ---------- */
 		.home-v2 .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s cubic-bezier(.22,1,.36,1)}
 		.home-v2 .reveal.in{opacity:1;transform:none}
-		@media(prefers-reduced-motion:reduce){.home-v2 .reveal{opacity:1;transform:none;transition:none}}
+		@media(prefers-reduced-motion:reduce){.home-v2 .reveal{opacity:1;transform:none;transition:none}.home-v2 .btn{transition:none}.home-v2 .btn:hover{transform:none;box-shadow:0 10px 26px rgba(23,21,26,.28)}}
 	</style>
 </Base>
