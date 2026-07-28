@@ -201,13 +201,19 @@ const entries = (await listCommunities())
 		import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 		// Pinned horizontal-pan community gallery (desktop only; CSS covers the
-		// mobile + reduced-motion fallbacks).
-		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			gsap.registerPlugin(ScrollTrigger);
-			const mm = gsap.matchMedia();
+		// mobile + reduced-motion fallbacks). Module scripts run once, so re-bind
+		// on astro:page-load (fires on first load too) and kill the outgoing
+		// page's triggers before each ClientRouter swap.
+		gsap.registerPlugin(ScrollTrigger);
+		const mm = gsap.matchMedia();
+		let railTriggers: ScrollTrigger[] = [];
+		const initCommRail = () => {
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 			mm.add('(min-width:1081px)', () => {
 				const cleanups: (() => void)[] = [];
 				document.querySelectorAll('[data-comm-rail]').forEach((rail) => {
+					if ((rail as HTMLElement).dataset.commRailBound) return;
+					(rail as HTMLElement).dataset.commRailBound = '1';
 					const track = rail.querySelector('[data-comm-track]');
 					if (!track) return;
 					const dist = () => Math.max(0, track.scrollWidth - window.innerWidth + 60);
@@ -224,14 +230,21 @@ const entries = (await listCommunities())
 							invalidateOnRefresh: true,
 						},
 					});
+					if (tween.scrollTrigger) railTriggers.push(tween.scrollTrigger);
 					cleanups.push(() => {
 						tween.scrollTrigger && tween.scrollTrigger.kill();
 						tween.kill();
 						gsap.set(track, { clearProps: 'x' });
+						delete (rail as HTMLElement).dataset.commRailBound;
 					});
 				});
 				return () => cleanups.forEach((fn) => fn());
 			});
-		}
+		};
+		document.addEventListener('astro:page-load', initCommRail);
+		document.addEventListener('astro:before-swap', () => {
+			railTriggers.forEach((t) => t.kill());
+			railTriggers = [];
+		});
 	</script>
 )}

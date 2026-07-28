@@ -5,6 +5,7 @@ import Icon from '../ui/Icon.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { getConfig } from '../../lib/data';
+import { isExternal, safeHref, telHref } from '../../lib/url';
 import type { CtaBlock } from '../../lib/data';
 
 interface Props { data: Omit<CtaBlock, '__typename'> }
@@ -15,7 +16,7 @@ const actions = (data.actions ?? []).filter(a => a !== null);
 // contact details straight from the loader (build-time / island SSR).
 const contact = (await getConfig()).data?.config?.contact ?? null;
 const isCrimson = data.variant === 'crimson';
-const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+const phoneHref = telHref(contact?.phone);
 ---
 {isCrimson ? (
 	<section class="font-apple relative overflow-hidden bg-primary py-24 text-center text-white md:py-36">
@@ -30,7 +31,7 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 			<div class="mt-10 flex flex-wrap justify-center gap-3.5">
 				{actions.map((action, index) => (
 					<a
-						href={action.link ?? '#'}
+						href={safeHref(action.link) ?? '#'}
 						data-tina-field={tinaField(action)}
 						{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 						class={index === 0
@@ -43,10 +44,10 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 			</div>
 			{(contact?.phone || contact?.email) && (
 				<div class="mt-11 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-					{contact?.phone && (
-						<a href={`tel:${contact.phone}`} class="flex items-center gap-2.5 text-[17px] hover:underline">
+					{phoneHref && (
+						<a href={phoneHref} class="flex items-center gap-2.5 text-[17px] hover:underline">
 							<Icon name="phone" class="size-[18px] text-white" />
-							{contact.phone}
+							{contact?.phone}
 						</a>
 					)}
 					{contact?.email && (
@@ -76,12 +77,12 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 		</div>
 		{(contact?.phone || contact?.email) && (
 			<div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
-				{contact?.phone && (
-					<a href={`tel:${contact.phone}`} class="flex items-center gap-3">
+				{phoneHref && (
+					<a href={phoneHref} class="flex items-center gap-3">
 						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">
 							<Icon name="phone" class="size-4 text-foreground" />
 						</span>
-						<span class="font-bold text-foreground">{contact.phone}</span>
+						<span class="font-bold text-foreground">{contact?.phone}</span>
 					</a>
 				)}
 				{contact?.phone && contact?.email && <span aria-hidden="true" class="h-5 w-px bg-border"></span>}

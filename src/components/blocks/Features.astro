@@ -4,6 +4,7 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
+import { isExternal, safeHref } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
 import type { FeaturesBlock } from '../../lib/data';
@@ -15,7 +16,6 @@ const items = (data.items ?? []).filter(it => it !== null);
 const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
 const isEditorial = data.variant === 'editorial';
 const isServices = data.variant === 'services';
-const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
 	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
@@ -42,7 +42,7 @@ const externalAttrs = (href?: string | null) =>
 						</div>
 						{item.action?.label && item.action?.link && (
 							<a
-								href={item.action.link}
+								href={safeHref(item.action.link)}
 								data-tina-field={tinaField(item, 'action')}
 								{...externalAttrs(item.action.link)}
 								class="group/link inline-flex items-center gap-1.5 text-[17px] text-primary hover:underline"
