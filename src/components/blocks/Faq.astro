@@ -18,7 +18,7 @@ const faqJsonLd = data.jsonld && items.length > 0
 			name: item.question ?? '',
 			acceptedAnswer: { '@type': 'Answer', text: richTextToPlainText(item.answer) },
 		})),
-	})
+	}).replace(/</g, '\\u003c')
 	: null;
 ---
 <section class="font-apple bg-section py-20 md:py-32">

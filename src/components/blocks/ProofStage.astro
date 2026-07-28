@@ -70,7 +70,7 @@ const linkHref = safeHref(data.action?.link);
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: radial-gradient(60% 45% at 50% 0%, rgba(194, 39, 55, 0.14), transparent 70%);
+		background: radial-gradient(60% 45% at 50% 0%, rgba(214, 50, 60, 0.14), transparent 70%);
 		pointer-events: none;
 	}
 	/* Dark-surface prose: scoped selectors outrank the global unlayered .prose rules. */
@@ -100,6 +100,7 @@ const linkHref = safeHref(data.action?.link);
 			requestAnimationFrame(step);
 		};
 		const initProofCount = () => {
+			if (reduced || !('IntersectionObserver' in window)) return;
 			proofObs = proofObs || new IntersectionObserver((entries) => {
 				entries.forEach((e) => {
 					if (e.isIntersecting) {

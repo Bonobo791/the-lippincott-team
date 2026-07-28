@@ -36,7 +36,7 @@ const cols = tiles.length >= 4
 				{tiles.map((tile) => (
 					<div
 						data-tina-field={tinaField(tile)}
-						class={`relative p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:before:scale-x-100 md:p-10 ${tile.invert ? 'bg-tile before:bg-gold' : 'bg-background hover:bg-section'}`}
+						class={`relative p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:transition-transform before:duration-500 hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none md:p-10 ${tile.invert ? 'bg-tile before:bg-gold' : 'bg-background before:bg-primary hover:bg-section'}`}
 					>
 						{tile.figure ? (
 							<>

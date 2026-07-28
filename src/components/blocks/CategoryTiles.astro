@@ -32,7 +32,7 @@ const cols = tiles.length >= 3 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols
 				{tiles.map((tile) => {
 					const items = (tile.items ?? []).filter(i => i !== null);
 					return (
-						<div data-tina-field={tinaField(tile)} class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 md:p-10">
+						<div data-tina-field={tinaField(tile)} class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none md:p-10">
 							<span class="mb-4 block text-xs font-semibold uppercase tracking-[0.18em] text-primary">{tile.label}</span>
 							{items.length > 0 && (
 								<ul class="grid gap-2.5">

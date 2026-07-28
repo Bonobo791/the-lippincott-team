@@ -6,8 +6,8 @@
 
 @theme inline {
 	--font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
-	--font-heading: 'Fraunces Variable', 'Fraunces', Georgia, serif;
-	--font-serif: 'Fraunces Variable', 'Fraunces', Georgia, serif;
+	--font-heading: 'Fraunces Variable', 'Fraunces', georgia, serif;
+	--font-serif: 'Fraunces Variable', 'Fraunces', georgia, serif;
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
@@ -146,11 +146,11 @@
 /* ---------------------------------------------------------------------------
    Apple-style redesign (homepage blocks + site chrome). The `.font-apple`
    stack mirrors the design's system/Inter font; the global `--font-sans` is
-   now Inter itself, so this class is kept only for legacy block markup.
+   now Inter itself, so this class stays available to shared homepage markup.
 --------------------------------------------------------------------------- */
 .font-apple {
 	font-family:
-		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', 'Inter',
+		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', Inter,
 		'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
