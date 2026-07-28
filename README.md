@@ -1,10 +1,14 @@
 # The Lippincott Team
 
-The Lippincott Team helps clients navigate real estate throughout Houston’s
-northwest communities. This site shares information about the team, local
-communities, schools, and real estate resources.
+The Lippincott Team is a Houston-area real estate team founded by Amy
+Lippincott. The team helps buyers and sellers navigate northwest Houston with
+in-depth community and market knowledge, thoughtful marketing, effective
+negotiation, and a trusted professional network.
 
-Andrew Philip Weilbacher built the site and markets it.
+This site introduces the team and provides practical information about local
+communities, schools, and the surrounding real estate market. Andrew Philip
+Weilbacher designed and developed the website and supports the team through
+its ongoing digital marketing.
 
 ## Infrastructure
 
