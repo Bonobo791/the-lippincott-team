@@ -90,20 +90,27 @@ above rather than bare `astro build`.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
   CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner,
-  ContactForm — page collection only). **Convention: each block is a pair** —
+  ContactForm — page collection only; plus the **community guide blocks**:
+  GuideHero, StatLedger, PriceLadder, CalloutRail, DataTable, PhotoCardGrid,
+  CategoryTiles, RouteLedger, TradeOffs, NotePanel, ProofStage, RelatedChips,
+  GuideCta — registered in **both** the page and community collections).
+  **Convention: each block is a pair** —
   `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts`. **Watch field-name collisions across
+  template in `tina/collections/page.ts` (and `community.ts` when it should be
+  available on community pages). **Watch field-name collisions across
   the block union**: two templates in the same `blocks` field may not reuse a
   field name with a different value type (e.g. `body` rich-text JSON vs
-  string, `image` object vs image string) — Tina's codegen fails with
+  string, `image` object vs image string) — **nullability counts too**
+  (`String` vs `String!` from `required: true`) — Tina's codegen fails with
   "Fields ... conflict". Pick a distinct name (`summary`, `description`,
   `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
-  `tina/collections/community.ts` reuses a reduced 7-template set (hero,
-  split, features, stats, content, faq, cta) — Tina namespaces block
+  `tina/collections/community.ts` registers the 7 legacy templates (hero,
+  split, features, stats, content, faq, cta) plus the 13 community guide
+  blocks — Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
@@ -144,6 +151,10 @@ above rather than bare `astro build`.
   files outside the Tina admin, rerun `pnpm build:local` and restart the dev
   server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
+- The `faq` block has an optional `jsonld` boolean: when enabled, `Faq.astro`
+  emits a `FAQPage` schema.org script built from the block's Q&A items
+  (answers flattened via `richTextToPlainText` in `src/lib/rich-text.ts`).
+  Enable it on at most one FAQ block per page.
 - Split headings: editors mark the accented phrase in plain Tina string fields
   with `**...**` (the brand's light+bold heading device). Render them with
   `src/components/ui/SplitHeading.astro` (parser in

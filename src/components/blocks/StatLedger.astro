@@ -1,0 +1,76 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { mdxComponents } from '../mdx/components';
+import type { StatLedgerBlock } from '../../lib/data';
+
+interface Props { data: Omit<StatLedgerBlock, '__typename'> }
+
+const { data } = Astro.props;
+const tiles = (data.tiles ?? []).filter(t => t !== null);
+const cols = tiles.length >= 4
+	? 'md:grid-cols-2 lg:grid-cols-4'
+	: tiles.length === 3
+		? 'md:grid-cols-2 lg:grid-cols-3'
+		: 'md:grid-cols-2';
+---
+<section class="font-apple py-20 md:py-28">
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{(data.title || data.summary) && (
+			<div class="mb-10 grid gap-4 md:mb-14">
+				{data.title && (
+					<div class="h2-mask">
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+					</div>
+				)}
+				{data.summary && (
+					<div data-tina-field={tinaField(data, 'summary')} class="prose max-w-[56ch] text-[clamp(17px,1.6vw,21px)] [--tw-prose-body:var(--color-body)]">
+						<TinaMarkdown content={data.summary} components={mdxComponents} />
+					</div>
+				)}
+			</div>
+		)}
+		{tiles.length > 0 && (
+			<div class={`grid gap-px border border-border bg-border ${cols}`}>
+				{tiles.map((tile) => (
+					<div
+						data-tina-field={tinaField(tile)}
+						class={`relative p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:before:scale-x-100 md:p-10 ${tile.invert ? 'bg-tile before:bg-gold' : 'bg-background hover:bg-section'}`}
+					>
+						{tile.figure ? (
+							<>
+								<span class={`block text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-none tracking-[-0.02em] ${tile.invert ? 'text-gold' : 'text-ink'}`}>{tile.figure}</span>
+								{tile.label && <span class={`mt-3 block text-xs font-semibold uppercase tracking-[0.18em] ${tile.invert ? 'text-white/50' : 'text-muted-foreground'}`}>{tile.label}</span>}
+								{tile.source && <span class={`mt-1.5 block text-xs ${tile.invert ? 'text-white/50' : 'text-muted-foreground'}`}>{tile.source}</span>}
+							</>
+						) : (
+							<>
+								{tile.label && <span class={`mb-4 block text-xs font-semibold uppercase tracking-[0.18em] ${tile.invert ? 'text-gold' : 'text-primary'}`}>{tile.label}</span>}
+								{tile.body && (
+									<div class={`prose max-w-none text-[14.5px] leading-relaxed ${tile.invert ? 'tile-body-invert' : '[--tw-prose-body:var(--color-muted-foreground)]'}`}>
+										<TinaMarkdown content={tile.body} components={mdxComponents} />
+									</div>
+								)}
+							</>
+						)}
+					</div>
+				))}
+			</div>
+		)}
+		{data.note && (
+			<div data-tina-field={tinaField(data, 'note')} class="prose mt-7 max-w-[68ch] text-sm leading-relaxed [--tw-prose-body:var(--color-muted-foreground)]">
+				<TinaMarkdown content={data.note} components={mdxComponents} />
+			</div>
+		)}
+	</div>
+</section>
+<style>
+	/* Invert tiles sit on a dark surface: scoped selector outranks the global
+	   unlayered .prose rules (Tailwind arbitrary-property utilities lose to it). */
+	.tile-body-invert {
+		--tw-prose-body: rgba(255, 255, 255, 0.72);
+		--tw-prose-bold: #ffffff;
+		--tw-prose-links: var(--gold);
+	}
+</style>

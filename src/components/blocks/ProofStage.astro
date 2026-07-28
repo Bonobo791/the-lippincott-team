@@ -1,0 +1,122 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { mdxComponents } from '../mdx/components';
+import { safeHref, isExternal } from '../../lib/url';
+import type { ProofStageBlock } from '../../lib/data';
+
+interface Props { data: Omit<ProofStageBlock, '__typename'> }
+
+const { data } = Astro.props;
+const metrics = (data.metrics ?? []).filter(m => m !== null);
+const linkHref = safeHref(data.action?.link);
+---
+<section class="font-apple relative overflow-hidden bg-tile py-20 text-white md:py-28" data-proof-section>
+	<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
+		{(data.eyebrow || data.title) && (
+			<div class="mb-10 grid gap-4 md:mb-14">
+				{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
+				{data.title && (
+					<div class="h2-mask">
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-gold" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-white" />
+					</div>
+				)}
+			</div>
+		)}
+		{(data.quote?.text || data.rating) && (
+			<div class="mb-14 grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+				{data.quote?.text && (
+					<figure data-tina-field={tinaField(data, 'quote')} class="rounded-2xl border border-white/12 p-7 md:p-8">
+						<blockquote class="text-[19px] font-light italic leading-relaxed text-white">{data.quote.text}</blockquote>
+						{data.quote.attribution && <figcaption class="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{data.quote.attribution}</figcaption>}
+					</figure>
+				)}
+				<div>
+					<span class="text-sm tracking-[3px] text-gold" aria-label="Five star rating">★★★★★</span>
+					{data.rating && (
+						<div data-tina-field={tinaField(data, 'rating')} class="proof-rating prose mt-4 max-w-[52ch] text-[clamp(1.15rem,2vw,1.5rem)] leading-snug">
+							<TinaMarkdown content={data.rating} components={mdxComponents} />
+						</div>
+					)}
+					{linkHref && data.action?.label && (
+						<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
+							{data.action.label} <span aria-hidden="true">→</span>
+						</a>
+					)}
+				</div>
+			</div>
+		)}
+		{metrics.length > 0 && (
+			<div class={`grid gap-px border border-white/12 bg-white/12 ${metrics.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+				{metrics.map((metric) => (
+					<div data-tina-field={tinaField(metric)} class="bg-tile p-8 transition-colors duration-300 hover:bg-[#2e2e31] md:p-10">
+						<div class="flex items-baseline whitespace-nowrap text-[clamp(2.6rem,5vw,4rem)] font-semibold leading-none tracking-[-0.03em]">
+							{typeof metric.value === 'number' ? (
+								<span class="proof-count" data-target={metric.value}>{metric.value.toLocaleString('en-US')}</span>
+							) : null}
+							{metric.suffix && <em class="not-italic text-accent-on-dark">{metric.suffix}</em>}
+						</div>
+						{metric.label && <span class="mt-4 block text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{metric.label}</span>}
+						{metric.source && <span class="mt-1.5 block text-xs text-white/50">{metric.source}</span>}
+					</div>
+				))}
+			</div>
+		)}
+	</div>
+</section>
+<style>
+	[data-proof-section]::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(60% 45% at 50% 0%, rgba(194, 39, 55, 0.14), transparent 70%);
+		pointer-events: none;
+	}
+	/* Dark-surface prose: scoped selectors outrank the global unlayered .prose rules. */
+	.proof-rating {
+		--tw-prose-body: rgba(255, 255, 255, 0.85);
+		--tw-prose-bold: var(--gold);
+	}
+</style>
+<script is:inline>
+	if (!window.__proofCountBound) {
+		window.__proofCountBound = true;
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let proofObs = null;
+		const animateProof = (el) => {
+			const target = parseInt(el.dataset.target, 10);
+			const render = (v) => { el.textContent = v.toLocaleString('en-US'); };
+			if (reduced) { render(target); return; }
+			let start = null;
+			const dur = 1200;
+			const step = (ts) => {
+				if (!start) start = ts;
+				const p = Math.min((ts - start) / dur, 1);
+				const eased = 1 - Math.pow(1 - p, 3);
+				render(Math.round(target * eased));
+				if (p < 1) requestAnimationFrame(step);
+			};
+			requestAnimationFrame(step);
+		};
+		const initProofCount = () => {
+			proofObs = proofObs || new IntersectionObserver((entries) => {
+				entries.forEach((e) => {
+					if (e.isIntersecting) {
+						e.target.querySelectorAll('.proof-count').forEach(animateProof);
+						proofObs.unobserve(e.target);
+					}
+				});
+			}, { threshold: 0.3 });
+			document.querySelectorAll('[data-proof-section]').forEach((s) => {
+				if (s.dataset.proofCountBound) return;
+				s.dataset.proofCountBound = '1';
+				proofObs.observe(s);
+			});
+		};
+		document.addEventListener('astro:page-load', initProofCount);
+		document.addEventListener('astro:before-swap', () => {
+			if (proofObs) { proofObs.disconnect(); proofObs = null; }
+		});
+	}
+</script>
