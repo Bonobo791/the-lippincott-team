@@ -2,37 +2,70 @@
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsCommunity } from '../../lib/data';
+import { communityPath } from '../../lib/data';
+import { sierraLinks } from '../../lib/sierra-links';
 import { mdxComponents } from '../mdx/components';
+import Blocks from '../blocks/Blocks.astro';
+import Button from '../ui/Button.astro';
+import CommunityFaqHeading from '../mdx/CommunityFaqHeading.astro';
+import CommunityFaqQuestion from '../mdx/CommunityFaqQuestion.astro';
 import FaqAccordion from '../ui/FaqAccordion.astro';
 
 interface Props { data?: CmsCommunity | null }
 
 const { data } = Astro.props;
+const blocks = (data?.blocks ?? []).filter(b => b !== null);
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
+// Red "View Listings" hero CTA links to the doc's Sierra property search
+// when one was recovered from the migrated body; unmapped docs get none.
+const sierraUrl = data ? (sierraLinks[communityPath(data)] ?? null) : null;
+// Community FAQs are static Q&A inside the rich-text body (no doc uses the
+// faqs frontmatter), so h2/h3 overrides restyle that section to the
+// accordion pattern. Docs that do use frontmatter FAQs get FaqAccordion.
+const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: CommunityFaqQuestion };
+// The community schema has no eyebrow field, so the hero is image + overlay +
+// white H1 + intro only (no invented copy).
 ---
 {data && (
+	blocks.length > 0 ? (
+		<Blocks data={data} />
+	) : (
 	<>
-		{data.heroImage && (
-			<div data-tina-field={tinaField(data, 'heroImage')} class="mx-auto max-w-5xl px-6">
-				<img src={data.heroImage} alt={data.title ?? ''} width={1020} height={510} class="w-full rounded-2xl border object-cover shadow-lg" />
+		{data.heroImage ? (
+			<section class="relative w-full overflow-hidden">
+				<div data-tina-field={tinaField(data, 'heroImage')} class="absolute inset-0">
+					<img src={data.heroImage} alt="" class="size-full object-cover" />
+					<div class="absolute inset-0 bg-black/50"></div>
+				</div>
+				<div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">
+					<h1 data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">{data.title}</h1>
+					{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/80">{data.intro}</p>}
+					{sierraUrl && (
+						<Button href={sierraUrl} target="_blank" rel="noopener noreferrer" size="lg" class="mt-10 px-8">View Listings</Button>
+					)}
+				</div>
+			</section>
+		) : (
+			<div class="mx-auto max-w-[720px] px-6 pt-12">
+				<h1 data-tina-field={tinaField(data, 'title')} class="text-4xl font-semibold tracking-tight lg:text-5xl">{data.title}</h1>
+				{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-4 text-lg text-muted-foreground">{data.intro}</p>}
 			</div>
 		)}
-		<div class="mx-auto max-w-3xl px-6 py-12">
-			<h1 data-tina-field={tinaField(data, 'title')} class="text-4xl font-semibold tracking-tight lg:text-5xl">{data.title}</h1>
-			{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-4 text-lg text-muted-foreground">{data.intro}</p>}
-			{data.body && (
-				<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg mt-8 max-w-none">
-					<TinaMarkdown content={data.body} components={mdxComponents} />
+		{data.body && (
+			<div class="mx-auto max-w-[720px] px-6 py-16">
+				<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none prose-a:font-bold">
+					<TinaMarkdown content={data.body} components={bodyComponents} />
 				</div>
-			)}
-			{faqs.length > 0 && (
-				<div class="mt-12">
-					<h2 class="text-2xl font-semibold tracking-tight">Frequently Asked Questions</h2>
-					<div class="mt-6" data-tina-field={tinaField(data, 'faqs')}>
-						<FaqAccordion items={faqs} tinaFieldFor={(item) => tinaField(item)} />
-					</div>
+			</div>
+		)}
+		{faqs.length > 0 && (
+			<div class="mx-auto max-w-3xl px-6 pb-16">
+				<h2 class="text-center text-3xl font-bold tracking-tight text-primary md:text-[2.5rem]">{data.title} FAQ</h2>
+				<div class="mt-8" data-tina-field={tinaField(data, 'faqs')}>
+					<FaqAccordion items={faqs} tinaFieldFor={(item) => tinaField(item)} />
 				</div>
-			)}
-		</div>
+			</div>
+		)}
 	</>
+	)
 )}

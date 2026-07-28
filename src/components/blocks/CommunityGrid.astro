@@ -1,31 +1,250 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { communityPath, listCommunities } from '../../lib/data';
+import { sierraLinks } from '../../lib/sierra-links';
 import type { CommunityGridBlock } from '../../lib/data';
 
 interface Props { data: CommunityGridBlock }
 
 const { data } = Astro.props;
 const prefix = data.prefix ?? 'northwest-houston-real-estate';
+const variant = data.variant ?? 'grid';
 // Direct children of the prefix (one level deep), sorted by title.
 const entries = (await listCommunities())
 	.map((node) => ({ node, path: communityPath(node) }))
 	.filter(({ path }) => path.startsWith(`${prefix}/`) && path.slice(prefix.length + 1).split('/').length === 1)
 	.sort((a, b) => (a.node.title ?? '').localeCompare(b.node.title ?? ''));
 ---
-<Section>
-	{data.title && <h2 data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-semibold tracking-tight">{data.title}</h2>}
-	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
-	<div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-		{entries.map(({ node, path }) => (
-			<a href={`/${path}/`} class="group overflow-hidden rounded-2xl border transition-shadow hover:shadow-lg">
-				{node.heroImage && <img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} loading="lazy" decoding="async" class="aspect-[3/2] w-full object-cover" />}
-				<div class="p-5">
-					<h3 class="text-lg font-semibold transition-colors group-hover:text-primary">{node.title}</h3>
-					{node.description && <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{node.description}</p>}
+{variant === 'rail' ? (
+	<section class="communities font-apple overflow-hidden bg-background" data-comm-rail>
+		<div class="comm-pin">
+			<div class="comm-track" data-comm-track>
+				<div class="comm-intro">
+					{data.title && (
+						<div class="h2-mask">
+							<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+						</div>
+					)}
+					{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 				</div>
-			</a>
-		))}
-	</div>
-</Section>
+				{entries.map(({ node, path }, i) => {
+					const sierraUrl = sierraLinks[path] ?? null;
+					return (
+						<a
+							href={sierraUrl ?? `/${path}/`}
+							{...(sierraUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							class:list={['tile group', { 'tile-lg': i % 3 === 0 }]}
+						>
+							{node.heroImage ? (
+								<img src={node.heroImage} alt={node.title ?? ''} width="660" height="600" loading="lazy" decoding="async" />
+							) : (
+								<div aria-hidden class="size-full bg-section"></div>
+							)}
+							<div class="tile-info">
+								<h3 class="text-[21px] font-semibold tracking-[-0.02em]">{(node.title ?? '').replace(/ TX Real Estate$/, '')}</h3>
+								<span class="mt-0.5 inline-block text-xs text-white/80">
+									View Listings <i class="not-italic inline-block text-white transition-transform duration-300 group-hover:translate-x-[5px]">→</i>
+								</span>
+							</div>
+						</a>
+					);
+				})}
+			</div>
+		</div>
+	</section>
+) : (
+	<Section id="communities">
+		{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-center text-3xl font-light tracking-tight" />}
+		{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
+		<div class="mt-10 grid gap-6 md:grid-cols-2">
+			{entries.map(({ node, path }) => {
+				const sierraUrl = sierraLinks[path] ?? null;
+				return (
+					<a
+						href={sierraUrl ?? `/${path}/`}
+						{...(sierraUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+						class="group relative block overflow-hidden rounded-2xl shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]"
+					>
+						{node.heroImage ? (
+							<img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} loading="lazy" decoding="async" class="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+						) : (
+							<div aria-hidden class="aspect-[16/9] w-full bg-section"></div>
+						)}
+						<div aria-hidden class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
+						<div class="absolute inset-x-0 bottom-0 p-6">
+							<h3 class="text-2xl font-bold text-white">{node.title}</h3>
+							<p class="mt-1 text-sm uppercase tracking-[0.1em] text-white/80">View Listings</p>
+						</div>
+					</a>
+				);
+			})}
+		</div>
+	</Section>
+)}
+{variant === 'rail' && (
+	<style>
+		.comm-pin {
+			position: relative;
+			overflow: hidden;
+		}
+		.comm-track {
+			position: relative;
+			z-index: 1;
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			padding: 0 clamp(20px, 4vw, 48px);
+			will-change: transform;
+		}
+		.comm-intro {
+			flex: none;
+			position: relative;
+			z-index: 2;
+			margin-bottom: 24px;
+		}
+		.tile {
+			position: relative;
+			overflow: hidden;
+			background: var(--tile);
+			flex: none;
+			width: 100%;
+			height: 230px;
+			border-radius: 18px;
+		}
+		.tile img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+		}
+		.tile::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(185deg, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.7) 100%);
+		}
+		.tile:hover img {
+			transform: scale(1.05);
+		}
+		.tile-info {
+			position: absolute;
+			left: 24px;
+			bottom: 22px;
+			z-index: 2;
+			color: #fff;
+		}
+		.tile-lg .tile-info h3 {
+			font-size: 28px;
+		}
+		@media (max-width: 1080px) {
+			.comm-pin {
+				display: block;
+				padding: clamp(72px, 9vw, 110px) 0;
+			}
+			.comm-track {
+				flex-direction: column;
+				align-items: stretch;
+			}
+			.comm-intro {
+				width: auto;
+			}
+		}
+		@media (min-width: 1081px) {
+			.comm-pin {
+				min-height: 100svh;
+				display: flex;
+				align-items: center;
+			}
+			.comm-track {
+				gap: clamp(16px, 2vw, 28px);
+			}
+			.comm-intro {
+				width: min(36vw, 480px);
+				padding-right: clamp(10px, 2vw, 28px);
+				margin-bottom: 0;
+			}
+			.tile {
+				width: clamp(300px, 32vw, 500px);
+				height: min(66svh, 600px);
+			}
+			.tile.tile-lg {
+				width: clamp(360px, 42vw, 660px);
+			}
+		}
+		@media (prefers-reduced-motion: reduce) and (min-width: 1081px) {
+			.comm-pin {
+				min-height: 0;
+				display: block;
+				padding: clamp(72px, 9vw, 110px) 0;
+			}
+			.comm-track {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+			.comm-intro {
+				grid-column: 1 / -1;
+				width: auto;
+			}
+			.tile,
+			.tile.tile-lg {
+				width: auto;
+				height: 240px;
+			}
+		}
+	</style>
+	<script>
+		import gsap from 'gsap';
+		import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+		// Pinned horizontal-pan community gallery (desktop only; CSS covers the
+		// mobile + reduced-motion fallbacks). Module scripts run once, so re-bind
+		// on astro:page-load (fires on first load too) and kill the outgoing
+		// page's triggers before each ClientRouter swap.
+		gsap.registerPlugin(ScrollTrigger);
+		const mm = gsap.matchMedia();
+		let railTriggers: ScrollTrigger[] = [];
+		const initCommRail = () => {
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			mm.add('(min-width:1081px)', () => {
+				const cleanups: (() => void)[] = [];
+				document.querySelectorAll('[data-comm-rail]').forEach((rail) => {
+					if ((rail as HTMLElement).dataset.commRailBound) return;
+					(rail as HTMLElement).dataset.commRailBound = '1';
+					const track = rail.querySelector('[data-comm-track]');
+					if (!track) return;
+					const dist = () => Math.max(0, track.scrollWidth - window.innerWidth + 60);
+					const tween = gsap.to(track, {
+						x: () => -dist(),
+						ease: 'none',
+						scrollTrigger: {
+							trigger: rail,
+							start: 'top top',
+							end: () => '+=' + dist(),
+							pin: true,
+							scrub: 1,
+							anticipatePin: 1,
+							invalidateOnRefresh: true,
+						},
+					});
+					if (tween.scrollTrigger) railTriggers.push(tween.scrollTrigger);
+					cleanups.push(() => {
+						tween.scrollTrigger && tween.scrollTrigger.kill();
+						tween.kill();
+						gsap.set(track, { clearProps: 'x' });
+						delete (rail as HTMLElement).dataset.commRailBound;
+					});
+				});
+				return () => cleanups.forEach((fn) => fn());
+			});
+		};
+		document.addEventListener('astro:page-load', initCommRail);
+		document.addEventListener('astro:before-swap', () => {
+			railTriggers.forEach((t) => t.kill());
+			railTriggers = [];
+		});
+	</script>
+)}

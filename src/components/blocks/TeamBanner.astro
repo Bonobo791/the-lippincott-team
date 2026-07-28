@@ -1,0 +1,43 @@
+---
+import { Image } from 'astro:assets';
+import { tinaField } from '@tinacms/astro/tina-field';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { isExternal, safeHref } from '../../lib/url';
+import type { PageBlock } from '../../lib/data';
+
+// Type is a pure derivation from the Tina schema (see src/lib/data.ts
+// conventions); kept local so the block pair is self-contained.
+type TeamBannerBlock = Extract<PageBlock, { __typename: 'PageBlocksTeamBanner' }>;
+
+interface Props { data: Omit<TeamBannerBlock, '__typename'> }
+
+const { data } = Astro.props;
+---
+<section class="font-apple relative overflow-hidden text-white">
+	{data.backgroundImage && (
+		<div class="absolute inset-0" data-tina-field={tinaField(data, 'backgroundImage')}>
+			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={80} loading="lazy" decoding="async" class="size-full object-cover" />
+		</div>
+	)}
+	<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(100deg,rgba(194,39,55,.88)_0%,rgba(142,27,40,.72)_34%,rgba(0,0,0,.55)_68%,rgba(0,0,0,.35)_100%)]"></div>
+	<div class="relative z-[2] mx-auto w-full max-w-[1200px] px-6 md:px-12">
+		<div class="max-w-[640px] py-24 md:py-40">
+			{data.title && (
+				<div class="h2-mask">
+					<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em]" />
+				</div>
+			)}
+			{data.description && <p data-tina-field={tinaField(data, 'description')} class="my-[22px] mb-[34px] text-lg leading-[1.4] tracking-[-0.01em] text-white/90 md:text-[21px]">{data.description}</p>}
+			{data.action?.link && (
+				<a
+					href={safeHref(data.action.link)}
+					data-tina-field={tinaField(data.action)}
+					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+					class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-white transition-all hover:bg-white/12 active:scale-95"
+				>
+					{data.action.label ?? 'Meet the Full Team'}
+				</a>
+			)}
+		</div>
+	</div>
+</section>

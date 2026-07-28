@@ -3,8 +3,10 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import { Icon } from 'astro-icon/components';
 import { getConfig } from '../lib/data';
 import { islands } from '../lib/islands';
+import { telHref } from '../lib/url';
 
 interface Props {
 	title: string;
@@ -29,5 +31,79 @@ const config = (await getConfig()).data?.config ?? null;
 		<TinaIsland name="global-footer" wrapper={islands['global-footer'].wrapper}>
 			<Footer config={config} />
 		</TinaIsland>
+		{config?.contact?.phone && (
+			<>
+				{/* Spacer keeps the fixed call bar from covering footer content on mobile. */}
+				<div aria-hidden="true" class="h-14 lg:hidden"></div>
+				{/* z-10: below the sticky header (z-20) so the open mobile menu panel paints over the bar. */}
+				<a
+					href={telHref(config.contact.phone)}
+					class="fixed inset-x-0 bottom-0 z-10 flex h-14 items-center justify-center gap-2 bg-primary text-sm font-bold uppercase tracking-[0.1em] text-primary-foreground lg:hidden"
+				>
+					<Icon name="tabler:phone" class="size-5" />
+					{config.contact.phone}
+				</a>
+			</>
+		)}
+		{/* Shared Apple-style motion: masked h2 reveals + magnetic primary CTAs.
+		    Everything is a no-op under prefers-reduced-motion. */}
+		<script is:inline>
+			if (!window.__appleMotionBound) {
+				window.__appleMotionBound = true;
+				const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				let h2obs = null;
+
+				const initAppleMotion = () => {
+					// Section headline masked reveals (CSS shows the lines when reduced).
+					if (!reduced) {
+						h2obs = new IntersectionObserver((entries) => {
+							entries.forEach((e) => {
+								if (e.isIntersecting) { e.target.classList.add('in'); h2obs.unobserve(e.target); }
+							});
+						}, { threshold: 0.35 });
+						document.querySelectorAll('.h2-mask').forEach((m) => h2obs.observe(m));
+					}
+
+					// Magnetic primary CTAs (fine pointers only, rAF lerp).
+					if (!reduced && window.matchMedia('(pointer:fine)').matches) {
+						document.querySelectorAll('.btn-magnetic').forEach((btn) => {
+							if (btn.dataset.magneticBound) return;
+							btn.dataset.magneticBound = '1';
+							let tx = 0, ty = 0, cx = 0, cy = 0, raf = null, hovering = false;
+							const loop = () => {
+								cx += (tx - cx) * 0.16;
+								cy += (ty - cy) * 0.16;
+								btn.style.transform = 'translate(' + cx.toFixed(2) + 'px,' + cy.toFixed(2) + 'px)';
+								if (hovering || Math.abs(tx - cx) > 0.2 || Math.abs(ty - cy) > 0.2) {
+									raf = requestAnimationFrame(loop);
+								} else {
+									btn.style.transform = '';
+									raf = null;
+								}
+							};
+							const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+							btn.addEventListener('pointermove', (e) => {
+								const r = btn.getBoundingClientRect();
+								tx = (e.clientX - r.left - r.width / 2) * 0.22;
+								ty = (e.clientY - r.top - r.height / 2) * 0.28;
+								hovering = true;
+								kick();
+							});
+							btn.addEventListener('pointerleave', () => {
+								tx = 0; ty = 0; hovering = false;
+								kick();
+							});
+						});
+					}
+				};
+
+				// Re-bind after every ClientRouter swap; astro:page-load fires on
+				// first load too, and before-swap drops observers tied to old DOM.
+				document.addEventListener('astro:page-load', initAppleMotion);
+				document.addEventListener('astro:before-swap', () => {
+					if (h2obs) { h2obs.disconnect(); h2obs = null; }
+				});
+			}
+		</script>
 	</body>
 </html>

@@ -90,6 +90,7 @@ export type CommunityFaq = NonNullable<NonNullable<CmsCommunity['faqs']>[number]
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type PageBlockTypename = PageBlock['__typename'];
+export type CommunityBlock = NonNullable<NonNullable<CmsCommunity['blocks']>[number]>;
 
 export type HeroBlock = Extract<PageBlock, { __typename: 'PageBlocksHero' }>;
 export type CalloutBlock = Extract<PageBlock, { __typename: 'PageBlocksCallout' }>;

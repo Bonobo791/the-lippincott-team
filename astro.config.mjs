@@ -1,5 +1,15 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+
+// Config files run in plain Node, so Vite's .env loading does not apply —
+// load .env explicitly for local builds (Node >= 20.6). CI/Netlify inject
+// the same vars into the process env, where this is a no-op fallback.
+try {
+	process.loadEnvFile();
+} catch {
+	// no .env file present (e.g. CI) — rely on the process environment
+}
+
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import icon from 'astro-icon';

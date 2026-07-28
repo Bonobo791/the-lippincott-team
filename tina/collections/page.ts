@@ -9,9 +9,13 @@ import { contentBlockSchema } from '../../src/components/blocks/content.template
 import { videoBlockSchema } from '../../src/components/blocks/video.template';
 import { splitBlockSchema } from '../../src/components/blocks/split.template';
 import { teamGridBlockSchema } from '../../src/components/blocks/teamGrid.template';
+import { trustStripBlockSchema } from '../../src/components/blocks/trustStrip.template';
 import { faqBlockSchema } from '../../src/components/blocks/faq.template';
 import { communityGridBlockSchema } from '../../src/components/blocks/communityGrid.template';
 import { contactFormBlockSchema } from '../../src/components/blocks/contactForm.template';
+import { testimonialShowcaseBlockSchema } from '../../src/components/blocks/testimonialShowcase.template';
+import { awardsBlockSchema } from '../../src/components/blocks/awards.template';
+import { teamBannerBlockSchema } from '../../src/components/blocks/teamBanner.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -50,9 +54,13 @@ export const PageCollection: Collection = {
 				videoBlockSchema,
 				splitBlockSchema,
 				teamGridBlockSchema,
+				trustStripBlockSchema,
 				faqBlockSchema,
 				communityGridBlockSchema,
 				contactFormBlockSchema,
+				testimonialShowcaseBlockSchema,
+				awardsBlockSchema,
+				teamBannerBlockSchema,
 			],
 		},
 	],

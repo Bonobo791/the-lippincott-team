@@ -1,0 +1,156 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { isExternal, safeHref } from '../../lib/url';
+import type { PageBlock } from '../../lib/data';
+
+// Type is a pure derivation from the Tina schema (see src/lib/data.ts
+// conventions); kept local so the block pair is self-contained.
+type TestimonialShowcaseBlock = Extract<PageBlock, { __typename: 'PageBlocksTestimonialShowcase' }>;
+
+interface Props { data: Omit<TestimonialShowcaseBlock, '__typename'> }
+
+const { data } = Astro.props;
+const reviews = (data.testimonials ?? []).filter(r => r !== null);
+---
+<section class="font-apple bg-background py-20 md:py-32" data-testimonial-showcase>
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{data.title && (
+			<div class="h2-mask">
+				<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+			</div>
+		)}
+		<div class="mt-12 grid items-center gap-10 lg:mt-14 lg:grid-cols-[1.05fr_.95fr] lg:gap-20">
+			<div>
+				<div class="testi-frame relative overflow-hidden rounded-[18px]">
+					{data.videoUrl ? (
+						<video controls preload="none" playsinline poster={data.poster ?? undefined} class="aspect-[16/10] w-full bg-black object-cover" data-tina-field={tinaField(data, 'videoUrl')}>
+							<source src={data.videoUrl} type="video/mp4" />
+						</video>
+					) : data.poster ? (
+						<img src={data.poster} alt="" width="800" height="500" loading="lazy" decoding="async" class="aspect-[16/10] w-full object-cover" data-tina-field={tinaField(data, 'poster')} />
+					) : null}
+				</div>
+				{data.caption && <p data-tina-field={tinaField(data, 'caption')} class="mt-3 text-xs text-muted-foreground">{data.caption}</p>}
+			</div>
+			<div>
+				{reviews.length > 0 && (
+					<div class="relative z-[2] mx-3.5 -mt-11 max-w-[500px] rounded-[18px] bg-tile p-8 text-white md:p-12 lg:mx-0 lg:-mt-16 lg:ml-auto lg:mr-12">
+						{reviews.map((review, i) => (
+							<div class:list={['review-card', { active: i === 0, hidden: i !== 0 }]} data-tina-field={tinaField(review)}>
+								<blockquote class="text-[clamp(19px,1.8vw,23px)] leading-[1.4] tracking-[-0.01em]">
+									&ldquo;{review.quote}&rdquo;
+								</blockquote>
+								<cite class="mt-[18px] block text-xs not-italic text-[#cccccc]">
+									{review.author}{review.role ? ` — ${review.role}` : ''}
+								</cite>
+							</div>
+						))}
+					</div>
+				)}
+				{reviews.length > 1 && (
+					<div class="mt-6 flex items-center gap-3">
+						<button type="button" data-rev-prev aria-label="Previous review" class="flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-[#d2d2d7]/60 text-ink transition-all hover:bg-[#d2d2d7]/90 active:scale-95">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+						</button>
+						<button type="button" data-rev-next aria-label="Next review" class="flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-[#d2d2d7]/60 text-ink transition-all hover:bg-[#d2d2d7]/90 active:scale-95">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+						</button>
+						<span data-rev-count class="ml-2 text-xs text-muted-foreground">1 / {reviews.length}</span>
+					</div>
+				)}
+				{data.action?.link && (
+					<div class="mt-7">
+						<a
+							href={safeHref(data.action.link)}
+							data-tina-field={tinaField(data.action)}
+							{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-primary bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-primary transition-all hover:bg-primary/[0.06] active:scale-95"
+						>
+							{data.action.label ?? 'See All Reviews'}
+						</a>
+					</div>
+				)}
+			</div>
+		</div>
+	</div>
+</section>
+<style>
+	.review-card.active {
+		display: block;
+		animation: reviewIn 0.45s cubic-bezier(0.77, 0, 0.175, 1);
+	}
+	@keyframes reviewIn {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.review-card.active {
+			animation: none;
+		}
+	}
+</style>
+<script is:inline>
+	if (!window.__reviewCarouselBound) {
+		window.__reviewCarouselBound = true;
+		const initReviewCarousel = () => {
+			document.querySelectorAll('[data-testimonial-showcase]').forEach((root) => {
+				if (root.dataset.reviewCarouselBound) return;
+				root.dataset.reviewCarouselBound = '1';
+				const cards = root.querySelectorAll('.review-card');
+				const count = root.querySelector('[data-rev-count]');
+				if (cards.length < 2 || !count) return;
+				let idx = 0;
+				const show = (i) => {
+					idx = (i + cards.length) % cards.length;
+					cards.forEach((c, k) => {
+						c.classList.toggle('active', k === idx);
+						c.classList.toggle('hidden', k !== idx);
+					});
+					count.textContent = (idx + 1) + ' / ' + cards.length;
+				};
+				root.querySelector('[data-rev-prev]')?.addEventListener('click', () => show(idx - 1));
+				root.querySelector('[data-rev-next]')?.addEventListener('click', () => show(idx + 1));
+			});
+		};
+		// astro:page-load fires on first load and after each ClientRouter swap.
+		document.addEventListener('astro:page-load', initReviewCarousel);
+	}
+</script>
+<script>
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	// Clip-path bottom-up reveal on the client video frame (skipped under
+	// reduced motion). Bundled by Astro so gsap ships as a module, not a CDN tag.
+	// Module scripts run once, so re-bind on astro:page-load (fires on first
+	// load too) and kill the outgoing page's triggers before each swap.
+	gsap.registerPlugin(ScrollTrigger);
+	let testiTriggers: ScrollTrigger[] = [];
+	const initTestiReveal = () => {
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		document.querySelectorAll('.testi-frame').forEach((frame) => {
+			if ((frame as HTMLElement).dataset.testiRevealBound) return;
+			(frame as HTMLElement).dataset.testiRevealBound = '1';
+			const tween = gsap.fromTo(frame,
+				{ clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)' },
+				{
+					clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)',
+					ease: 'none',
+					scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 45%', scrub: true },
+				});
+			if (tween.scrollTrigger) testiTriggers.push(tween.scrollTrigger);
+		});
+	};
+	document.addEventListener('astro:page-load', initTestiReveal);
+	document.addEventListener('astro:before-swap', () => {
+		testiTriggers.forEach((t) => t.kill());
+		testiTriggers = [];
+	});
+</script>

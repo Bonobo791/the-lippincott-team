@@ -2,27 +2,100 @@
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
+import { getConfig } from '../../lib/data';
+import { isExternal, safeHref, telHref } from '../../lib/url';
 import type { CtaBlock } from '../../lib/data';
 
-interface Props { data: CtaBlock }
+interface Props { data: Omit<CtaBlock, '__typename'> }
 
 const { data } = Astro.props;
 const actions = (data.actions ?? []).filter(a => a !== null);
+// Blocks.astro passes only block data, so the contact row pulls the config
+// contact details straight from the loader (build-time / island SSR).
+const contact = (await getConfig()).data?.config?.contact ?? null;
+const isCrimson = data.variant === 'crimson';
+const phoneHref = telHref(contact?.phone);
 ---
+{isCrimson ? (
+	<section class="font-apple relative overflow-hidden bg-primary py-24 text-center text-white md:py-36">
+		<div class="beams" aria-hidden="true">
+			<div class="beam b1"></div>
+			<div class="beam b2"></div>
+			<div class="beam b4"></div>
+		</div>
+		<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
+			{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-normal italic" class="text-balance text-[clamp(2.1rem,4vw,3.2rem)] font-semibold leading-[1.1] tracking-[-0.02em]" data-tina-field={tinaField(data, 'title')} />}
+			{data.description && <p class="mx-auto mt-[18px] max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85" data-tina-field={tinaField(data, 'description')}>{data.description}</p>}
+			<div class="mt-10 flex flex-wrap justify-center gap-3.5">
+				{actions.map((action, index) => (
+					<a
+						href={safeHref(action.link) ?? '#'}
+						data-tina-field={tinaField(action)}
+						{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+						class={index === 0
+							? 'btn-magnetic inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-7 py-3.5 text-lg font-light leading-none text-primary transition-all hover:bg-section active:scale-95'
+							: 'inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-white/12 active:scale-95'}
+					>
+						{action.label}
+					</a>
+				))}
+			</div>
+			{(contact?.phone || contact?.email) && (
+				<div class="mt-11 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+					{phoneHref && (
+						<a href={phoneHref} class="flex items-center gap-2.5 text-[17px] hover:underline">
+							<Icon name="phone" class="size-[18px] text-white" />
+							{contact?.phone}
+						</a>
+					)}
+					{contact?.email && (
+						<a href={`mailto:${contact.email}`} class="flex items-center gap-2.5 text-[17px] hover:underline">
+							<Icon name="mail" class="size-[18px] text-white" />
+							{contact.email}
+						</a>
+					)}
+				</div>
+			)}
+		</div>
+	</section>
+) : (
 <Section>
 	<div class="text-center">
-		<h2 class="text-balance text-4xl font-semibold lg:text-5xl" data-tina-field={tinaField(data, 'title')}>{data.title}</h2>
-		<p class="mt-4 text-muted-foreground" data-tina-field={tinaField(data, 'description')}>{data.description}</p>
+		{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold text-primary" class="text-balance text-4xl font-light tracking-tight lg:text-5xl" data-tina-field={tinaField(data, 'title')} />}
+		{data.description && <p class="mx-auto mt-4 max-w-2xl text-muted-foreground" data-tina-field={tinaField(data, 'description')}>{data.description}</p>}
 		<div class="mt-12 flex flex-wrap justify-center gap-4">
-			{actions.map((action) => (
-				<div class="bg-foreground/10 rounded-2xl border p-0.5" data-tina-field={tinaField(action)}>
-					<Button href={action.link} size="lg" variant={action.type === 'link' ? 'ghost' : 'default'} class="rounded-xl px-5 text-base">
+			{actions.map((action, index) => (
+				<div data-tina-field={tinaField(action)}>
+					<Button href={action.link} size="lg" variant={action.type === 'link' ? 'ghost' : index === 0 ? 'default' : 'secondary'} class="px-5">
 						{action.icon && <Icon name={action.icon} class="size-4" />}
 						<span class="text-nowrap">{action.label}</span>
 					</Button>
 				</div>
 			))}
 		</div>
+		{(contact?.phone || contact?.email) && (
+			<div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+				{phoneHref && (
+					<a href={phoneHref} class="flex items-center gap-3">
+						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">
+							<Icon name="phone" class="size-4 text-foreground" />
+						</span>
+						<span class="font-bold text-foreground">{contact?.phone}</span>
+					</a>
+				)}
+				{contact?.phone && contact?.email && <span aria-hidden="true" class="h-5 w-px bg-border"></span>}
+				{contact?.email && (
+					<a href={`mailto:${contact.email}`} class="flex items-center gap-3">
+						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">
+							<Icon name="mail" class="size-4 text-foreground" />
+						</span>
+						<span class="font-bold text-foreground">{contact.email}</span>
+					</a>
+				)}
+			</div>
+		)}
 	</div>
 </Section>
+)}

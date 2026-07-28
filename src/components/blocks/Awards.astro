@@ -1,0 +1,85 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { isExternal, safeHref } from '../../lib/url';
+import type { PageBlock } from '../../lib/data';
+
+// Type is a pure derivation from the Tina schema (see src/lib/data.ts
+// conventions); kept local so the block pair is self-contained.
+type AwardsBlock = Extract<PageBlock, { __typename: 'PageBlocksAwards' }>;
+
+interface Props { data: Omit<AwardsBlock, '__typename'> }
+
+const { data } = Astro.props;
+const items = (data.items ?? []).filter(i => i !== null);
+---
+<section class="font-apple bg-section py-20 md:py-32">
+	<div class="mx-auto grid max-w-[1200px] gap-12 px-6 md:px-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
+		<div class="self-start lg:sticky lg:top-[110px]">
+			{data.title && (
+				<div class="h2-mask">
+					<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+				</div>
+			)}
+			{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
+			{data.action?.link && (
+				<a
+					href={safeHref(data.action.link)}
+					data-tina-field={tinaField(data.action)}
+					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+					class="btn-magnetic mt-8 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-[22px] py-[11px] text-[17px] leading-none text-white transition-colors hover:bg-[#9e1e2c] active:scale-95"
+				>
+					{data.action.label ?? 'Schedule a Consultation'}
+				</a>
+			)}
+		</div>
+		{items.length > 0 && (
+			<div class="award-list">
+				{items.map((item) => (
+					<div class="award" data-tina-field={tinaField(item)}>
+						<h3 class="mb-2 text-[21px] font-semibold tracking-[-0.02em] text-ink">{item.title}</h3>
+						{item.summary && <p class="max-w-[52ch] text-[17px] text-body">{item.summary}</p>}
+					</div>
+				))}
+			</div>
+		)}
+	</div>
+</section>
+<style>
+	.award-list {
+		counter-reset: award;
+	}
+	.award {
+		position: relative;
+		padding: 30px 0 30px 60px;
+		border-top: 1px solid var(--hairline);
+		counter-increment: award;
+	}
+	@media (min-width: 768px) {
+		.award {
+			padding-left: 76px;
+		}
+	}
+	.award:last-child {
+		border-bottom: 1px solid var(--hairline);
+	}
+	.award::before {
+		content: '0' counter(award);
+		position: absolute;
+		left: 0;
+		top: 32px;
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--primary);
+	}
+	.award::after {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: 60px;
+		width: 7px;
+		height: 7px;
+		background: var(--primary);
+	}
+</style>

@@ -1,4 +1,14 @@
 import { defineConfig } from "tinacms";
+
+// The tinacms CLI runs this file in plain Node, so .env is not auto-loaded —
+// load it explicitly for local builds (Node >= 20.6). Hosted builds (Netlify
+// etc.) inject these vars into the process env instead.
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file present (e.g. CI) — rely on the process environment
+}
+
 import { BlogCollection } from "./collections/blog";
 import { CommunityCollection } from "./collections/community";
 import { GlobalConfigCollection } from "./collections/global-config";

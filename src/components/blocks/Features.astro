@@ -2,44 +2,106 @@
 import { tinaField } from '@tinacms/astro/tina-field';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
-import Card from '../ui/Card.astro';
-import CardHeader from '../ui/CardHeader.astro';
-import CardContent from '../ui/CardContent.astro';
+import { isExternal, safeHref } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
 import type { FeaturesBlock } from '../../lib/data';
 
-interface Props { data: FeaturesBlock }
+interface Props { data: Omit<FeaturesBlock, '__typename'> }
 
 const { data } = Astro.props;
 const items = (data.items ?? []).filter(it => it !== null);
+const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
+const isEditorial = data.variant === 'editorial';
+const isServices = data.variant === 'services';
+const externalAttrs = (href?: string | null) =>
+	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
+{isServices ? (
+	<section class="font-apple border-t border-hairline bg-background py-20 md:py-32">
+		<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+			{data.title && (
+				<div class="h2-mask">
+					<SplitHeading as="h2" text={data.title} accentClass="font-normal italic" data-tina-field={tinaField(data, 'title')} class="text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+				</div>
+			)}
+			{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
+			<div class="mt-12 grid gap-10 md:mt-14 md:grid-cols-3 md:gap-16">
+				{items.map((item) => (
+					<div data-tina-field={tinaField(item)} class="border-t border-ink pt-[26px]">
+						{item.icon && (
+							<span data-tina-field={tinaField(item, 'icon')} class="mb-[18px] block text-primary">
+								<Icon name={item.icon} class="size-8" />
+							</span>
+						)}
+						<h3 data-tina-field={tinaField(item, 'title')} class="mb-2.5 text-[21px] font-semibold tracking-[-0.02em] text-ink">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mb-5 text-[17px] text-body [&_p]:m-0">
+							<TinaMarkdown content={item.text} components={mdxComponents} />
+						</div>
+						{item.action?.label && item.action?.link && (
+							<a
+								href={safeHref(item.action.link)}
+								data-tina-field={tinaField(item, 'action')}
+								{...externalAttrs(item.action.link)}
+								class="group/link inline-flex items-center gap-1.5 text-[17px] text-primary hover:underline"
+							>
+								{item.action.label}
+								<i class="not-italic transition-transform duration-300 group-hover/link:translate-x-1">→</i>
+							</a>
+						)}
+					</div>
+				))}
+			</div>
+		</div>
+	</section>
+) : (
 <Section>
 	<div class="mx-auto max-w-5xl px-6">
 		<div class="text-center">
-			<h2 data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-semibold lg:text-5xl">{data.title}</h2>
+			<SplitHeading as="h2" text={data.title ?? ''} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-light lg:text-5xl" />
 			<p data-tina-field={tinaField(data, 'description')} class="mt-4 text-muted-foreground">{data.description}</p>
 		</div>
-		<Card class="mx-auto mt-8 grid max-w-sm divide-y overflow-hidden md:mt-16 md:max-w-full md:grid-cols-3 md:divide-x md:divide-y-0 *:text-center">
-			{items.map((item) => (
-				<div data-tina-field={tinaField(item)}>
-					<CardHeader class="pb-3">
-						<div class="relative mx-auto size-36">
-							<div aria-hidden class="absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-							<div aria-hidden class="absolute inset-0 bg-radial from-transparent to-background to-75%"></div>
-							<div data-tina-field={tinaField(item, 'icon')} class="bg-background absolute inset-0 m-auto flex size-12 items-center justify-center border-l border-t">
-								{item.icon && <Icon name={item.icon} class="size-6" />}
-							</div>
-						</div>
-						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 font-medium">{item.title}</h3>
-					</CardHeader>
-					<CardContent class="text-sm pb-8 text-muted-foreground">
-						<div data-tina-field={tinaField(item, 'text')}>
+		<div class={isEditorial ? 'mt-8 grid gap-10 md:mt-16 md:grid-cols-2' : 'mt-8 grid gap-6 md:mt-16 md:grid-cols-3'}>
+			{items.map((item, i) => (
+				isEditorial ? (
+					<div data-tina-field={tinaField(item)}>
+						<div aria-hidden="true" class="h-[3px] w-[70px] bg-primary"></div>
+						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
 							<TinaMarkdown content={item.text} components={mdxComponents} />
 						</div>
-					</CardContent>
-				</div>
+						{item.action?.label && item.action?.link && (
+							<div data-tina-field={tinaField(item, 'action')} class="mt-6">
+								<Button href={item.action.link} {...externalAttrs(item.action.link)} class="w-full">
+									<span class="text-nowrap">{item.action.label}</span>
+								</Button>
+							</div>
+						)}
+					</div>
+				) : (
+					<div data-tina-field={tinaField(item)} class={item.action?.label && item.action?.link ? 'flex flex-col rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]' : 'rounded-2xl bg-white p-8 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]'}>
+						{item.icon && (
+							<div data-tina-field={tinaField(item, 'icon')} class:list={['flex size-14 items-center justify-center rounded-[14px] text-white', tileColors[i % tileColors.length]]}>
+								<Icon name={item.icon} class="size-7" />
+							</div>
+						)}
+						<h3 data-tina-field={tinaField(item, 'title')} class="mt-6 text-xl font-bold text-foreground">{item.title}</h3>
+						<div data-tina-field={tinaField(item, 'text')} class="mt-3 text-sm leading-relaxed text-body">
+							<TinaMarkdown content={item.text} components={mdxComponents} />
+						</div>
+						{item.action?.label && item.action?.link && (
+							<div data-tina-field={tinaField(item, 'action')} class="mt-auto pt-6">
+								<Button href={item.action.link} {...externalAttrs(item.action.link)} class="w-full">
+									<span class="text-nowrap">{item.action.label}</span>
+								</Button>
+							</div>
+						)}
+					</div>
+				)
 			))}
-		</Card>
+		</div>
 	</div>
 </Section>
+)}

@@ -1,12 +1,12 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
 @import '@fontsource-variable/montserrat';
-@import '@fontsource-variable/arimo';
 @import '@fontsource/libre-baskerville/400.css';
 @import '@fontsource/libre-baskerville/700.css';
 @plugin '@tailwindcss/typography';
 
 @theme inline {
-	--font-sans: 'Arimo Variable', 'Arimo', system-ui, sans-serif;
+	--font-sans: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
 	--font-heading: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
 	--font-serif: 'Libre Baskerville', Georgia, serif;
 	--radius-sm: calc(var(--radius) - 4px);
@@ -15,6 +15,7 @@
 	--radius-xl: calc(var(--radius) + 4px);
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
+	--color-body: var(--body);
 	--color-card: var(--card);
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
@@ -31,6 +32,14 @@
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
+	--color-chip: var(--chip);
+	--color-section: var(--section);
+	--color-stat-label: var(--stat-label);
+	--color-tile: var(--tile);
+	--color-gold: var(--gold);
+	--color-accent-on-dark: var(--accent-on-dark);
+	--color-ink: var(--ink);
+	--color-hairline: var(--hairline);
 	--color-chart-1: var(--chart-1);
 	--color-chart-2: var(--chart-2);
 	--color-chart-3: var(--chart-3);
@@ -39,25 +48,35 @@
 }
 
 :root {
-	--radius: 0.625rem;
+	--radius: 1rem;
 	--background: #ffffff;
 	--foreground: #101828;
+	--body: #333333;
 	--card: #ffffff;
 	--card-foreground: #101828;
 	--popover: #ffffff;
 	--popover-foreground: #101828;
 	--primary: #c22737;
 	--primary-foreground: #ffffff;
-	--secondary: #f9fafb;
-	--secondary-foreground: #101828;
-	--muted: #f9fafb;
-	--muted-foreground: #475467;
-	--accent: #f9fafb;
+	--secondary: #101828;
+	--secondary-foreground: #ffffff;
+	--muted: #f5f5f6;
+	--muted-foreground: #7a7a7a;
+	--accent: #f5f5f6;
 	--accent-foreground: #101828;
 	--destructive: oklch(0.577 0.245 27.325);
 	--border: #e4e7ec;
 	--input: #e4e7ec;
 	--ring: #c22737;
+	--chip: #fbe9ec;
+	--section: #f5f5f6;
+	--stat-label: #99a1af;
+	/* Apple-style redesign tokens (homepage + chrome) */
+	--tile: #272729;
+	--gold: #f2b01e;
+	--accent-on-dark: #e8596b;
+	--ink: #1d1d1f;
+	--hairline: #e0e0e0;
 	--chart-1: oklch(0.646 0.222 41.116);
 	--chart-2: oklch(0.6 0.118 184.704);
 	--chart-3: oklch(0.398 0.07 227.392);
@@ -71,7 +90,7 @@
 	}
 	body {
 		background-color: var(--background);
-		color: var(--foreground);
+		color: var(--body);
 		font-family: var(--font-sans);
 		margin: 0;
 	}
@@ -108,4 +127,161 @@
 	--tw-prose-pre-bg: var(--muted);
 	--tw-prose-th-borders: var(--border);
 	--tw-prose-td-borders: var(--border);
+}
+
+/* Tables in rich-text prose (community neighborhood comparisons): hairline
+   borders, comfortable cell padding, and a bold red first column. Unlayered
+   so it wins over the typography plugin's layered table styles. */
+.prose table th,
+.prose table td {
+	border: 1px solid var(--border);
+	padding: 0.75rem 1rem;
+}
+
+.prose table th:first-child,
+.prose table td:first-child {
+	font-weight: 700;
+	color: var(--primary);
+}
+
+/* ---------------------------------------------------------------------------
+   Apple-style redesign (homepage blocks + site chrome). The `.font-apple`
+   stack mirrors the design's system/Inter font; Montserrat stays the global
+   default elsewhere.
+--------------------------------------------------------------------------- */
+.font-apple {
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', 'Inter',
+		'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Eyebrow: red tick + uppercase label (dark sections use --accent-on-dark). */
+.eyebrow {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--primary);
+}
+.eyebrow::before {
+	content: '';
+	width: 28px;
+	height: 2px;
+	background: var(--primary);
+	flex: none;
+}
+.eyebrow.on-dark {
+	color: var(--accent-on-dark);
+}
+.eyebrow.on-dark::before {
+	background: var(--accent-on-dark);
+}
+
+/* Masked headline reveals: h2 slides up when the shared observer adds .in. */
+.h2-mask {
+	overflow: hidden;
+}
+.h2-mask > * {
+	display: block;
+	transform: translateY(108%);
+	transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+}
+.h2-mask.in > * {
+	transform: translateY(0);
+}
+
+/* Hero masked-line reveal (CSS-only, plays on load). */
+.mask-line {
+	display: block;
+	overflow: hidden;
+}
+.mask-line > span {
+	display: block;
+	transform: translateY(112%);
+	animation: lineUp 1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+.mask-line:nth-child(2) > span {
+	animation-delay: 0.14s;
+}
+@keyframes lineUp {
+	to {
+		transform: translateY(0);
+	}
+}
+
+/* Drifting light beams (hero / final CTA atmosphere). */
+.beams {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+.beam {
+	position: absolute;
+	height: 7px;
+	width: 150vmax;
+	left: -25vmax;
+	background: rgba(255, 255, 255, 0.9);
+	transform-origin: center;
+}
+.beam.b1 {
+	top: 18%;
+	transform: rotate(-24deg);
+	animation: drift1 34s linear infinite;
+	opacity: 0.08;
+}
+.beam.b2 {
+	top: 64%;
+	transform: rotate(-24deg);
+	animation: drift1 46s linear infinite;
+	opacity: 0.06;
+	height: 5px;
+}
+.beam.b3 {
+	top: 40%;
+	transform: rotate(-52deg);
+	animation: drift2 52s linear infinite;
+	opacity: 0.1;
+	height: 9px;
+	background: var(--primary);
+}
+.beam.b4 {
+	top: 82%;
+	transform: rotate(-16deg);
+	animation: drift2 38s linear infinite;
+	opacity: 0.07;
+	height: 4px;
+}
+@keyframes drift1 {
+	from {
+		translate: -6vmax 0;
+	}
+	to {
+		translate: 6vmax 0;
+	}
+}
+@keyframes drift2 {
+	from {
+		translate: 5vmax 0;
+	}
+	to {
+		translate: -5vmax 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.beam {
+		animation: none;
+	}
+	.mask-line > span {
+		animation: none;
+		transform: none;
+	}
+	.h2-mask > * {
+		transform: none;
+		transition: none;
+	}
 }

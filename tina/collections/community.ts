@@ -1,4 +1,11 @@
 import type { Collection } from "tinacms";
+import { heroBlockSchema } from "../../src/components/blocks/hero.template";
+import { splitBlockSchema } from "../../src/components/blocks/split.template";
+import { featuresBlockSchema } from "../../src/components/blocks/features.template";
+import { statsBlockSchema } from "../../src/components/blocks/stats.template";
+import { contentBlockSchema } from "../../src/components/blocks/content.template";
+import { faqBlockSchema } from "../../src/components/blocks/faq.template";
+import { ctaBlockSchema } from "../../src/components/blocks/cta.template";
 
 export const CommunityCollection: Collection = {
   name: "community",
@@ -20,6 +27,19 @@ export const CommunityCollection: Collection = {
     {
       type: "string", name: "intro", label: "Intro",
       ui: { component: "textarea" },
+    },
+    {
+      type: "object", list: true, name: "blocks", label: "Page Sections",
+      ui: { visualSelector: true },
+      templates: [
+        heroBlockSchema,
+        splitBlockSchema,
+        featuresBlockSchema,
+        statsBlockSchema,
+        contentBlockSchema,
+        faqBlockSchema,
+        ctaBlockSchema,
+      ],
     },
     { type: "rich-text", name: "body", label: "Body", isBody: true },
     {

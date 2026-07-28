@@ -35,6 +35,12 @@ before working in these areas:
   `netlify-config` (`netlify.toml` / build config), `netlify-functions`,
   `netlify-edge-functions`, `netlify-frameworks`. Consult these when working
   on Netlify deployment or configuration.
+- `.agents/skills/visual-loop` — iterative visual QA: edit code, screenshot
+  with Playwright (`scripts/audit/shoot.mjs` / `probe-styles.mjs`), view the
+  PNGs, compare to spec/baseline, re-shoot until clean. Use for any frontend
+  change that must be verified visually. Exception: changes that cannot affect
+  rendering (build scripts, backend logic, tooling, docs) skip the screenshot
+  loop — a green `pnpm build:local` is sufficient verification for those.
 
 ## Build and dev commands
 
@@ -79,12 +85,24 @@ above rather than bare `astro build`.
   picks it up automatically.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
-  CommunityGrid). **Convention: each block
-  is a pair** — `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
+  CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner — page
+  collection only). **Convention: each block is a pair** — `<Name>.astro`
+  (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts`.
+  template in `tina/collections/page.ts`. **Watch field-name collisions across
+  the block union**: two templates in the same `blocks` field may not reuse a
+  field name with a different value type (e.g. `body` rich-text JSON vs
+  string, `image` object vs image string) — Tina's codegen fails with
+  "Fields ... conflict". Pick a distinct name (`summary`, `description`,
+  `backgroundImage`) instead. The shared block templates serve
+  two collections: `page.ts` registers all of them, while
+  `tina/collections/community.ts` reuses a reduced 7-template set (hero,
+  split, features, stats, content, faq, cta) — Tina namespaces block
+  typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
+  and `Blocks.astro` dispatches on the suffix after stripping the
+  `Page|CommunityBlocks` prefix.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
   registry; `src/components/ui/` — reusable UI components (including
   `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
@@ -99,13 +117,84 @@ above rather than bare `astro build`.
 - `scripts/migrate/` — one-off WordPress→Tina migration pipeline, kept for
   provenance. `data/` (cached WP API responses) is gitignored; run scripts
   with `node scripts/migrate/<name>.mjs`.
+- `scripts/audit/` — Playwright design-fidelity tooling used by the
+  `visual-loop` skill: `shoot.mjs` (screenshots of 10 templates at 3 viewports
+  + interaction shots + error manifest) and `probe-styles.mjs` (computed-style
+  extraction for numeric spec comparison). Run with
+  `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
+  gitignored `.launch/qa/`. For interactive browsing use
+  `npx playwright cli --browser=chromium` (no system Chrome installed).
 
 ## Key conventions
 
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
+- The generated client reads content from a **seeded cache**
+  (`tina/__generated__/.cache/<timestamp>`) written by the last Tina build —
+  plain `npx astro dev` keeps serving that snapshot. After editing content
+  files outside the Tina admin, rerun `pnpm build:local` and restart the dev
+  server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
+- Split headings: editors mark the accented phrase in plain Tina string fields
+  with `**...**` (the brand's light+bold heading device). Render them with
+  `src/components/ui/SplitHeading.astro` (parser in
+  `src/lib/split-heading.ts`); the accent styling comes from its `accentClass`
+  prop.
+- Fonts and tokens: the body font is **Montserrat** (Arimo was removed in the
+  design-fidelity pass); `--font-sans`/`--font-heading` are Montserrat,
+  `--font-serif` is Libre Baskerville. Brand theme tokens live in the
+  `@theme` block of `src/styles/global.css`: `--body`, `--secondary` (navy
+  `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
+- Hero block: four `variant`s — `simple`, `photo`, `glass`, `video` — plus
+  `backgroundImage`, `backgroundVideo` (MP4 URL, optional) and
+  `eyebrow` fields (eyebrow renders on photo/glass/video). The video variant
+  is the Apple-style full-viewport hero: bottom-left content, gradient scrim,
+  drifting light beams, and a masked-line headline reveal (editors split the
+  reveal lines with a line break in the headline). With no `backgroundVideo`
+  it renders `backgroundImage` as a full-bleed still. Video hosting plan:
+  ~2 MB silent 720p loops on Cloudflare R2 behind the CDN (URLs referenced
+  from Tina), poster-only on mobile — until then, stills only; don't commit
+  MP4s to the repo.
+- Apple-style homepage blocks (all render in the `.font-apple` system/Inter
+  stack with italic `**...**` accents via `SplitHeading`): `TrustStrip` (flat
+  parchment trust bar — title's plain segments = small label, accented = big
+  figure), `Stats` (near-black `--tile` count-up section), `TestimonialShowcase`
+  (video + dark quote-panel carousel), `Awards` (sticky intro + numbered
+  list), `TeamBanner` (crimson-gradient photo banner). Site chrome matches:
+  black 64px blur `Header.astro` and parchment `Footer.astro`.
+- Motion: `gsap` (npm dep, bundled via Astro `<script>` imports — never CDN)
+  drives the CommunityGrid `rail` variant's pinned horizontal pan and the
+  TestimonialShowcase clip-path reveal. Count-up stats, `.h2-mask` headline
+  reveals and magnetic `.btn-magnetic` CTAs are vanilla JS (shared inline
+  script in `src/layouts/Base.astro`). Everything must no-op under
+  `prefers-reduced-motion`.
+- Cta block: `variant` — `default` (light) or `crimson` (solid red, beams,
+  contact row from `config.contact`). CommunityGrid: `variant` — `grid` or
+  `rail`. Features: `services` variant (ink top-rule, crimson icon, arrow
+  link). Shared Apple tokens live in `src/styles/global.css`: `--tile`,
+  `--gold`, `--accent-on-dark`, `--ink`, `--hairline`.
+- Split block: optional `eyebrow` renders as the red uppercase chip (same
+  styling as the Hero glass eyebrow) above the title.
+- Features block: optional `variant` — `cards` (default) or `editorial`
+  (borderless, ~70×3px red top-rule above each title, `md:grid-cols-2`, no
+  icon tile, spec pattern #12). Each item has an optional `action`
+  (`label`+`link`) rendering a full-width red Button pinned to the card
+  bottom; external http(s) links open in a new tab.
+- Prose tables (rich-text bodies, e.g. community neighborhood comparisons):
+  hairline `var(--border)` borders, padded cells, and a bold red first
+  column — styled globally under the `.prose` rules in
+  `src/styles/global.css`.
+- Sticky mobile click-to-call bar: a pure-CSS fixed bottom bar in
+  `src/layouts/Base.astro` (`lg:hidden`, `bg-primary`, phone number from
+  `config.contact.phone` as a `tel:` link, no JS). A `h-14 lg:hidden` spacer
+  after the footer keeps it from covering footer content; it sits at `z-10`,
+  below the sticky header (`z-20`) so the open mobile menu paints over it.
+- CommunityGrid cards link to the community's Sierra property-search URL
+  (external, new tab) when one exists — the `sierraLinks` map in
+  `src/components/blocks/CommunityGrid.astro` holds the URLs recovered from
+  the migrated community bodies; communities without one fall back to their
+  internal community page.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**
@@ -120,6 +209,16 @@ There is **no test suite, linter, or formatter configured** in this project
   any type/schema errors — the Tina codegen + Astro build is the de-facto check.
 - `npx astro check` is available via `@astrojs/check` for type-checking
   `.astro` files.
+- For visual iteration, run `npx astro dev --port 4322` (not `pnpm dev`) and
+  screenshot against it — component/CSS edits hot-reload in under a second,
+  no build per round. Use the separate port so a `pnpm preview` server can
+  stay on 4321. Reserve `NODE_ENV=production pnpm build:local` + `pnpm preview`
+  for per-task gates, Tina schema changes, production-only behavior
+  (`compressHTML`, GA4 gating, island endpoints), and final evidence shots. See the `visual-loop`
+  skill for the full loop. Caveat: bare `astro dev` only serves content when
+  `tina/__generated__/client.ts` points at TinaCloud — `pnpm dev` and
+  `pnpm build:local` both pin it to `localhost:4001`, so after either, run a
+  credentialed `pnpm build` (or use `pnpm dev`) before dev-server iteration.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud

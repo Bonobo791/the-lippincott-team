@@ -1,7 +1,7 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
-import type { CmsConfig, CmsConfigContactLink } from '../lib/data';
-import { safeHref, telHref } from '../lib/url';
+import type { CmsConfig, CmsConfigContactLink, CmsConfigNav, CmsConfigNavChild } from '../lib/data';
+import { safeHref } from '../lib/url';
 import IconLink from "./IconLink.astro";
 
 interface Props {
@@ -17,18 +17,45 @@ const contactLinks = (config?.contactLinks ?? []).filter(
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const contact = config?.contact ?? null;
 const today = new Date();
+
+const childrenOf = (item: CmsConfigNav | null) =>
+	(item?.children ?? []).filter((child): child is CmsConfigNavChild => child !== null);
+const communitiesNav = nav.find((item) => item.link?.startsWith('/northwest-houston-real-estate')) ?? null;
+const schoolsNav = nav.find((item) => item.link?.startsWith('/northwest-houston-schools-real-estate')) ?? null;
+const companyNav = nav.filter((item) => ['/about/', '/blog/', '/contact-us/'].includes(item.link ?? ''));
+const columns = [
+	{ heading: 'Communities', href: communitiesNav?.link ?? null, links: childrenOf(communitiesNav) },
+	{ heading: 'Schools', href: schoolsNav?.link ?? null, links: childrenOf(schoolsNav) },
+	{ heading: 'Company', href: null, links: companyNav },
+	{
+		heading: 'Resources',
+		href: null,
+		links: [
+			{ title: 'Privacy Policy', link: '/privacy-policy/' },
+			{ title: 'Terms and Conditions', link: '/terms-and-conditions/' },
+		],
+	},
+].filter((column) => column.links.length > 0);
 ---
 
-<footer class="bg-foreground text-background/70">
-	<div class="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
-		<div class="space-y-4">
+<footer class="font-apple border-t border-hairline bg-section text-body">
+	<div class="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-12 px-6 pb-10 pt-14 md:pt-20 lg:grid-cols-6">
+		<div class="col-span-2 space-y-4">
 			{seo?.logo ? (
-				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="191" height="55" class="h-10 w-auto" />
-			) : (
-				<span class="text-sm font-semibold uppercase tracking-[0.175em] text-background">{seo?.title ?? 'Home'}</span>
-			)}
+				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="52" height="52" class="size-[52px]" />
+			) : null}
+			<div>
+				<p class="text-[17px] font-semibold text-ink">{seo?.title ?? 'The Lippincott Team'}</p>
+				<p class="text-xs uppercase tracking-[0.04em] text-muted-foreground">eXp Realty</p>
+			</div>
 			{config?.footerBlurb && (
-				<p class="text-sm leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
+				<p class="text-xs leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
+			)}
+			{contact?.email && (
+				<p class="text-xs">
+					Contact us at{' '}
+					<a href={`mailto:${contact.email}`} class="text-primary transition-colors hover:underline">{contact.email}</a>
+				</p>
 			)}
 			{contactLinks.length > 0 && (
 				<div class="flex gap-4">
@@ -43,46 +70,40 @@ const today = new Date();
 				</div>
 			)}
 		</div>
-		<nav aria-label="Footer">
-			<h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.175em] text-background">Quick Links</h2>
-			<ul class="space-y-2 text-sm">
-				{nav.map((item) => (
-					<li>
-						<a
-							href={safeHref(item.link)}
-							class="transition-colors hover:text-background"
-							{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-						>
-							{item.title}
-						</a>
-					</li>
-				))}
-			</ul>
-		</nav>
-		<div>
-			<h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.175em] text-background">Contact</h2>
-			<address class="space-y-2 text-sm not-italic">
-				{contact?.address && (
-					<p>{contact.address.split('\n').map((line, i) => (<>{i > 0 && <br />}{line}</>))}</p>
-				)}
-				{contact?.phone && (
-					<p><a href={telHref(contact.phone)} class="transition-colors hover:text-background">{contact.phone}</a></p>
-				)}
-				{contact?.email && (
-					<p><a href={`mailto:${contact.email}`} class="transition-colors hover:text-background">{contact.email}</a></p>
-				)}
-			</address>
-		</div>
+		{columns.map((column) => (
+			<nav aria-label={`Footer ${column.heading}`}>
+				<h2 class="mb-3.5 text-sm font-semibold tracking-[-0.01em] text-ink">
+					{column.href ? (
+						<a href={safeHref(column.href)} class="transition-colors hover:text-primary">{column.heading}</a>
+					) : (
+						column.heading
+					)}
+				</h2>
+				<ul class="text-[15px] leading-8">
+					{column.links.map((item) => (
+						<li>
+							<a
+								href={safeHref(item.link)}
+								class="transition-colors hover:text-ink"
+								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							>
+								{item.title}
+							</a>
+						</li>
+					))}
+				</ul>
+			</nav>
+		))}
 	</div>
-	<div class="border-t border-background/10">
-		<div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-5 text-xs sm:flex-row">
+	<div class="border-t border-hairline">
+		<div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-5 text-xs text-muted-foreground sm:flex-row">
 			<p>
 				&copy; {today.getFullYear()}{' '}
 				<span data-tina-field={seo ? tinaField(seo, "siteOwner") : undefined}>{seo?.siteOwner}</span>. All rights reserved.
 			</p>
-			<p class="flex gap-4">
-				<a href="/privacy-policy/" class="transition-colors hover:text-background">Privacy Policy</a>
-				<a href="/terms-and-conditions/" class="transition-colors hover:text-background">Terms &amp; Conditions</a>
+			<p class="flex gap-6">
+				<a href="/privacy-policy/" class="transition-colors hover:text-ink">Privacy Policy</a>
+				<a href="/terms-and-conditions/" class="transition-colors hover:text-ink">Terms &amp; Conditions</a>
 			</p>
 		</div>
 	</div>

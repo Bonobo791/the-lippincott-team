@@ -1,0 +1,62 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import { splitHeading } from '../../lib/split-heading';
+import type { PageBlock } from '../../lib/data';
+
+// Type is a pure derivation from the Tina schema (see src/lib/data.ts
+// conventions); kept local so the block pair is self-contained.
+type TrustStripBlock = Extract<PageBlock, { __typename: 'PageBlocksTrustStrip' }>;
+
+interface Props { data: Omit<TrustStripBlock, '__typename'> }
+
+const { data } = Astro.props;
+const items = (data.items ?? []).filter(i => i !== null);
+const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
+const externalAttrs = (href?: string | null) =>
+	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+// Title doubles as the lead cell: plain segments render as the small label,
+// **accented** segments as the big figure ("Trusted by **1,000+ families**").
+const titleSegments = data.title ? splitHeading(data.title) : [];
+const cellClass =
+	'flex flex-col justify-center gap-1 border-t border-hairline px-6 py-6 md:border-l md:border-t-0 md:px-10 first:border-t-0 md:first:border-l-0';
+---
+<div class="font-apple border-b border-hairline bg-section">
+	<div class="mx-auto flex max-w-[1200px] flex-col md:flex-row md:items-stretch">
+		{titleSegments.length > 0 && (
+			<div class={cellClass + ' md:flex-[1.2]'} data-tina-field={tinaField(data, 'title')}>
+				{titleSegments.map((segment) => (
+					segment.accent
+						? <span class="text-[21px] font-semibold tracking-[-0.02em] text-ink">{segment.text}</span>
+						: <span class="text-xs text-muted-foreground">{segment.text}</span>
+				))}
+			</div>
+		)}
+		{items.map((item) => {
+			const inner = (
+				<>
+					{item.ratingImage ? (
+						<img src={item.ratingImage} alt="" width="68" height="12" loading="lazy" decoding="async" class="h-3.5 w-auto object-contain" />
+					) : (
+						<span class="text-sm tracking-[2px] text-gold" aria-label={item.rating ?? 'Rated'}>★★★★★</span>
+					)}
+					{item.image
+						? <img src={item.image} alt={item.imageAlt ?? ''} width="109" height="76" loading="lazy" decoding="async" class="h-6 w-auto object-contain" />
+						: item.wordmark
+							? <span data-tina-field={tinaField(item, 'wordmark')} class="text-[17px] font-semibold text-ink">{item.wordmark}</span>
+							: null}
+					{item.rating && <span data-tina-field={tinaField(item, 'rating')} class="text-xs text-muted-foreground">{item.rating}</span>}
+					{item.caption && <span data-tina-field={tinaField(item, 'caption')} class="text-xs italic text-muted-foreground">{item.caption}</span>}
+				</>
+			);
+			return item.link ? (
+				<a data-tina-field={tinaField(item)} href={item.link} {...externalAttrs(item.link)} class={cellClass + ' flex-1 transition-colors hover:bg-black/[0.03]'}>
+					{inner}
+				</a>
+			) : (
+				<div data-tina-field={tinaField(item)} class={cellClass + ' flex-1'}>
+					{inner}
+				</div>
+			);
+		})}
+	</div>
+</div>

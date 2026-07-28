@@ -1,26 +1,104 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
-import Section from '../ui/Section.astro';
 import type { StatsBlock } from '../../lib/data';
 
-interface Props { data: StatsBlock }
+interface Props { data: Omit<StatsBlock, '__typename'> }
 
 const { data } = Astro.props;
 const stats = (data.stats ?? []).filter(s => s !== null);
+// Split editor strings like "$400M+" into prefix/number/suffix so the number
+// can count up while the "$", "M" and red "+" stay static.
+const parsed = stats.map((s) => {
+	const m = (s.stat ?? '').match(/^([^\d]*)([\d,]+)(.*?)(\+?)$/);
+	return {
+		raw: s.stat ?? '',
+		prefix: m?.[1] ?? '',
+		target: m ? Number(m[2].replace(/,/g, '')) : null,
+		comma: (m?.[2] ?? '').includes(','),
+		suffix: m?.[3] ?? '',
+		plus: m?.[4] ?? '',
+	};
+});
 ---
-<Section>
-	<div class="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-		<div class="mx-auto max-w-xl space-y-6 text-center">
-			<h2 data-tina-field={tinaField(data, 'title')} class="text-4xl font-medium lg:text-5xl">{data.title}</h2>
-			<p data-tina-field={tinaField(data, 'description')} class="text-muted-foreground">{data.description}</p>
-		</div>
-		<div class="grid divide-y *:text-center md:grid-cols-3 md:divide-x md:divide-y-0">
-			{stats.map((stat) => (
-				<div data-tina-field={tinaField(stat)} class="space-y-4 py-4">
-					<div data-tina-field={tinaField(stat, 'stat')} class="text-5xl font-bold">{stat.stat}</div>
-					<p data-tina-field={tinaField(stat, 'type')} class="text-muted-foreground">{stat.type}</p>
+<section data-stats-section class="font-apple relative overflow-hidden bg-tile py-20 text-white md:py-28">
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{data.title && <p data-tina-field={tinaField(data, 'title')} class="eyebrow on-dark relative">{data.title}</p>}
+		{data.description && <p data-tina-field={tinaField(data, 'description')} class="relative mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-[#cccccc]">{data.description}</p>}
+		<div class="relative mt-12 grid gap-8 md:mt-14 md:grid-cols-3 md:gap-16">
+			{parsed.map((stat, i) => (
+				<div data-tina-field={tinaField(stats[i])}>
+					<div class="flex items-baseline whitespace-nowrap text-[clamp(3rem,6vw,4.8rem)] font-semibold leading-none tracking-[-0.03em]">
+						{stat.target !== null ? (
+							<span
+								class="stat-count"
+								data-target={stat.target}
+								data-prefix={stat.prefix}
+								data-suffix={stat.suffix}
+								data-format={stat.comma ? 'comma' : undefined}
+							>{stat.prefix}{stat.comma ? stat.target.toLocaleString('en-US') : stat.target}{stat.suffix}</span>
+						) : (
+							<span>{stat.raw}</span>
+						)}
+						{stat.plus && <em class="not-italic text-accent-on-dark">{stat.plus}</em>}
+					</div>
+					<p data-tina-field={tinaField(stats[i], 'type')} class="mt-3 text-sm text-[#cccccc]">{stats[i].type}</p>
 				</div>
 			))}
 		</div>
 	</div>
-</Section>
+</section>
+<style>
+	[data-stats-section]::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: repeating-linear-gradient(-24deg, rgba(255, 255, 255, 0.024) 0 9px, transparent 9px 46px);
+		pointer-events: none;
+	}
+</style>
+<script is:inline>
+	if (!window.__statsCountBound) {
+		window.__statsCountBound = true;
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let obs = null;
+		const animateCount = (el) => {
+			const target = parseInt(el.dataset.target, 10);
+			const prefix = el.dataset.prefix || '';
+			const suffix = el.dataset.suffix || '';
+			const comma = el.dataset.format === 'comma';
+			const render = (v) => { el.textContent = prefix + (comma ? v.toLocaleString('en-US') : v) + suffix; };
+			if (reduced) { render(target); return; }
+			let start = null;
+			const dur = 1700;
+			const step = (ts) => {
+				if (!start) start = ts;
+				const p = Math.min((ts - start) / dur, 1);
+				const eased = 1 - Math.pow(1 - p, 3);
+				render(Math.round(target * eased));
+				if (p < 1) requestAnimationFrame(step);
+			};
+			requestAnimationFrame(step);
+		};
+		const initStatsCount = () => {
+			obs = new IntersectionObserver((entries) => {
+				entries.forEach((e) => {
+					if (e.isIntersecting) {
+						e.target.querySelectorAll('.stat-count').forEach(animateCount);
+						obs.unobserve(e.target);
+					}
+				});
+			}, { threshold: 0.3 });
+			document.querySelectorAll('[data-stats-section]').forEach((s) => {
+				if (s.dataset.statsCountBound) return;
+				s.dataset.statsCountBound = '1';
+				obs.observe(s);
+			});
+		};
+		// astro:page-load fires on first load and after each ClientRouter swap;
+		// before-swap drops the observer tied to the outgoing DOM.
+		document.addEventListener('astro:page-load', initStatsCount);
+		document.addEventListener('astro:before-swap', () => {
+			if (obs) { obs.disconnect(); obs = null; }
+		});
+	}
+</script>
