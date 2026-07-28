@@ -21,20 +21,15 @@ await page.goto('https://lippincottteam.com/', { waitUntil: 'domcontentloaded', 
 await page.waitForFunction(() => !document.title.includes('Just a moment'), null, { timeout: 60000 });
 await page.waitForTimeout(2000);
 console.log('challenge cleared, title:', await page.title());
+// context.request shares the browser context's storage state, so the
+// Cloudflare-cleared session carries over; response.body() streams straight
+// to disk as a Buffer (no in-page Base64 round-trip).
+const request = page.context().request;
 for (const job of jobs) {
-	const b64 = await page.evaluate(async (url) => {
-		const res = await fetch(url);
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-		const buf = await res.arrayBuffer();
-		let bin = '';
-		const bytes = new Uint8Array(buf);
-		const chunk = 0x8000;
-		for (let i = 0; i < bytes.length; i += chunk) {
-			bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-		}
-		return btoa(bin);
-	}, job.url);
-	writeFileSync(job.out, Buffer.from(b64, 'base64'));
-	console.log('saved', job.out, Buffer.from(b64, 'base64').length, 'bytes');
+	const response = await request.get(job.url);
+	if (!response.ok()) throw new Error(`HTTP ${response.status()} fetching ${job.url}`);
+	const body = await response.body();
+	writeFileSync(job.out, body);
+	console.log('saved', job.out, body.length, 'bytes');
 }
 await browser.close();
