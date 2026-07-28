@@ -22,17 +22,17 @@ const isCurrent = (href?: string | null) =>
 ---
 
 <header class="font-apple sticky top-0 z-20 w-full border-b border-[rgba(246,242,234,0.12)] bg-[rgba(23,21,26,0.82)] backdrop-blur-[14px]">
-	<div class="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-6 px-6">
+	<div class="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-6 px-6">
 		<a href="/" class="flex shrink-0 items-center gap-3 text-white">
 			{seo?.logo ? (
-				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="38" height="38" class="size-[38px] max-sm:size-8" data-tina-field={tinaField(seo, "logo")} />
+				<img src={seo.logo} alt="" width="38" height="38" class="size-[38px] max-sm:size-8" data-tina-field={tinaField(seo, "logo")} />
 			) : null}
 			<span class="text-[15px] font-bold leading-[1.1] max-sm:whitespace-nowrap max-sm:text-[13px]">
 				{seo?.title ?? 'The Lippincott Team'}
 				<small class="block text-[10.5px] font-normal uppercase tracking-[0.18em] text-[rgba(246,242,234,0.42)]">eXp Realty</small>
 			</span>
 		</a>
-		<nav aria-label="Main navigation" class="hidden items-center gap-[26px] lg:flex">
+		<nav aria-label="Main navigation" class="hidden items-center gap-4 min-[1240px]:flex min-[1440px]:gap-[26px]">
 			{nav.map((item) => {
 				const children = (item.children ?? []).filter(c => c !== null);
 				const current = isCurrent(item.link);
@@ -78,13 +78,13 @@ const isCurrent = (href?: string | null) =>
 				);
 			})}
 			{contact?.phone && (
-				<a href={telHref(contact.phone)} class="whitespace-nowrap text-sm font-semibold text-white transition-colors">
+				<a href={telHref(contact.phone)} class="hidden whitespace-nowrap text-sm font-semibold text-white transition-colors min-[1440px]:inline-flex">
 					{contact.phone}
 				</a>
 			)}
 			<a
 				href="/contact-us/"
-				class="inline-flex items-center whitespace-nowrap rounded-full bg-[#d6323c] px-5 py-[11px] text-[13px] font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] max-sm:hidden"
+				class="inline-flex items-center whitespace-nowrap rounded-full bg-[#d6323c] px-5 py-[11px] text-[13px] font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 max-sm:hidden"
 			>
 				Schedule a Consultation
 			</a>
@@ -95,7 +95,7 @@ const isCurrent = (href?: string | null) =>
 			aria-label="Toggle navigation menu"
 			aria-controls="mobile-menu-panel"
 			aria-expanded="false"
-			class="relative z-30 inline-flex size-11 cursor-pointer flex-col items-center justify-center gap-[5px] lg:hidden"
+			class="relative z-30 inline-flex size-11 cursor-pointer flex-col items-center justify-center gap-[5px] min-[1240px]:hidden"
 		>
 			<span class="menu-bar block h-[1.5px] w-[22px] bg-white transition-all duration-300"></span>
 			<span class="menu-bar block h-[1.5px] w-[22px] bg-white transition-all duration-300"></span>
@@ -106,7 +106,7 @@ const isCurrent = (href?: string | null) =>
 		id="mobile-menu-panel"
 		inert
 		aria-hidden="true"
-		class="font-apple pointer-events-none absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-t border-[rgba(246,242,234,0.12)] bg-[#17151a] px-6 pb-[26px] pt-[18px] opacity-0 transition-opacity duration-300 lg:hidden"
+		class="font-apple pointer-events-none absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-t border-[rgba(246,242,234,0.12)] bg-[#17151a] px-6 pb-[26px] pt-[18px] opacity-0 transition-opacity duration-300 min-[1240px]:hidden"
 	>
 		<nav aria-label="Mobile navigation" class="flex flex-col">
 			{nav.map((item) => {
@@ -141,7 +141,7 @@ const isCurrent = (href?: string | null) =>
 		</nav>
 		<a
 			href="/contact-us/"
-			class="mt-[18px] inline-flex items-center justify-center rounded-full bg-[#d6323c] px-7 py-4 text-center text-sm font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)]"
+			class="mt-[18px] inline-flex items-center justify-center rounded-full bg-[#d6323c] px-7 py-4 text-center text-sm font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
 		>
 			Schedule a Consultation
 		</a>

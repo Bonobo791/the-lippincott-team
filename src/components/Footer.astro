@@ -38,12 +38,12 @@ const columns = [
 ].filter((column) => column.links.length > 0);
 ---
 
-<footer class="font-apple bg-[#100e13] text-sm text-[rgba(246,242,234,0.42)]">
+<footer class="font-apple bg-[#100e13] text-sm text-[rgba(246,242,234,0.62)]">
 	<div class="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-6 pt-[72px] lg:grid-cols-[1.6fr_repeat(4,1fr)]">
 		<div class="space-y-4">
 			<div class="flex items-center gap-3 text-white">
 				{seo?.logo ? (
-					<img src={seo.logo} alt={seo.title ?? 'Logo'} width="34" height="34" class="size-[34px]" />
+					<img src={seo.logo} alt="" width="34" height="34" class="size-[34px]" />
 				) : null}
 				<div>
 					<p class="text-[15px] font-bold leading-[1.1]">{seo?.title ?? 'The Lippincott Team'}</p>
