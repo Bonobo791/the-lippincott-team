@@ -114,6 +114,17 @@ above rather than bare `astro build`.
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
+- **Every community/school doc is now a block-driven guide** (Cypress order:
+  guideHero → market statLedger → priceLadder → schools calloutRail/dataTable
+  → photoCardGrid → categoryTiles → routeLedger → cost-of-living statLedger →
+  tradeOffs → comparison dataTable → proofStage → faq → relatedChips →
+  guideCta; sections drop out when no sourced data exists). The legacy
+  frontmatter-hero + rich-text-body path in `CommunityBody.astro` remains only
+  as a fallback for docs without blocks. Market figures in these guides were
+  researched per community (Realtor.com local-market pages, U.S. News, district
+  sites — June 2026) and every stat carries a source citation in its `source`
+  field; when updating numbers, cite the same way and never copy one
+  community's figures into another's.
 - `src/components/islands/` — `PageBody`/`BlogBody`/`CommunityBody` wrappers
   used by the island registry; `src/components/ui/` — reusable UI components
   (including `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
