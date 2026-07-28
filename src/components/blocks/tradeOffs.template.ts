@@ -1,11 +1,11 @@
 import type { Template } from 'tinacms';
+import { guideIntroFields, guideItemFields } from './guide-fields.template';
 
 export const tradeOffsBlockSchema: Template = {
 	name: 'tradeOffs',
 	label: 'Trade-offs',
 	fields: [
-		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.' },
-		{ type: 'rich-text', label: 'Summary', name: 'summary' },
+		...guideIntroFields(),
 		{
 			type: 'object', label: 'Sides', name: 'sides', list: true,
 			ui: {
@@ -14,11 +14,7 @@ export const tradeOffsBlockSchema: Template = {
 			},
 			fields: [
 				{ type: 'string', label: 'Label', name: 'label', required: true },
-				{
-					type: 'object', label: 'Items', name: 'items', list: true,
-					ui: { defaultItem: { text: '' }, itemProps: (i: { text?: string }) => ({ label: i.text ?? '' }) },
-					fields: [{ type: 'string', label: 'Text', name: 'text', ui: { component: 'textarea' } }],
-				},
+				...guideItemFields(),
 			],
 		},
 		{ type: 'string', label: 'Note Panel Label', name: 'noteLabel', description: 'Red label of the bordered note panel (e.g. "The flood question, straight").' },

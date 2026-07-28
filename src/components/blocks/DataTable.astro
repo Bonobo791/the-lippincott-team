@@ -8,7 +8,7 @@ import type { DataTableBlock } from '../../lib/data';
 interface Props { data: Omit<DataTableBlock, '__typename'> }
 
 const { data } = Astro.props;
-const headers = (data.headers ?? []).filter(h => h !== null);
+const headers = data.headers ?? [];
 const rows = (data.rows ?? []).filter(r => r !== null);
 // Numeric-looking cells get the big light figure treatment; text cells stay body copy.
 const isNumeric = (text?: string | null) => !!text && /^[\d#$%.,+\-–—×x ]+$/.test(text.trim());
@@ -36,25 +36,25 @@ const isNumeric = (text?: string | null) => !!text && /^[\d#$%.,+\-–—×x ]+$
 						<thead>
 							<tr>
 								{headers.map((h) => (
-									<th data-tina-field={tinaField(h)} class="pb-3.5 pr-5 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground last:pr-0">{h.heading}</th>
+									<th data-tina-field={h ? tinaField(h) : undefined} class="pb-3.5 pr-5 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground last:pr-0">{h?.heading}</th>
 								))}
 							</tr>
 						</thead>
 					)}
 					<tbody>
 						{rows.map((row, rowIndex) => {
-							const cells = (row.cells ?? []).filter(c => c !== null);
+							const cells = row.cells ?? [];
 							return (
 								<tr data-tina-field={tinaField(row)} class={rowIndex === rows.length - 1 ? '[&>td]:border-b' : ''}>
 									{cells.map((cell, cellIndex) => (
 										<td
-											data-tina-field={tinaField(cell)}
+											data-tina-field={cell ? tinaField(cell) : undefined}
 											class={`border-t border-hairline py-4 pr-5 align-baseline leading-relaxed last:pr-0 ${cellIndex === 0
 												? 'text-[15px] font-semibold text-ink'
-												: isNumeric(cell.text)
+												: isNumeric(cell?.text)
 													? 'whitespace-nowrap text-lg font-serif font-light tracking-[-0.01em] text-ink'
 													: 'text-[15px] text-body'}`}
-										>{cell.text}</td>
+										>{cell?.text}</td>
 									))}
 								</tr>
 							);

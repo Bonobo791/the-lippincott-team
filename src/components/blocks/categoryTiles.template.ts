@@ -1,11 +1,11 @@
 import type { Template } from 'tinacms';
+import { guideIntroFields, guideItemFields } from './guide-fields.template';
 
 export const categoryTilesBlockSchema: Template = {
 	name: 'categoryTiles',
 	label: 'Category Tiles',
 	fields: [
-		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.' },
-		{ type: 'rich-text', label: 'Summary', name: 'summary' },
+		...guideIntroFields(),
 		{
 			type: 'object', label: 'Tiles', name: 'tiles', list: true,
 			ui: {
@@ -14,11 +14,7 @@ export const categoryTilesBlockSchema: Template = {
 			},
 			fields: [
 				{ type: 'string', label: 'Label', name: 'label' },
-				{
-					type: 'object', label: 'Items', name: 'items', list: true,
-					ui: { defaultItem: { text: '' }, itemProps: (i: { text?: string }) => ({ label: i.text ?? '' }) },
-					fields: [{ type: 'string', label: 'Text', name: 'text', ui: { component: 'textarea' } }],
-				},
+				...guideItemFields(),
 			],
 		},
 		{ type: 'rich-text', label: 'Note', name: 'note' },
