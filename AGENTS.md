@@ -165,8 +165,15 @@ above rather than bare `astro build`.
   parchment trust bar — title's plain segments = small label, accented = big
   figure), `Stats` (near-black `--tile` count-up section), `TestimonialShowcase`
   (video + dark quote-panel carousel), `Awards` (sticky intro + numbered
-  list), `TeamBanner` (crimson-gradient photo banner). Site chrome matches:
-  black 64px blur `Header.astro` and parchment `Footer.astro`.
+  list), `TeamBanner` (crimson-gradient photo banner). Site chrome: a 72px
+  `rgba(23,21,26,.82)` blur `Header.astro` with an ivory hairline bottom
+  border and a dark `#100e13` `Footer.astro`. The mobile menu is a dark
+  dropdown panel under the header bar (not a full-screen overlay). The
+  desktop nav appears at `min-[1240px]` (the 8 config links + phone + CTA
+  measurably overflow below that; the phone link and the spec's 26px link
+  gaps join at `min-[1440px]`, where the 1440px container fits them),
+  and the header CTA uses the design spec's translateY/shadow hover — not
+  `.btn-magnetic`, whose rAF transform would override it.
 - Motion: `gsap` (npm dep, bundled via Astro `<script>` imports — never CDN)
   drives the CommunityGrid `rail` variant's pinned horizontal pan and the
   TestimonialShowcase clip-path reveal. Count-up stats, `.h2-mask` headline
