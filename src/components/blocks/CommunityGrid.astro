@@ -206,7 +206,6 @@ const entries = (await listCommunities())
 		// page's triggers before each ClientRouter swap.
 		gsap.registerPlugin(ScrollTrigger);
 		const mm = gsap.matchMedia();
-		let railTriggers: ScrollTrigger[] = [];
 		const initCommRail = () => {
 			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 			mm.add('(min-width:1081px)', () => {
@@ -230,7 +229,6 @@ const entries = (await listCommunities())
 							invalidateOnRefresh: true,
 						},
 					});
-					if (tween.scrollTrigger) railTriggers.push(tween.scrollTrigger);
 					cleanups.push(() => {
 						tween.scrollTrigger && tween.scrollTrigger.kill();
 						tween.kill();
@@ -243,8 +241,11 @@ const entries = (await listCommunities())
 		};
 		document.addEventListener('astro:page-load', initCommRail);
 		document.addEventListener('astro:before-swap', () => {
-			railTriggers.forEach((t) => t.kill());
-			railTriggers = [];
+			// Reverting the matchMedia context runs every context cleanup (kills
+			// tweens/triggers, unbinds rails) and lets the next page-load start
+			// fresh — without this, each swap accumulates contexts and detached
+			// DOM references.
+			mm.revert();
 		});
 	</script>
 )}

@@ -1,9 +1,12 @@
-const SAFE_URL = /^(\/[^\\]*|#[^\\]*|(https?|mailto|tel):[^\s]*)$/i;
+// `/(?!/)` rejects protocol-relative URLs (`//host`) — those would navigate
+// off-site while looking like same-site relative paths.
+const SAFE_URL = /^(\/(?!\/)[^\\]*|#[^\\]*|(https?|mailto|tel):[^\s]*)$/i;
 
 /**
  * Sanitize a CMS-provided URL for use in `href`. Allows relative paths,
  * anchors, and http/https/mailto/tel URLs; anything else (e.g.
- * `javascript:`/`data:`) returns `undefined` so the attribute is omitted.
+ * `javascript:`/`data:`/protocol-relative `//host`) returns `undefined` so
+ * the attribute is omitted.
  */
 export function safeHref(href?: string | null): string | undefined {
 	if (!href) return undefined;
@@ -13,7 +16,7 @@ export function safeHref(href?: string | null): string | undefined {
 
 /** True for absolute http(s) URLs — external links open in a new tab. */
 export function isExternal(link: string | undefined | null): boolean {
-	return !!link && /^https?:\/\//.test(link);
+	return !!link && /^https?:\/\//i.test(link.trim());
 }
 
 /** Build a `tel:` href from a display phone number (US 10-digit numbers get the leading 1). */

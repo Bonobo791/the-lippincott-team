@@ -106,7 +106,11 @@ above rather than bare `astro build`.
 - `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
   registry; `src/components/ui/` — reusable UI components (including
   `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
-- `src/pages/` — routes: `[...slug].astro` (pages), `about/[...slug].astro`
+- `src/pages/` — routes: `index.astro` (**static one-off homepage**, not
+  Tina-block-driven: self-contained editorial design with its own scoped
+  palette/typography — Fraunces Variable + Inter Variable — inside the shared
+  `Base` chrome; `home.mdx` is kept in Tina but no longer rendered),
+  `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
   hierarchies), `blog/`, `rss.xml.ts`, `404.astro`, `tina-island/[name].ts`.

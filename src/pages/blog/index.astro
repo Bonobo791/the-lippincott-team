@@ -11,7 +11,7 @@ const config = (await getConfig()).data?.config ?? null;
 	title={config?.seo?.title ?? 'Blog'}
 	description={config?.seo?.description ?? 'Welcome to my website!'}
 >
-	<main class="bg-section">
+	<div class="bg-section">
 		<header class="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
 			<h1 class="text-5xl font-bold tracking-tight">Blog</h1>
 		</header>
@@ -40,5 +40,5 @@ const config = (await getConfig()).data?.config ?? null;
 				))}
 			</ul>
 		</div>
-	</main>
+	</div>
 </Base>

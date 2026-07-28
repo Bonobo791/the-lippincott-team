@@ -42,7 +42,7 @@ const phoneHref = telHref(contact?.phone);
 					</a>
 				))}
 			</div>
-			{(contact?.phone || contact?.email) && (
+			{(phoneHref || contact?.email) && (
 				<div class="mt-11 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
 					{phoneHref && (
 						<a href={phoneHref} class="flex items-center gap-2.5 text-[17px] hover:underline">
@@ -75,7 +75,7 @@ const phoneHref = telHref(contact?.phone);
 				</div>
 			))}
 		</div>
-		{(contact?.phone || contact?.email) && (
+		{(phoneHref || contact?.email) && (
 			<div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
 				{phoneHref && (
 					<a href={phoneHref} class="flex items-center gap-3">
@@ -85,7 +85,7 @@ const phoneHref = telHref(contact?.phone);
 						<span class="font-bold text-foreground">{contact?.phone}</span>
 					</a>
 				)}
-				{contact?.phone && contact?.email && <span aria-hidden="true" class="h-5 w-px bg-border"></span>}
+				{phoneHref && contact?.email && <span aria-hidden="true" class="h-5 w-px bg-border"></span>}
 				{contact?.email && (
 					<a href={`mailto:${contact.email}`} class="flex items-center gap-3">
 						<span class="flex size-10 items-center justify-center rounded-lg bg-muted">

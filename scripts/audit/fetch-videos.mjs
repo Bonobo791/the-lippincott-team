@@ -25,11 +25,14 @@ console.log('challenge cleared, title:', await page.title());
 // Cloudflare-cleared session carries over; response.body() streams straight
 // to disk as a Buffer (no in-page Base64 round-trip).
 const request = page.context().request;
-for (const job of jobs) {
-	const response = await request.get(job.url);
-	if (!response.ok()) throw new Error(`HTTP ${response.status()} fetching ${job.url}`);
-	const body = await response.body();
-	writeFileSync(job.out, body);
-	console.log('saved', job.out, body.length, 'bytes');
+try {
+	for (const job of jobs) {
+		const response = await request.get(job.url);
+		if (!response.ok()) throw new Error(`HTTP ${response.status()} fetching ${job.url}`);
+		const body = await response.body();
+		writeFileSync(job.out, body);
+		console.log('saved', job.out, body.length, 'bytes');
+	}
+} finally {
+	await browser.close();
 }
-await browser.close();
