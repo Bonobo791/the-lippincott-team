@@ -96,3 +96,10 @@ dist
 .impeccable/live/*.png
 # impeccable-ignore-end
 .tokensave
+# Local Pi runtime state
+.atl/
+.superpowers
+.headroom
+.codex
+.cusor
+.claude
