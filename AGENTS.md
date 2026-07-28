@@ -38,7 +38,9 @@ before working in these areas:
 - `.agents/skills/visual-loop` — iterative visual QA: edit code, screenshot
   with Playwright (`scripts/audit/shoot.mjs` / `probe-styles.mjs`), view the
   PNGs, compare to spec/baseline, re-shoot until clean. Use for any frontend
-  change that must be verified visually.
+  change that must be verified visually. Exception: changes that cannot affect
+  rendering (build scripts, backend logic, tooling, docs) skip the screenshot
+  loop — a green `pnpm build:local` is sufficient verification for those.
 
 ## Build and dev commands
 
@@ -210,9 +212,9 @@ There is **no test suite, linter, or formatter configured** in this project
 - For visual iteration, run `npx astro dev --port 4322` (not `pnpm dev`) and
   screenshot against it — component/CSS edits hot-reload in under a second,
   no build per round. Use the separate port so a `pnpm preview` server can
-  stay on 4321. Reserve `pnpm build:local` + `pnpm preview` for per-task
-  gates, Tina schema changes, production-only behavior (`compressHTML`, GA4
-  gating, island endpoints), and final evidence shots. See the `visual-loop`
+  stay on 4321. Reserve `NODE_ENV=production pnpm build:local` + `pnpm preview`
+  for per-task gates, Tina schema changes, production-only behavior
+  (`compressHTML`, GA4 gating, island endpoints), and final evidence shots. See the `visual-loop`
   skill for the full loop. Caveat: bare `astro dev` only serves content when
   `tina/__generated__/client.ts` points at TinaCloud — `pnpm dev` and
   `pnpm build:local` both pin it to `localhost:4001`, so after either, run a

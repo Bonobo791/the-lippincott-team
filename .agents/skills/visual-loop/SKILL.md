@@ -38,8 +38,8 @@ fails every query with `ECONNREFUSED` and pages 404. Check with
 either run a credentialed `pnpm build` (regenerates the client against
 TinaCloud) or fall back to `pnpm dev` for that session.
 
-**Slow path — `pnpm build:local` + `pnpm preview` (gates only).** Still
-required, but only at specific moments:
+**Slow path — `NODE_ENV=production pnpm build:local` + `pnpm preview` (gates
+only).** Still required, but only at specific moments:
 
 - **Per-task commit gates** — the build must be green before committing; it
   also type-checks via Tina codegen and catches content/schema errors that
@@ -84,8 +84,8 @@ the gate and for final shots.
 - Spec values confirmed via probe-styles output where the spec is numeric.
 - Zero errors in the round's `manifest.json`.
 - Final evidence screenshots taken against the production build
-  (`pnpm build:local` + `pnpm preview`) and left on disk under `.launch/qa/`
-  as evidence.
+  (`NODE_ENV=production pnpm build:local` + `pnpm preview`) and left on disk
+  under `.launch/qa/` as evidence.
 
 ## Notes
 
