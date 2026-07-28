@@ -435,7 +435,7 @@ function findDocs(dir) {
 		if (statSync(p).isDirectory()) out.push(...findDocs(p));
 		else if (entry.endsWith('.mdx')) out.push(p);
 	}
-	return out.sort();
+	return out.sort((a, b) => a.localeCompare(b));
 }
 
 // Convert one doc, print its coverage report, and (in --only mode) write it
