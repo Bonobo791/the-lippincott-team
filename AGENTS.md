@@ -18,7 +18,11 @@ exists; do not remove it casually).
 - Visual editing uses `@tinacms/astro`: a vanilla-JS bridge plus one on-demand
   endpoint (`/tina-island/[name]`) that re-renders editable regions. Everything
   else prerenders to static HTML.
-- Package manager: **pnpm** (not npm/yarn). Node **>= 22.22.0** (`.nvmrc`).
+- Package manager: **pnpm** (not npm/yarn), pinned via `packageManager` in
+  `package.json`. Node **>= 22.22.0** (`.nvmrc`).
+- A minimal root `pyproject.toml` (name/version/`requires-python >= 3.13`, no
+  dependencies) backs the `.venv/` used by tooling scripts — the site itself
+  has no Python code.
 
 ## Agent skills
 
@@ -85,9 +89,9 @@ above rather than bare `astro build`.
   picks it up automatically.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
-  CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner — page
-  collection only). **Convention: each block is a pair** — `<Name>.astro`
-  (rendering) + `<name>.template.ts` (Tina
+  CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner,
+  ContactForm — page collection only). **Convention: each block is a pair** —
+  `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
@@ -103,9 +107,9 @@ above rather than bare `astro build`.
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
-- `src/components/islands/` — `PageBody`/`BlogBody` wrappers used by the island
-  registry; `src/components/ui/` — reusable UI components (including
-  `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
+- `src/components/islands/` — `PageBody`/`BlogBody`/`CommunityBody` wrappers
+  used by the island registry; `src/components/ui/` — reusable UI components
+  (including `FaqAccordion.astro`); `src/components/mdx/` — MDX components.
 - `src/pages/` — routes: `index.astro` (**static one-off homepage**, not
   Tina-block-driven: self-contained editorial design with its own scoped
   palette/typography — Fraunces Variable + Inter Variable — inside the shared
@@ -201,11 +205,11 @@ above rather than bare `astro build`.
   `config.contact.phone` as a `tel:` link, no JS). A `h-14 lg:hidden` spacer
   after the footer keeps it from covering footer content; it sits at `z-10`,
   below the sticky header (`z-20`) so the open mobile menu paints over it.
-- CommunityGrid cards link to the community's Sierra property-search URL
-  (external, new tab) when one exists — the `sierraLinks` map in
-  `src/components/blocks/CommunityGrid.astro` holds the URLs recovered from
-  the migrated community bodies; communities without one fall back to their
-  internal community page.
+- CommunityGrid cards (and `CommunityBody`) link to the community's Sierra
+  property-search URL (external, new tab) when one exists — the `sierraLinks`
+  map in `src/lib/sierra-links.ts` holds the URLs recovered from the migrated
+  community bodies; communities without one fall back to their internal
+  community page.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
 - `src/content.config.ts` exists only to silence a warning; content is **not**

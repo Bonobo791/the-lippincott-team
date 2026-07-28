@@ -1,239 +1,249 @@
 ---
 name: The Lippincott Team
-description: Real-estate team site — cinematic Apple-style surfaces over a calm crimson-and-parchment brand system.
+description: Real-estate team site — an editorial evidence system where sourced numbers, not decoration, carry the persuasion.
 colors:
-  primary: "#c22737"
-  primary-deep: "#9e1e2c"
-  navy: "#101828"
-  body-text: "#333333"
-  canvas: "#ffffff"
-  parchment: "#f5f5f6"
-  blush-chip: "#fbe9ec"
-  muted-gray: "#7a7a7a"
-  stat-label: "#99a1af"
-  border: "#e4e7ec"
-  hairline: "#e0e0e0"
-  ink: "#1d1d1f"
-  tile: "#272729"
-  gold: "#f2b01e"
-  accent-on-dark: "#e8596b"
+  primary: "#d6323c"
+  primary-deep: "#b4232c"
+  primary-dark: "#b02831"
+  ink: "#17151a"
+  ink-raised: "#211e26"
+  ivory: "#f6f2ea"
+  ivory-dim: "rgba(246,242,234,.62)"
+  ivory-faint: "rgba(246,242,234,.42)"
+  gold: "#c9a15a"
+  gold-bright: "#e3bd77"
+  paper: "#ffffff"
+  body-text: "#3c3a41"
+  muted: "#7a7780"
+  line: "rgba(23,21,26,.10)"
+  line-dark: "rgba(246,242,234,.12)"
 typography:
   display:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', 'Inter', 'SF Pro Text', system-ui, sans-serif"
-    fontSize: "clamp(2.4rem, 4.6vw, 3.5rem)"
-    fontWeight: 600
-    lineHeight: 1.07
-    letterSpacing: "-0.02em"
-  headline:
-    fontFamily: "'Montserrat Variable', 'Montserrat', system-ui, sans-serif"
-    fontSize: "clamp(2.5rem, 5vw, 5.25rem)"
+    fontFamily: "'Fraunces Variable', 'Fraunces', Georgia, serif"
+    fontSize: "clamp(34px, 4.6vw, 60px)"
     fontWeight: 300
-    lineHeight: 1
+    lineHeight: 1.12
     letterSpacing: "-0.01em"
+  headline:
+    fontFamily: "'Fraunces Variable', 'Fraunces', Georgia, serif"
+    fontSize: "clamp(44px, 6.6vw, 88px)"
+    fontWeight: 300
+    lineHeight: 1.04
+    letterSpacing: "-0.015em"
   title:
-    fontFamily: "'Montserrat Variable', 'Montserrat', system-ui, sans-serif"
-    fontSize: "clamp(2.1rem, 4vw, 3.2rem)"
-    fontWeight: 600
-    lineHeight: 1.1
-    letterSpacing: "-0.02em"
-  body:
-    fontFamily: "'Montserrat Variable', 'Montserrat', system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "'Fraunces Variable', 'Fraunces', Georgia, serif"
+    fontSize: "clamp(21px, 2.1vw, 28px)"
     fontWeight: 400
-    lineHeight: 1.6
+    lineHeight: 1.2
+    letterSpacing: "normal"
+  body:
+    fontFamily: "'Inter Variable', 'Inter', system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.75
     letterSpacing: "normal"
   label:
-    fontFamily: "'Montserrat Variable', 'Montserrat', system-ui, sans-serif"
+    fontFamily: "'Inter Variable', 'Inter', system-ui, sans-serif"
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 1.4
-    letterSpacing: "0.08em"
+    letterSpacing: "0.22em"
 rounded:
-  sm: "12px"
-  md: "14px"
-  lg: "16px"
-  xl: "20px"
-  panel: "24px"
-  pill: "9999px"
+  card: "18px"
+  pill: "999px"
 spacing:
-  section-y: "96px"
-  section-y-mobile: "64px"
+  container: "1200px"
   container-px: "24px"
-  container-px-md: "48px"
+  section-y: "clamp(80px, 10vw, 140px)"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.canvas}"
+    textColor: "#ffffff"
     rounded: "{rounded.pill}"
-    padding: "14px 28px"
+    padding: "16px 28px"
   button-primary-hover:
-    backgroundColor: "{colors.primary-deep}"
-  button-classic:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "12px 24px"
-  eyebrow-chip:
-    backgroundColor: "{colors.blush-chip}"
-    textColor: "{colors.primary}"
+  button-ghost:
+    backgroundColor: "transparent"
+    textColor: "#ffffff"
     rounded: "{rounded.pill}"
-    padding: "6px 16px"
-  card:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.navy}"
-    rounded: "{rounded.lg}"
-    padding: "24px"
+    padding: "16px 28px"
+  eyebrow:
+    backgroundColor: "transparent"
+    textColor: "{colors.primary}"
+    typography: "{typography.label}"
+  quote-card:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.card}"
+    padding: "28px 32px"
+  year-chip:
+    backgroundColor: "transparent"
+    textColor: "{colors.ivory-faint}"
+    rounded: "{rounded.pill}"
+    padding: "5px 11px"
 ---
 
 # Design System: The Lippincott Team
 
 ## Overview
 
-**Creative North Star: "The Cinematic Brokerage"**
+**Creative North Star: "The Verified Record"**
 
-This is a real-estate team site with a sales engine's heart and a film's surface. The brand is bold, energetic, and unapologetically sales-driven — every surface funnels toward a consultation — but the energy is delivered with cinematic discipline: a full-viewport video hero with drifting light beams, masked-line headline reveals, count-up stats on a near-black stage, and a crimson final act. Drama is concentrated in a few signature moments; everything between them stays calm, flat, and precise so the spectacle lands.
+This real-estate site persuades the way a well-sourced investigation does: every claim arrives with its receipt. The design's spine is documented evidence — 1,463+ homes sold counting up on an ink stage, a trophy wall where each award card lists its published criteria, market tiles citing HAR and NAR by name, an awards monument whose giant gold-gradient numeral counts to nine. Decoration is deliberately scarce so the numbers read as fact, not marketing.
 
-The system runs two coordinated voices. The **classic voice** (inner pages, blog, forms) is Montserrat everywhere, white and parchment sections, uppercase letter-spaced buttons. The **Apple voice** (homepage blocks and site chrome) switches to the system/Inter stack, near-black ink tones, hairline borders, and pill-shaped weightless CTAs. They share the same crimson, the same parchment, and the same restraint, so moving between them feels like a lighting change, not a rebrand.
+The surface is editorial, not corporate: Fraunces at its lightest weight sets headlines, quotations, and every meaningful numeral, with a single italic accent phrase per heading carrying the one red (on light) or gold (on dark). Inter does all the functional work — body copy, uppercase micro-labels, UI. Pages move through calm bands of paper and ivory, punctuated by near-black ink stages where the proof lives: stats, team video, the awards wall, the final call to action. Hairline grids — 1px gaps between tiles — organize services, market data, and trophies like entries in a ledger.
+
+This world currently ships on the static homepage (`src/pages/index.astro`, scoped under `.home-v2`) and is the system's primary voice. The Tina block-driven inner pages still run the earlier Montserrat/Apple system recorded in the Legacy section below; new work should follow this document, and the legacy record exists only until those surfaces migrate.
 
 **Key Characteristics:**
-- One decisive crimson accent on otherwise neutral stages
-- Cinematic motion signatures: masked-line reveals, drifting light beams, count-up stats, magnetic buttons
-- Dual typography: Montserrat globally, system/Inter stack on Apple-style surfaces
-- Flat surfaces organized by tonal bands and hairlines, not shadows
-- Pill-shaped CTAs with light font weights on cinematic surfaces; soft-squared uppercase buttons on classic ones
+- Evidence as ornament: sourced stats, quoted reviews with attributions, and award criteria are the visual content
+- Fraunces light for everything that carries meaning; Inter for everything that carries function
+- One red accent phrase per serif heading; gold reserved for earned honors (stars, awards, the monument)
+- Flat paper/ivory bands with hairline grids; ink stages reserved for proof moments
+- Quiet motion: reveals rise 28px and fade, top-rules draw left-to-right, numerals count up — all on one easing curve
 
 ## Colors
 
-The palette is a neutral stage (white, parchment, ink, tile) lit by a single crimson spotlight, with gold reserved for star ratings.
+The palette is a newsprint stage — paper white, warm ivory, deep ink — lit by one signal red, with a muted trophy gold that appears only where an honor was actually earned.
 
 ### Primary
-- **Team Crimson** (#c22737): The brand's one voice. Primary CTAs, the eyebrow tick, prose links, the first column of comparison tables, the crimson CTA finale. Hover state deepens to **Crimson Shadow** (#9e1e2c).
-- **Crimson on Dark** (#e8596b): A lifted crimson used only on near-black surfaces (eyebrows, stat `+` suffixes) where the base crimson would sink.
-
-### Secondary
-- **Deep Navy** (#101828): Headings, card text, the classic secondary button, and the dark prose voice. Not pure black — it keeps a blue undertone.
+- **Signal Red** (#d6323c): The single accent voice. Primary pill buttons, the italic accent phrase in light-surface serif headings, FAQ plus indicators, the red eyebrow variant, and the red radial glow inside dark stages. Never a background fill for large areas.
+- **Deep Signal Red** (#b4232c): The arrow-link color (`link-arrow`, recirculation "go" labels) — red at reading distance, slightly recessed so it doesn't compete with buttons.
+- **Signal Red Dark** (#b02831): The pressed/deep step of the ramp, available for hover deepening on light surfaces.
 
 ### Tertiary
-- **Rating Gold** (#f2b01e): Exactly one job — five-star ratings in the trust strip. Never a background, never a button.
+- **Trophy Gold** (#c9a15a): Earned-honor metal. Five-star ratings, award organization labels, the gold eyebrow variant, the base of the monument numeral's gradient. Never a background, never a button, never body text.
+- **Bright Trophy Gold** (#e3bd77): The dark-stage step of gold — italic accents in dark serif headings, the monument numeral's highlight, dark-tile figures, the gold arrow-link on ink.
 
 ### Neutral
-- **Canvas** (#ffffff): The default page background and card surface.
-- **Parchment** (#f5f5f6): Alternating section band, footer, mobile menu, FAQ rows. The warm half-step that keeps white pages from feeling clinical.
-- **Body Slate** (#333333): Long-form body text — softer than heading navy.
-- **Muted Gray** (#7a7a7a): Secondary text, captions, taglines on light surfaces.
-- **Stat Gray** (#99a1af): Labels on the near-black stats stage.
-- **Border Cool** (#e4e7ec): Classic-surface borders, table hairlines, inputs.
-- **Hairline** (#e0e0e0): The Apple-surface divider — FAQ rules, footer rules, mobile menu separators.
-- **Ink** (#1d1d1f): Headings and strong text on Apple-style surfaces.
-- **Tile** (#272729): The near-black stats stage. Also the tonal floor of the dark palette.
-- **Blush Chip** (#fbe9ec): The eyebrow chip background — crimson at a whisper.
+- **Ink** (#17151a): The near-black stage — stats, team, awards, final CTA backgrounds, quote and review cards, dark market tile, and default heading color on light.
+- **Ink Raised** (#211e26): The hover lift for ink tiles (trophy cards brighten on hover).
+- **Paper** (#ffffff): The default section background.
+- **Ivory** (#f6f2ea): The warm alternate band — trust bar, seller-help, FSBO, recirculation. Warmer and more editorial than a gray.
+- **Ivory Dim** (rgba(246,242,234,.62)): Body copy on ink stages.
+- **Ivory Faint** (rgba(246,242,234,.42)): Labels, sources, and captions on ink stages.
+- **Body Slate** (#3c3a41): Long-form body text on light surfaces.
+- **Muted Gray** (#7a7780): Secondary text, ledes, card body copy, source notes on light.
+- **Hairline** (rgba(23,21,26,.10)): The 1px grid line and border on light surfaces — the ledger rule.
+- **Hairline Dark** (rgba(246,242,234,.12)): The same ledger rule on ink stages.
 
 ### Named Rules
-**The One Crimson Rule.** Crimson is the only saturated accent and appears on ≤10% of any screen — CTAs, the eyebrow tick, links, one table column. If everything is red, nothing is.
+**The One Red Rule.** Signal Red is the only saturated functional accent — buttons, one italic phrase per heading, small indicators. It never floods a background; the crimson finale of the old system is gone. If everything is red, nothing is.
 
-**The Lighting-Change Rule.** Dark stages (tile, video scrims) are lit scenes, not themes: they reuse the same palette, lifting crimson to #e8596b and text to white/85 rather than inventing a dark-mode token set.
+**The Earned Gold Rule.** Gold is not a brand color; it is a medal. It appears exclusively on verified honors — star ratings, award labels, the monument numeral — and never decorates ordinary UI.
+
+**The Ledger Rule.** Structure on both light and dark comes from 10–12% alpha hairlines, not borders with their own hue. Grids are 1px gaps showing the hairline color between tiles.
 
 ## Typography
 
-**Display Font:** System/Inter stack (-apple-system, SF Pro Display, Inter Variable) on Apple-style surfaces (`.font-apple`)
-**Body Font:** Montserrat Variable (with system-ui fallback) — the global default
-**Serif:** Libre Baskerville (token `--font-serif`, sparing editorial use)
+**Display Font:** Fraunces Variable (with Fraunces/Georgia fallback) — headlines, quotations, meaningful numerals
+**Body Font:** Inter Variable (with Inter/system-ui fallback) — body copy, labels, UI
 
-**Character:** Montserrat is the brand's speaking voice — geometric, confident, slightly wide. The Apple stack is the cinematic voice — tight tracking (-0.02em to -0.03em), semibold weights, clamp-scaled. Headlines everywhere use the split-heading device: editors mark a phrase with `**...**` and it renders as the accent — light+bold pairs on classic surfaces, semibold+italic pairs on Apple surfaces.
+**Character:** Fraunces at weight 300 is the voice of record — high-contrast, literary, unhurried. Its italic at weight 400 is the accent instrument: exactly one phrase per heading. Inter is the working voice — plain, compact, uppercase-and-tracked for labels. The pairing reads like a broadsheet: serif for the story, sans for the furniture.
 
 ### Hierarchy
-- **Display** (semibold 600, clamp(2.4rem, 4.6vw, 3.5rem), line-height 1.07, -0.02em): Video-hero headline only, revealed line-by-line through masked spans. The classic hero scales larger (up to 5.25rem) in Montserrat light.
-- **Headline** (light 300 → bold 700 accent, 2.5rem–5.25rem, line-height 1, -0.01em): Classic section and hero headlines; the bold segment carries the accent word.
-- **Title** (semibold 600, clamp(2.1rem, 4vw, 3.2rem), line-height 1.1, -0.02em): Apple-surface section headings (crimson CTA, stats, showcase).
-- **Body** (regular 400, 1rem, line-height ~1.6): Long-form prose in Body Slate; max measure ~65ch via prose defaults. Lede/tagline text scales clamp(17px, 1.6vw, 21px).
-- **Label / Eyebrow** (semibold 600, 12px, uppercase, +0.08em): The red-tick eyebrow (28px × 2px crimson bar + label) and chip labels. On dark stages the tick and text lift to Crimson on Dark.
+- **Hero Headline** (light 300, clamp(44px, 6.6vw, 88px), line-height 1.04, -0.015em): The full-viewport video hero only; max 14ch measure, white with a gold-bright italic accent over the scrim.
+- **Display** (light 300, clamp(34px, 4.6vw, 60px), line-height 1.12, -0.01em): Section headings everywhere. Ink on light stages, ivory on dark; the italic `<em>` accent is Signal Red on light, Bright Trophy Gold on dark. Most sections pin it to clamp(30px, 3.8vw, 48px).
+- **Title** (regular 400, 21–28px, line-height 1.2): Card and row headings — service cards, job entries, trophy names, FAQ questions, community city names, recirculation rows.
+- **Numeral** (light 300, clamp(30px–200px by context), line-height ~1): Statistics, market figures, FSBO price comparisons, and the awards monument (up to 200px with a vertical gold gradient). The `+`/suffix drops to Inter 600 in red.
+- **Quote** (light 300 italic, 19–25px, line-height 1.55): Client testimonials and closing editorial lines inside ink cards.
+- **Body** (regular 400, 14.5–16.5px, line-height 1.7–1.8): Body Slate for long-form (max ~68ch), Muted Gray for ledes and card copy (lede max 52ch).
+- **Label / Eyebrow** (semibold 600, 11–12px, uppercase, +0.14em to +0.28em): Eyebrows with a 36px × 1px tick, stat labels, award organizations, source attributions.
 
 ### Named Rules
-**The Two Voices Rule.** Montserrat is default; the system/Inter stack appears only inside `.font-apple` surfaces (homepage blocks, header, footer). Never mix the two stacks within one surface.
+**The Serif Carries Meaning Rule.** Fraunces is used only where the words are the point — headlines, quotes, numerals. UI chrome, labels, and body text are always Inter. Never set a button or label in the serif.
 
-**The Split-Heading Rule.** Display and headline accents come from the editor's `**...**` markup rendered by SplitHeading — never from ad-hoc `<em>` or color spans. Classic surfaces pair light with bold; Apple surfaces pair semibold with italic.
+**The One Accent Phrase Rule.** A serif heading gets exactly one italic `<em>` accent phrase — red on light stages, gold-bright on dark. Two accents in one heading is a bug, not emphasis.
 
 ## Layout
 
-Full-bleed section bands wrap centered containers. Classic sections use a max-width of 1152px (`max-w-6xl`) with 24px side padding and 64px/96px (mobile/desktop) vertical rhythm. Apple-style blocks and the crimson finale use a 1200px container with 24px → 48px padding at the md breakpoint; the sticky header runs wider at 1440px. Sections alternate Canvas and Parchment bands to create rhythm without dividers; dark stages (tile stats, video hero, black header) punctuate the sequence.
+Full-bleed section bands wrap a 1200px centered container with 24px gutters. Vertical rhythm is generous and editorial: clamp(80px, 10vw, 140px) per section, tightening to clamp(72px, 9vw, 120px) for the services band and clamp(56px, 7vw, 88px) for the recirculation strip. The page alternates Paper and Ivory bands and interrupts the rhythm with full Ink stages (stats, team split, awards, final CTA) — the pattern is calm, calm, proof.
 
-The video hero is a full-viewport (100svh) stage: content pinned bottom-left, max 25ch headline measure, bottom padding clamp(88px, 13vh, 140px). Everything must no-op under `prefers-reduced-motion`, and the mobile experience adds a pure-CSS sticky click-to-call bar below `lg`.
+Content grids are ledger grids: tiles separated by 1px hairline gaps inside a 1px hairline border (services 3-up, seller jobs 2×2, market 4-up, trophy wall 2-up with a full-width featured card). Asymmetric splits use 5fr/7fr pairs (seller help, FSBO, team). The communities grid is a photographic mosaic — 4 columns × 280px rows with the lead card spanning 2×2. Breakpoints collapse grids at 900px (most), 860px (steps, awards), 760px (recirculation), 640px (trust bar), and 540px (market, communities to single column).
+
+The hero is a full-viewport (94svh minus the 72px header) video stage with bottom-anchored content and a three-stop ink scrim. Reveal-on-scroll applies page-wide: elements rise 28px and fade in over 0.8s, with a 1.6s fail-safe that force-shows anything still hidden above the fold.
 
 ## Elevation & Depth
 
-Flat by default. Depth is conveyed through tonal layering (white → parchment → ink → tile), hairline borders, backdrop blur, and photographic scrims — not through a shadow scale. The header floats via blur (black at 92% opacity, `backdrop-blur-xl` with boosted saturation), and the glass hero panel floats via `bg-white/15` + blur over photography. Shadows exist but stay small and state-driven: `shadow-sm` on cards, `shadow-lg` on dropdown menus and classic buttons.
+Flat by default; depth is editorial, not material. Tonal bands (paper → ivory → ink), hairline rules, and photographic scrims do the structural work. Shadows exist in exactly two places: the primary button (a grounded drop that deepens on hover) and embedded video media. Dark stages add atmosphere through radial gradient glows — faint red from above on stats, red and gold corner glows on awards, a red underglow on the final CTA — not through layering.
 
 ### Shadow Vocabulary
-- **Card Rest** (`box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05)`): Default card lift — barely there, just enough to separate white card from parchment band.
-- **Overlay** (`box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`): Dropdown menus, the glass hero panel, classic button defaults. Never stacked on top of each other.
+- **Button Drop** (`box-shadow: 0 10px 26px rgba(23,21,26,.28)`): Resting state of the primary pill; hover deepens to `0 16px 38px rgba(23,21,26,.34)` with a −2px lift.
+- **Media Lift** (`box-shadow: 0 24px 60px rgba(23,21,26,.18)`): Embedded testimonial videos on light stages — the only large shadow in the system.
 
 ### Named Rules
-**The Flat-By-Default Rule.** Surfaces are flat at rest. Shadows appear only to separate overlapping layers (dropdowns, floating panels), never to decorate.
+**The Two-Shadow Rule.** Only buttons and videos cast shadows. Cards, tiles, and grids are always flat — if a container needs separation, give it a hairline or an ink fill instead.
 
 ## Shapes
 
-Two corner languages coexist by voice. Classic surfaces use soft-squared corners: cards and classic buttons at a gentle 16px radius, small chips and inputs at 12–14px, glass panels at 24px. Apple surfaces use full pills: every CTA, the header consultation button, FAQ indicator circles, and eyebrow chips are fully rounded (9999px). Avatars and the simple-hero portrait are perfect circles. Dividers are 1px hairlines; the eyebrow's 28px × 2px crimson tick and the features variant's ~70px × 3px red top-rule are the only decorative bars.
+Two corner languages: fully rounded pills for actions and small indicators (buttons, the hero kicker, award year chips, the FAQ plus circle), and a soft 18px radius for content containers (quote cards, review card, FSBO stat panel, community photo cards, embedded video). Structural grids are square-cornered — the hairline ledger tiles have no radius at all. The recurring linear motifs are the 36px × 1px eyebrow tick and the 2px top-rule that draws from 15% to full width on tile hover.
 
 ### Named Rules
-**The Pill-or-Soft Rule.** A control is either a full pill (Apple surfaces) or a 16px soft square (classic surfaces). Nothing in between — no 6px or 8px corners on interactive elements.
+**The Pill-or-Ledger Rule.** An element is either a pill (action), an 18px soft card (self-contained content), or square (a cell in a hairline grid). No other radii, and never round a grid tile.
 
 ## Components
 
 ### Buttons
-Weightless and pill-shaped on cinematic surfaces; solid and uppercase on classic ones. Both press down (`active:scale-95`) rather than lifting.
-- **Shape:** Full pill (9999px) on Apple surfaces; gently rounded (16px) on classic surfaces.
-- **Primary (Apple):** Team Crimson background, white light-weight (300) label at 18px, padding 14px 28px. Hover deepens to Crimson Shadow; header variant is magnetic (`.btn-magnetic`).
-- **Primary (Classic):** Team Crimson background, white bold uppercase label at 14px with +0.1em tracking, padding 12px 24px, small shadow.
-- **Ghost on Dark:** Transparent pill with a white/80 border and white light-weight label; hover fills white at 12% opacity. The eternal second action next to a crimson first action.
-- **Outline (Classic):** Full pill, 1px border, uppercase semibold; hover fills parchment.
-- **Focus:** Visible ring in Team Crimson at 50% opacity (3px) — never removed.
+Pill-shaped, single-color, and motion-simple: they lift and deepen on hover, never change hue.
+- **Shape:** Full pill (999px).
+- **Primary:** Signal Red background, white 14px semibold label, padding 16px 28px, Button Drop shadow. Hover lifts −2px and deepens the shadow; an embedded arrow icon translates 4px right.
+- **Ghost on Dark:** Transparent pill with a white/45 border and white label; hover brightens the border to full white. The standing second action on ink stages.
+- **Text Link (hero/final):** White/85 14px semibold with a white/35 bottom border; hover brightens both. Used for the "browse live listings" escape hatch.
+- **Link Arrow:** Deep Signal Red 14.5px semibold inline link with a trailing `→`; hover widens the gap. The section-closer CTA (`.sec-cta`) and in-copy action; gold-bright variant on dark stages.
 
-### Chips
-- **Eyebrow Chip:** Blush Chip background, Team Crimson bold uppercase label at 14px, pill. On photo heroes it inverts to white/10 fill + white/30 border with backdrop blur.
-- **Red-Tick Eyebrow:** Not a chip — a 28px × 2px crimson bar followed by an uppercase 12px label.
+### Chips & Eyebrows
+- **Line-Tick Eyebrow:** 36px × 1px rule in currentColor + 12px semibold uppercase label at +0.28em. Red on light stages, gold on the awards stage. Introduces a section's subject, never a decoration.
+- **Hero Kicker:** Signal Red/85 pill, white 12px uppercase label at +0.24em — the one filled chip, used only in the hero.
+- **Year Chips:** Hairline-dark bordered pills (11.5px, ivory-faint) listing award years inside the trophy wall.
 
 ### Cards / Containers
-- **Corner Style:** Gently rounded (16px).
-- **Background:** Canvas white with a 1px Border Cool hairline; alternating section bands use Parchment.
-- **Shadow Strategy:** Card Rest only (see Elevation) — flat by default.
-- **Internal Padding:** 24px vertical rhythm with 24px gaps between card sections.
-- **Glass Panel (hero):** 24px radius, white at 15% + backdrop blur, white/20 border, Overlay shadow.
-
-### Inputs / Fields
-- **Style:** 1px Border Cool stroke on Canvas, 12–14px radius, Montserrat body size.
-- **Focus:** Team Crimson ring (3px at 50% opacity) — same focus language as buttons.
-- **Error / Disabled:** Destructive red for errors; disabled at 50% opacity with pointer events off.
-
-### Navigation
-- **Header:** Sticky 64px black bar at 92% opacity with heavy backdrop blur; 12px white/85 links that brighten to white on hover and current page; logo lockup with a 10px uppercase "eXp Realty" subline. The right-hand action is always the crimson pill ("Schedule a Consultation").
-- **Dropdowns:** Near-black panels (black/95 + blur), 12px radius, white/10 border, Overlay shadow; open on hover and focus-within.
-- **Mobile:** Full-screen parchment sheet with hairline-separated 24px semibold ink links, a crimson pill at the foot, and a hamburger that animates to an X. A pure-CSS crimson click-to-call bar stays fixed at the bottom below `lg`.
-- **Footer:** Parchment band with hairline top rule, ink headings, 15px body links that darken on hover, crimson reserved for the contact email.
+- **Ledger Tile:** Square-cornered cell in a 1px-gap hairline grid; paper or ivory fill, clamp(30px, 3.6vw, 48px) padding, optional 2px red top-rule that draws on hover (services). Service tiles shift their background to ivory on hover; trophy tiles lift Ink → Ink Raised with a gold top-rule.
+- **Quote / Review Card:** Ink fill, ivory text, 18px radius, 26–32px padding. Quote text is Fraunces italic 19px; the source attribution is an 12px uppercase ivory-faint label. The review card pairs a 44px Fraunces numeral with star-rated proof text.
+- **Community Photo Card:** 18px-radius image card in the mosaic grid; a bottom ink scrim (transparent → 78%) carries the Fraunces city name, an Inter character line, and a "View Listings →" action. Hover zooms the photo to 1.06 over 0.8s.
+- **FSBO Stat Panel:** Ink 18px-radius panel holding the agent-vs-solo price comparison; figures in Fraunces with the winning figure in gold-bright.
 
 ### FAQ Accordion
-- **Style:** Hairline-separated rows on parchment; 18–21px semibold ink questions; a 32px circle indicator that flips from gray plus to crimson minus when open. Answers render as prose in Body Slate.
+- **Style:** Native `details/summary` rows separated by hairlines; Fraunces 400 questions at clamp(19px, 2vw, 23px) in ink. A 30px hairline-bordered circle holds a red `+`; on open it rotates 45° and fills Signal Red with a white symbol. Answers in 15px Muted Gray, indented clear of the indicator.
 
-### Stats Stage (signature)
-- Near-black Tile band with a faint diagonal pinstripe, red-tick eyebrow in Crimson on Dark, and clamp(3rem, 6vw, 4.8rem) semibold figures that count up over 1.7s (ease-out cubic) when scrolled into view. The `+` suffix is the only crimson element. Stat labels in Stat Gray.
+### Stats & Figures (signature)
+- **Stats Band:** Ink stage with a faint red radial glow; Fraunces light numerals at clamp(52px, 6vw, 84px) count up over 1.2s (ease-out cubic) when scrolled into view. The `+` suffix is Inter 600 Signal Red; labels are 12px uppercase ivory-faint at +0.22em.
+- **Market Tiles:** Four-cell hairline ledger of Fraunces figures; one cell may invert to an ink "dark tile" with a gold-bright figure to spotlight the standout datum.
+- **Awards Monument:** A single Fraunces numeral at clamp(110px, 14vw, 200px) filled with a vertical gold gradient (bright → gold → deep bronze), counting to 9× beside an italic "times" — the system's largest type.
 
-### Trust Strip (signature)
-- Flat parchment bar: small muted labels beside large ink figures (plain vs. accented split-heading segments), gold five-star ratings, wordmarks in 17px semibold ink. Cells brighten to black/3 on hover when linked.
+### Trophy Wall (signature)
+- **Style:** A 2-up hairline ledger on the awards ink stage with a full-width featured card. Each entry leads with the awarding organization (11px gold uppercase label), the award name in Fraunces 400, and its published criteria in 14.5px Ivory Dim — the evidence is the design.
+
+### Navigation
+- The homepage renders inside the shared site chrome (sticky dark header, dark footer) documented in the Legacy section; the homepage body itself owns no navigation components.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** funnel every page toward one crimson primary CTA; second actions are ghost/outline pills, never a second solid color.
-- **Do** alternate Canvas and Parchment bands for rhythm, and reserve Tile near-black for one stats or showcase stage per page.
-- **Do** use the split-heading `**...**` device for headline accents — light+bold on classic, semibold+italic on Apple surfaces.
-- **Do** honor `prefers-reduced-motion`: count-ups render final values, beams and masked reveals render static.
-- **Do** keep CTAs pill-shaped and light-weight on cinematic surfaces, with `active:scale-95` press feedback.
-- **Do** use the red-tick eyebrow (12px, uppercase, +0.08em) to introduce dark stages.
+- **Do** give every statistic, quote, and award its source attribution — the citation is part of the component, not optional copy.
+- **Do** set exactly one italic `<em>` accent phrase per serif heading: Signal Red on light stages, Bright Trophy Gold on ink.
+- **Do** alternate Paper and Ivory bands and reserve Ink stages for proof moments — stats, team, awards, the final CTA.
+- **Do** build content grids as 1px hairline ledgers with square tiles; reserve 18px radii for self-contained cards and media.
+- **Do** honor `prefers-reduced-motion`: reveals render visible, count-ups render final values, hover lifts disable.
+- **Do** keep motion on the reveal curve (cubic-bezier(0.22, 1, 0.36, 1), 0.45–0.8s) and count-ups on ease-out cubic (~1.2s).
+- **Do** use the line-tick eyebrow (36px × 1px, 12px, +0.28em) to introduce sections — red on light, gold on the awards stage.
 
 ### Don't:
-- **Don't** introduce a second saturated accent — gold is for star ratings only, and no new hues for CTAs, links, or chips.
-- **Don't** stack shadows or use them decoratively; flat tonal bands and hairlines carry the depth.
-- **Don't** mix the Montserrat and system/Inter stacks within one surface — the `.font-apple` boundary is the seam.
-- **Don't** put gray text on colored backgrounds; on crimson or dark stages use white at full or 85% opacity.
-- **Don't** use bounce or elastic easing; motion uses the reveal curve (cubic-bezier(0.77, 0, 0.175, 1)) or ease-out cubic, 0.9–1.7s.
-- **Don't** round interactive elements at arbitrary radii — pill (9999px) or soft square (16px) per the Pill-or-Soft Rule.
-- **Don't** commit video files to the repo; hero loops are external CDN URLs referenced from Tina, poster-only on mobile.
+- **Don't** let gold escape honors — no gold buttons, backgrounds, links (except the dark-stage arrow variant), or body text.
+- **Don't** fill large areas with Signal Red; it is a voice, not a wall. The old crimson-finale pattern is retired.
+- **Don't** set buttons, labels, or UI chrome in Fraunces; the serif carries meaning only.
+- **Don't** add shadows to cards or tiles — the system has exactly two shadows (button, video). Use a hairline or an ink fill for separation.
+- **Don't** use bounce or elastic easing, and don't stack multiple accents into one heading.
+- **Don't** commit video files to the repo; loops are external URLs referenced from markup, with committed poster images.
+- **Don't** mix this world with the legacy system on one surface — the `.home-v2` scope and the block system are separate eras.
+
+## Legacy System (inner pages)
+
+The Tina block-driven inner pages (everything except the homepage) still ship the earlier "Cinematic Brokerage" system. Until those surfaces migrate, treat this as their record of truth; the living sources are `src/styles/global.css` and `src/components/blocks/`.
+
+- **Palette:** Team Crimson `#c22737` (hover `#9e1e2c`), Crimson on Dark `#e8596b`, Deep Navy `#101828`, Parchment `#f5f5f6`, Tile `#272729`, Rating Gold `#f2b01e` (stars only), Border Cool `#e4e7ec`, Blush Chip `#fbe9ec`.
+- **Typography:** Montserrat Variable globally; the system/Inter stack inside `.font-apple` surfaces (homepage blocks, chrome) — never mixed within one surface. Headline accents come from the editor's `**...**` split-heading device via `SplitHeading.astro` — light+bold on classic surfaces, semibold+italic on Apple surfaces.
+- **Voice rules:** One crimson accent per screen; dark stages are lit scenes, not a dark-mode token set; flat by default with Card Rest/Overlay shadows only; the Pill-or-Soft Rule (pills on Apple surfaces, 16px soft squares on classic).
+- **Signatures:** the video hero with masked-line reveals and drifting beams, the near-black count-up stats stage, the parchment trust strip, the crimson CTA finale.
+
+New homepage-family work follows the main sections of this document, not this section.
