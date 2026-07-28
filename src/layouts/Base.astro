@@ -27,7 +27,9 @@ const config = (await getConfig()).data?.config ?? null;
 		<TinaIsland name="global" wrapper={islands.global.wrapper}>
 			<Header config={config} />
 		</TinaIsland>
-		<slot />
+		<main id="main">
+			<slot />
+		</main>
 		<TinaIsland name="global-footer" wrapper={islands['global-footer'].wrapper}>
 			<Footer config={config} />
 		</TinaIsland>
@@ -52,6 +54,9 @@ const config = (await getConfig()).data?.config ?? null;
 				window.__appleMotionBound = true;
 				const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 				let h2obs = null;
+				// Active magnetic-CTA animation handles, cancelled on page swap so
+				// rAF loops never outlive their (detached) buttons.
+				let magneticCancels = [];
 
 				const initAppleMotion = () => {
 					// Section headline masked reveals (CSS shows the lines when reduced).
@@ -93,6 +98,11 @@ const config = (await getConfig()).data?.config ?? null;
 								tx = 0; ty = 0; hovering = false;
 								kick();
 							});
+							magneticCancels.push(() => {
+								hovering = false;
+								if (raf) { cancelAnimationFrame(raf); raf = null; }
+								btn.style.transform = '';
+							});
 						});
 					}
 				};
@@ -102,6 +112,8 @@ const config = (await getConfig()).data?.config ?? null;
 				document.addEventListener('astro:page-load', initAppleMotion);
 				document.addEventListener('astro:before-swap', () => {
 					if (h2obs) { h2obs.disconnect(); h2obs = null; }
+					magneticCancels.forEach((cancel) => cancel());
+					magneticCancels = [];
 				});
 			}
 		</script>
