@@ -70,8 +70,12 @@ async function main() {
 			const url = new URL(tpl.path, base).toString();
 			const entry = { template: tpl.name, viewport: viewport.name, url, errors, files: [] };
 			try {
-				const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
+				const response = await page.goto(url, { waitUntil: 'load', timeout: 45_000 });
 				entry.status = response?.status() ?? null;
+				// Locator-based waits for the chrome we screenshot (never
+				// networkidle — long-polling analytics keep it from settling).
+				await page.locator('header').first().waitFor({ state: 'visible', timeout: 10_000 });
+				await page.locator('main, [role="main"]').first().waitFor({ state: 'visible', timeout: 10_000 });
 				// Let webfonts and lazy images settle.
 				await page.evaluate(() => document.fonts.ready);
 				await page.waitForTimeout(500);
@@ -91,10 +95,22 @@ async function main() {
 									clearInterval(timer);
 									resolve();
 								}
-							}, 120);
+							}, 200);
 						}),
 				);
-				await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
+				// Wait for the images the scroll brought into view to finish
+				// loading (bounded, so one stuck asset can't hang the audit).
+				await page.evaluate(
+					() =>
+						Promise.race([
+							Promise.all(
+								[...document.images]
+									.filter((img) => !img.complete)
+									.map((img) => new Promise((done) => { img.onload = img.onerror = done; })),
+							),
+							new Promise((done) => setTimeout(done, 15_000)),
+						]),
+				);
 				await page.evaluate(() => window.scrollTo(0, 0));
 				await page.waitForTimeout(300);
 

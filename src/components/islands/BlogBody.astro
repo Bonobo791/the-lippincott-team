@@ -15,7 +15,11 @@ const { data } = Astro.props;
 // bylined to Amy on the live site, so her team doc is the source for
 // photo/name/role/bio. The sidebar card reuses the home page CTA copy
 // verbatim (live's "Looking to Buy?" copy exists nowhere in our content).
-const author = (await getTeamMember('amy-lippincott-2')).data?.team ?? null;
+const author = data
+	? await getTeamMember('amy-lippincott-2')
+		.then((res) => res.data?.team ?? null)
+		.catch(() => null)
+	: null;
 ---
 {data && (
 	<div class="mx-auto max-w-6xl px-6 py-12">

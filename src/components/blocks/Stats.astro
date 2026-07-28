@@ -60,6 +60,7 @@ const parsed = stats.map((s) => {
 	if (!window.__statsCountBound) {
 		window.__statsCountBound = true;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let obs = null;
 		const animateCount = (el) => {
 			const target = parseInt(el.dataset.target, 10);
 			const prefix = el.dataset.prefix || '';
@@ -78,14 +79,26 @@ const parsed = stats.map((s) => {
 			};
 			requestAnimationFrame(step);
 		};
-		const obs = new IntersectionObserver((entries) => {
-			entries.forEach((e) => {
-				if (e.isIntersecting) {
-					e.target.querySelectorAll('.stat-count').forEach(animateCount);
-					obs.unobserve(e.target);
-				}
+		const initStatsCount = () => {
+			obs = new IntersectionObserver((entries) => {
+				entries.forEach((e) => {
+					if (e.isIntersecting) {
+						e.target.querySelectorAll('.stat-count').forEach(animateCount);
+						obs.unobserve(e.target);
+					}
+				});
+			}, { threshold: 0.3 });
+			document.querySelectorAll('[data-stats-section]').forEach((s) => {
+				if (s.dataset.statsCountBound) return;
+				s.dataset.statsCountBound = '1';
+				obs.observe(s);
 			});
-		}, { threshold: 0.3 });
-		document.querySelectorAll('[data-stats-section]').forEach((s) => obs.observe(s));
+		};
+		// astro:page-load fires on first load and after each ClientRouter swap;
+		// before-swap drops the observer tied to the outgoing DOM.
+		document.addEventListener('astro:page-load', initStatsCount);
+		document.addEventListener('astro:before-swap', () => {
+			if (obs) { obs.disconnect(); obs = null; }
+		});
 	}
 </script>

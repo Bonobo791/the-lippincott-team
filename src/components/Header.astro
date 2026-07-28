@@ -105,6 +105,8 @@ const isCurrent = (href?: string | null) =>
 </header>
 <div
 	id="mobile-menu-panel"
+	inert
+	aria-hidden="true"
 	class="font-apple pointer-events-none fixed inset-0 z-10 flex flex-col gap-1 overflow-y-auto bg-section px-8 pb-10 pt-24 opacity-0 transition-opacity duration-300 lg:hidden"
 >
 	{nav.map((item) => {
@@ -162,6 +164,8 @@ const isCurrent = (href?: string | null) =>
 			if (!btn || !panel) return;
 			btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 			panel.classList.toggle('open', open);
+			panel.toggleAttribute('inert', !open);
+			panel.setAttribute('aria-hidden', String(!open));
 			document.body.style.overflow = open ? 'hidden' : '';
 		};
 		document.addEventListener('click', (e) => {

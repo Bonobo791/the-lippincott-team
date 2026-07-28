@@ -98,13 +98,9 @@ const hasGfmTable = (lines) => lines.some((l) => l.trim().startsWith('|'));
 // Segmentation: split on `## ` boundaries; a trailing plain line belongs to
 // the NEXT segment as its eyebrow (live renders it above the section title).
 // ---------------------------------------------------------------------------
-function segment(body) {
-	const lines = body.split('\n');
-	const segments = [{ heading: null, lines: [] }];
-	for (const line of lines) {
-		if (isH2(line)) segments.push({ heading: line.replace(/^##\s+/, '').trim(), lines: [] });
-		else segments[segments.length - 1].lines.push(line);
-	}
+// Eyebrow hoisting: a trailing plain line in one segment is the NEXT
+// segment's eyebrow (live renders it above the section title).
+function hoistEyebrows(segments) {
 	for (let i = 0; i < segments.length - 1; i++) {
 		const seg = segments[i];
 		let j = seg.lines.length - 1;
@@ -114,9 +110,19 @@ function segment(body) {
 			segments[i + 1].eyebrow = eyebrow.trim();
 		}
 	}
+}
+
+function segment(body) {
+	const lines = body.split('\n');
+	const segments = [{ heading: null, lines: [] }];
+	for (const line of lines) {
+		if (isH2(line)) segments.push({ heading: line.replace(/^##\s+/, '').trim(), lines: [] });
+		else segments.at(-1).lines.push(line);
+	}
+	hoistEyebrows(segments);
 	for (const seg of segments) {
 		while (seg.lines.length && isBlank(seg.lines[0])) seg.lines.shift();
-		while (seg.lines.length && isBlank(seg.lines[seg.lines.length - 1])) seg.lines.pop();
+		while (seg.lines.length && isBlank(seg.lines.at(-1))) seg.lines.pop();
 	}
 	return segments;
 }
@@ -352,8 +358,17 @@ function convertDoc(path, sierraLinks) {
 	const docKey = relative(COMMUNITY_DIR, path).replace(/\.mdx$/, '');
 	const overrides = DOC_OVERRIDES[slug] ?? {};
 	const waived = overrides.waived ?? [];
-	const { fm, body } = readDoc(path) ?? {};
-	if (!fm) return { report: { slug, path, alreadyConverted: true, mapped: [], unmatched: [], waived: [] }, output: null };
+	let doc;
+	try {
+		doc = readDoc(path);
+	} catch (err) {
+		// A doc without a frontmatter fence must not abort the whole batch —
+		// report it as unmatched and carry on with the remaining docs.
+		const report = { slug, path, mapped: [], unmatched: [`READ ERROR: ${err.message}`], waived: [] };
+		return { report, output: null };
+	}
+	if (!doc) return { report: { slug, path, alreadyConverted: true, mapped: [], unmatched: [], waived: [] }, output: null };
+	const { fm, body } = doc;
 	const report = { slug, path, mapped: [], unmatched: [], waived: [] };
 
 	const sierraCheck = (url) => {
@@ -420,7 +435,32 @@ function findDocs(dir) {
 		if (statSync(p).isDirectory()) out.push(...findDocs(p));
 		else if (entry.endsWith('.mdx')) out.push(p);
 	}
-	return out.sort();
+	return out.sort((a, b) => a.localeCompare(b));
+}
+
+// Convert one doc, print its coverage report, and (in --only mode) write it
+// back in place. Returns 1 when the doc has UNMATCHED lines, else 0.
+function reportDoc(path, sierraLinks, only) {
+	const { report, output } = convertDoc(path, sierraLinks);
+	console.log(`\n=== ${relative(ROOT, path)} ===`);
+	if (report.alreadyConverted) {
+		console.log('  SKIPPED   already converted (frontmatter has blocks:)');
+		return 0;
+	}
+	for (const m of report.mapped) console.log(`  MAPPED    ${m}`);
+	for (const w of report.waived) console.log(`  WAIVED    ${w}`);
+	for (const u of report.unmatched) console.log(`  UNMATCHED ${u}`);
+	console.log(
+		`  → ${report.mapped.length} segments mapped, ${report.waived.length} waived, ${report.unmatched.length} unmatched`,
+	);
+	if (!only) return 0;
+	if (report.unmatched.length > 0) {
+		console.log('  (not written — resolve UNMATCHED lines or add a documented waiver)');
+		return 1;
+	}
+	writeFileSync(path, output);
+	console.log(`  WROTE ${relative(ROOT, path)}`);
+	return 0;
 }
 
 function main() {
@@ -434,29 +474,7 @@ function main() {
 		process.exit(2);
 	}
 	let failures = 0;
-	for (const path of docs) {
-		const { report, output } = convertDoc(path, sierraLinks);
-		console.log(`\n=== ${relative(ROOT, path)} ===`);
-		if (report.alreadyConverted) {
-			console.log('  SKIPPED   already converted (frontmatter has blocks:)');
-			continue;
-		}
-		for (const m of report.mapped) console.log(`  MAPPED    ${m}`);
-		for (const w of report.waived) console.log(`  WAIVED    ${w}`);
-		for (const u of report.unmatched) console.log(`  UNMATCHED ${u}`);
-		console.log(
-			`  → ${report.mapped.length} segments mapped, ${report.waived.length} waived, ${report.unmatched.length} unmatched`,
-		);
-		if (only) {
-			if (report.unmatched.length > 0) {
-				failures++;
-				console.log('  (not written — resolve UNMATCHED lines or add a documented waiver)');
-			} else {
-				writeFileSync(path, output);
-				console.log(`  WROTE ${relative(ROOT, path)}`);
-			}
-		}
-	}
+	for (const path of docs) failures += reportDoc(path, sierraLinks, only);
 	if (only) process.exit(failures > 0 ? 1 : 0);
 }
 

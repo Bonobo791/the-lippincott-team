@@ -3,7 +3,7 @@
   "hooks": {
     "preToolUse": [
       {
-        "command": "[ ! -f \"/home/user/.cursor/skills/impeccable/scripts/hook-before-edit.mjs\" ] || node \"/home/user/.cursor/skills/impeccable/scripts/hook-before-edit.mjs\"",
+        "command": "[ ! -f \"$HOME/.cursor/skills/impeccable/scripts/hook-before-edit.mjs\" ] || node \"$HOME/.cursor/skills/impeccable/scripts/hook-before-edit.mjs\"",
         "timeout": 5
       }
     ]

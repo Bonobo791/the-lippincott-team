@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
+import { isExternal, safeHref } from '../../lib/url';
 import type { PageBlock } from '../../lib/data';
 
 // Type is a pure derivation from the Tina schema (see src/lib/data.ts
@@ -11,7 +12,6 @@ type TeamBannerBlock = Extract<PageBlock, { __typename: 'PageBlocksTeamBanner' }
 interface Props { data: Omit<TeamBannerBlock, '__typename'> }
 
 const { data } = Astro.props;
-const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 ---
 <section class="font-apple relative overflow-hidden text-white">
 	{data.backgroundImage && (
@@ -30,7 +30,7 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 			{data.description && <p data-tina-field={tinaField(data, 'description')} class="my-[22px] mb-[34px] text-lg leading-[1.4] tracking-[-0.01em] text-white/90 md:text-[21px]">{data.description}</p>}
 			{data.action?.link && (
 				<a
-					href={data.action.link}
+					href={safeHref(data.action.link)}
 					data-tina-field={tinaField(data.action)}
 					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 					class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-white transition-all hover:bg-white/12 active:scale-95"

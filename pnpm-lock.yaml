@@ -65,9 +65,6 @@ importers:
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
-      playwright-cli:
-        specifier: ^0.262.0
-        version: 0.262.0
       sharp:
         specifier: ^0.35.0
         version: 0.35.2
@@ -99,6 +96,9 @@ importers:
       playwright:
         specifier: ^1.62.0
         version: 1.62.0
+      playwright-cli:
+        specifier: ^0.262.0
+        version: 0.262.0
       react:
         specifier: ^19.2.7
         version: 19.2.8

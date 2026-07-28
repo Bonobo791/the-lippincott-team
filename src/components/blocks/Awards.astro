@@ -1,6 +1,7 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
+import { isExternal, safeHref } from '../../lib/url';
 import type { PageBlock } from '../../lib/data';
 
 // Type is a pure derivation from the Tina schema (see src/lib/data.ts
@@ -11,7 +12,6 @@ interface Props { data: Omit<AwardsBlock, '__typename'> }
 
 const { data } = Astro.props;
 const items = (data.items ?? []).filter(i => i !== null);
-const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 ---
 <section class="font-apple bg-section py-20 md:py-32">
 	<div class="mx-auto grid max-w-[1200px] gap-12 px-6 md:px-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
@@ -24,7 +24,7 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 			{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 			{data.action?.link && (
 				<a
-					href={data.action.link}
+					href={safeHref(data.action.link)}
 					data-tina-field={tinaField(data.action)}
 					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 					class="btn-magnetic mt-8 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-[22px] py-[11px] text-[17px] leading-none text-white transition-colors hover:bg-[#9e1e2c] active:scale-95"

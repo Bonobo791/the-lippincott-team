@@ -8,7 +8,8 @@ import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-const base = process.argv[process.argv.indexOf('--base') + 1];
+const baseIndex = process.argv.indexOf('--base');
+const base = baseIndex === -1 ? undefined : process.argv[baseIndex + 1];
 const out = path.resolve('.launch/qa/verify');
 if (!base) { console.error('Usage: node scripts/audit/g3b7-verify.mjs --base <url>'); process.exit(2); }
 
