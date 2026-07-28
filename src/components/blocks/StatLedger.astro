@@ -15,13 +15,13 @@ const cols = tiles.length >= 4
 		? 'md:grid-cols-2 lg:grid-cols-3'
 		: 'md:grid-cols-2';
 ---
-<section class="font-apple py-20 md:py-28">
+<section class="py-20 md:py-28">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		{(data.title || data.summary) && (
 			<div class="mb-10 grid gap-4 md:mb-14">
 				{data.title && (
 					<div class="h2-mask">
-						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 					</div>
 				)}
 				{data.summary && (
@@ -40,7 +40,7 @@ const cols = tiles.length >= 4
 					>
 						{tile.figure ? (
 							<>
-								<span class={`block text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-none tracking-[-0.02em] ${tile.invert ? 'text-gold' : 'text-ink'}`}>{tile.figure}</span>
+								<span class={`block text-[clamp(1.9rem,3vw,2.6rem)] font-serif font-light leading-none tracking-[-0.02em] ${tile.invert ? 'text-gold' : 'text-ink'}`}>{tile.figure}</span>
 								{tile.label && <span class={`mt-3 block text-xs font-semibold uppercase tracking-[0.18em] ${tile.invert ? 'text-white/50' : 'text-muted-foreground'}`}>{tile.label}</span>}
 								{tile.source && <span class={`mt-1.5 block text-xs ${tile.invert ? 'text-white/50' : 'text-muted-foreground'}`}>{tile.source}</span>}
 							</>

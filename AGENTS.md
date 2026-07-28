@@ -160,11 +160,17 @@ above rather than bare `astro build`.
   `src/components/ui/SplitHeading.astro` (parser in
   `src/lib/split-heading.ts`); the accent styling comes from its `accentClass`
   prop.
-- Fonts and tokens: the body font is **Montserrat** (Arimo was removed in the
-  design-fidelity pass); `--font-sans`/`--font-heading` are Montserrat,
-  `--font-serif` is Libre Baskerville. Brand theme tokens live in the
-  `@theme` block of `src/styles/global.css`: `--body`, `--secondary` (navy
-  `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
+- Fonts and tokens: the design language is "The Verified Record" (from the
+  system.css spec) — **Fraunces Variable** (300/400) carries display,
+  **Inter Variable** carries body/function; `--font-sans` is Inter and
+  `--font-heading`/`--font-serif` are Fraunces (italic axis imported).
+  Base `h1–h4` weight is 400 — Fraunces 600 reads heavy. Brand theme tokens
+  live in the `@theme` block of `src/styles/global.css`, with `:root` values:
+  `--primary: #d6323c` (red), `--secondary`/`--foreground`/`--ink`/`--tile`:
+  `#17151a` (ink), `--body: #3c3a41`, `--section`/`--muted`/`--accent`:
+  `#f6f2ea` (ivory), `--gold: #c9a15a`, `--stat-label: #7a7780`,
+  `--hairline: #e7e2d6`, `--border`/`--input: #e8e3d9`, and `--radius: 1rem`.
+  Eyebrows on dark surfaces are gold (`.eyebrow.on-dark` → `--gold`), not red.
 - Hero block: four `variant`s — `simple`, `photo`, `glass`, `video` — plus
   `backgroundImage`, `backgroundVideo` (MP4 URL, optional) and
   `eyebrow` fields (eyebrow renders on photo/glass/video). The video variant

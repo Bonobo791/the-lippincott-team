@@ -9,11 +9,11 @@ interface Props { data: Omit<RelatedChipsBlock, '__typename'> }
 const { data } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 ---
-<section class="font-apple bg-section py-14 md:py-20">
+<section class="bg-section py-14 md:py-20">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		{data.title && (
 			<div class="h2-mask mb-8">
-				<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink" />
+				<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 			</div>
 		)}
 		{chips.length > 0 && (
