@@ -16,6 +16,19 @@ import { contactFormBlockSchema } from '../../src/components/blocks/contactForm.
 import { testimonialShowcaseBlockSchema } from '../../src/components/blocks/testimonialShowcase.template';
 import { awardsBlockSchema } from '../../src/components/blocks/awards.template';
 import { teamBannerBlockSchema } from '../../src/components/blocks/teamBanner.template';
+import { guideHeroBlockSchema } from '../../src/components/blocks/guideHero.template';
+import { statLedgerBlockSchema } from '../../src/components/blocks/statLedger.template';
+import { priceLadderBlockSchema } from '../../src/components/blocks/priceLadder.template';
+import { calloutRailBlockSchema } from '../../src/components/blocks/calloutRail.template';
+import { dataTableBlockSchema } from '../../src/components/blocks/dataTable.template';
+import { photoCardGridBlockSchema } from '../../src/components/blocks/photoCardGrid.template';
+import { categoryTilesBlockSchema } from '../../src/components/blocks/categoryTiles.template';
+import { routeLedgerBlockSchema } from '../../src/components/blocks/routeLedger.template';
+import { tradeOffsBlockSchema } from '../../src/components/blocks/tradeOffs.template';
+import { notePanelBlockSchema } from '../../src/components/blocks/notePanel.template';
+import { proofStageBlockSchema } from '../../src/components/blocks/proofStage.template';
+import { relatedChipsBlockSchema } from '../../src/components/blocks/relatedChips.template';
+import { guideCtaBlockSchema } from '../../src/components/blocks/guideCta.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -61,6 +74,19 @@ export const PageCollection: Collection = {
 				testimonialShowcaseBlockSchema,
 				awardsBlockSchema,
 				teamBannerBlockSchema,
+				guideHeroBlockSchema,
+				statLedgerBlockSchema,
+				priceLadderBlockSchema,
+				calloutRailBlockSchema,
+				dataTableBlockSchema,
+				photoCardGridBlockSchema,
+				categoryTilesBlockSchema,
+				routeLedgerBlockSchema,
+				tradeOffsBlockSchema,
+				notePanelBlockSchema,
+				proofStageBlockSchema,
+				relatedChipsBlockSchema,
+				guideCtaBlockSchema,
 			],
 		},
 	],

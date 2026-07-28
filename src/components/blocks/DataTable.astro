@@ -1,0 +1,72 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { mdxComponents } from '../mdx/components';
+import type { DataTableBlock } from '../../lib/data';
+
+interface Props { data: Omit<DataTableBlock, '__typename'> }
+
+const { data } = Astro.props;
+const headers = data.headers ?? [];
+const rows = (data.rows ?? []).filter(r => r !== null);
+// Numeric-looking cells get the big light figure treatment; text cells stay body copy.
+const isNumeric = (text?: string | null) => !!text && /^[\d#$%.,+\-–—×x ]+$/.test(text.trim());
+---
+<section class="py-20 md:py-28">
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{(data.title || data.summary) && (
+			<div class="mb-10 grid gap-4 md:mb-14">
+				{data.title && (
+					<div class="h2-mask">
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
+					</div>
+				)}
+				{data.summary && (
+					<div data-tina-field={tinaField(data, 'summary')} class="prose max-w-[56ch] text-[clamp(17px,1.6vw,21px)] [--tw-prose-body:var(--color-body)]">
+						<TinaMarkdown content={data.summary} components={mdxComponents} />
+					</div>
+				)}
+			</div>
+		)}
+		{rows.length > 0 && (
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse">
+					{headers.length > 0 && (
+						<thead>
+							<tr>
+								{headers.map((h) => (
+									<th data-tina-field={h ? tinaField(h) : undefined} class="pb-3.5 pr-5 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground last:pr-0">{h?.heading}</th>
+								))}
+							</tr>
+						</thead>
+					)}
+					<tbody>
+						{rows.map((row, rowIndex) => {
+							const cells = row.cells ?? [];
+							return (
+								<tr data-tina-field={tinaField(row)} class={rowIndex === rows.length - 1 ? '[&>td]:border-b' : ''}>
+									{cells.map((cell, cellIndex) => (
+										<td
+											data-tina-field={cell ? tinaField(cell) : undefined}
+											class={`border-t border-hairline py-4 pr-5 align-baseline leading-relaxed last:pr-0 ${cellIndex === 0
+												? 'text-[15px] font-semibold text-ink'
+												: isNumeric(cell?.text)
+													? 'whitespace-nowrap text-lg font-serif font-light tracking-[-0.01em] text-ink'
+													: 'text-[15px] text-body'}`}
+										>{cell?.text}</td>
+									))}
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		)}
+		{data.note && (
+			<div data-tina-field={tinaField(data, 'note')} class="prose mt-5 max-w-[68ch] text-sm leading-relaxed [--tw-prose-body:var(--color-muted-foreground)]">
+				<TinaMarkdown content={data.note} components={mdxComponents} />
+			</div>
+		)}
+	</div>
+</section>

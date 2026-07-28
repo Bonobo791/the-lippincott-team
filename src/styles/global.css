@@ -1,16 +1,13 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
-@import '@fontsource-variable/montserrat';
 @import '@fontsource-variable/fraunces';
 @import '@fontsource-variable/fraunces/wght-italic.css';
-@import '@fontsource/libre-baskerville/400.css';
-@import '@fontsource/libre-baskerville/700.css';
 @plugin '@tailwindcss/typography';
 
 @theme inline {
-	--font-sans: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
-	--font-heading: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
-	--font-serif: 'Libre Baskerville', Georgia, serif;
+	--font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+	--font-heading: 'Fraunces Variable', 'Fraunces', georgia, serif;
+	--font-serif: 'Fraunces Variable', 'Fraunces', georgia, serif;
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
@@ -52,33 +49,33 @@
 :root {
 	--radius: 1rem;
 	--background: #ffffff;
-	--foreground: #101828;
-	--body: #333333;
+	--foreground: #17151a;
+	--body: #3c3a41;
 	--card: #ffffff;
-	--card-foreground: #101828;
+	--card-foreground: #17151a;
 	--popover: #ffffff;
-	--popover-foreground: #101828;
-	--primary: #c22737;
+	--popover-foreground: #17151a;
+	--primary: #d6323c;
 	--primary-foreground: #ffffff;
-	--secondary: #101828;
+	--secondary: #17151a;
 	--secondary-foreground: #ffffff;
-	--muted: #f5f5f6;
+	--muted: #f6f2ea;
 	--muted-foreground: #7a7a7a;
-	--accent: #f5f5f6;
-	--accent-foreground: #101828;
+	--accent: #f6f2ea;
+	--accent-foreground: #17151a;
 	--destructive: oklch(0.577 0.245 27.325);
-	--border: #e4e7ec;
-	--input: #e4e7ec;
-	--ring: #c22737;
+	--border: #e8e3d9;
+	--input: #e8e3d9;
+	--ring: #d6323c;
 	--chip: #fbe9ec;
-	--section: #f5f5f6;
-	--stat-label: #99a1af;
+	--section: #f6f2ea;
+	--stat-label: #7a7780;
 	/* Apple-style redesign tokens (homepage + chrome) */
-	--tile: #272729;
-	--gold: #f2b01e;
+	--tile: #17151a;
+	--gold: #c9a15a;
 	--accent-on-dark: #e8596b;
-	--ink: #1d1d1f;
-	--hairline: #e0e0e0;
+	--ink: #17151a;
+	--hairline: #e7e2d6;
 	--chart-1: oklch(0.646 0.222 41.116);
 	--chart-2: oklch(0.6 0.118 184.704);
 	--chart-3: oklch(0.398 0.07 227.392);
@@ -101,7 +98,7 @@
 	h3,
 	h4 {
 		font-family: var(--font-heading);
-		font-weight: 600;
+		font-weight: 400;
 	}
 	.bg-default {
 		background-color: var(--background);
@@ -112,7 +109,7 @@
    tokens, rather than the plugin's default zero-chroma grays.
    Unlayered so it overrides the typography plugin's layered variables. */
 .prose {
-	--tw-prose-body: var(--foreground);
+	--tw-prose-body: var(--body);
 	--tw-prose-headings: var(--foreground);
 	--tw-prose-lead: var(--muted-foreground);
 	--tw-prose-links: var(--primary);
@@ -148,16 +145,16 @@
 
 /* ---------------------------------------------------------------------------
    Apple-style redesign (homepage blocks + site chrome). The `.font-apple`
-   stack mirrors the design's system/Inter font; Montserrat stays the global
-   default elsewhere.
+   stack mirrors the design's system/Inter font; the global `--font-sans` is
+   now Inter itself, so this class stays available to shared homepage markup.
 --------------------------------------------------------------------------- */
 .font-apple {
 	font-family:
-		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', 'Inter',
+		-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', Inter,
 		'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Eyebrow: red tick + uppercase label (dark sections use --accent-on-dark). */
+/* Eyebrow: red tick + uppercase label (dark sections use --gold). */
 .eyebrow {
 	display: flex;
 	align-items: center;
@@ -176,10 +173,10 @@
 	flex: none;
 }
 .eyebrow.on-dark {
-	color: var(--accent-on-dark);
+	color: var(--gold);
 }
 .eyebrow.on-dark::before {
-	background: var(--accent-on-dark);
+	background: var(--gold);
 }
 
 /* Masked headline reveals: h2 slides up when the shared observer adds .in. */

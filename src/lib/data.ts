@@ -107,6 +107,21 @@ export type CommunityGridBlock = Extract<PageBlock, { __typename: 'PageBlocksCom
 export type ContactFormBlock = Extract<PageBlock, { __typename: 'PageBlocksContactForm' }>;
 export type FaqItem = NonNullable<NonNullable<FaqBlock['items']>[number]>;
 
+// Community guide blocks (shared by the page and community collections).
+export type GuideHeroBlock = Extract<PageBlock, { __typename: 'PageBlocksGuideHero' }>;
+export type StatLedgerBlock = Extract<PageBlock, { __typename: 'PageBlocksStatLedger' }>;
+export type PriceLadderBlock = Extract<PageBlock, { __typename: 'PageBlocksPriceLadder' }>;
+export type CalloutRailBlock = Extract<PageBlock, { __typename: 'PageBlocksCalloutRail' }>;
+export type DataTableBlock = Extract<PageBlock, { __typename: 'PageBlocksDataTable' }>;
+export type PhotoCardGridBlock = Extract<PageBlock, { __typename: 'PageBlocksPhotoCardGrid' }>;
+export type CategoryTilesBlock = Extract<PageBlock, { __typename: 'PageBlocksCategoryTiles' }>;
+export type RouteLedgerBlock = Extract<PageBlock, { __typename: 'PageBlocksRouteLedger' }>;
+export type TradeOffsBlock = Extract<PageBlock, { __typename: 'PageBlocksTradeOffs' }>;
+export type NotePanelBlock = Extract<PageBlock, { __typename: 'PageBlocksNotePanel' }>;
+export type ProofStageBlock = Extract<PageBlock, { __typename: 'PageBlocksProofStage' }>;
+export type RelatedChipsBlock = Extract<PageBlock, { __typename: 'PageBlocksRelatedChips' }>;
+export type GuideCtaBlock = Extract<PageBlock, { __typename: 'PageBlocksGuideCta' }>;
+
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
 export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;
 export type CmsConfigContactLink = NonNullable<NonNullable<CmsConfig['contactLinks']>[number]>;

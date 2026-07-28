@@ -6,6 +6,19 @@ import { statsBlockSchema } from "../../src/components/blocks/stats.template";
 import { contentBlockSchema } from "../../src/components/blocks/content.template";
 import { faqBlockSchema } from "../../src/components/blocks/faq.template";
 import { ctaBlockSchema } from "../../src/components/blocks/cta.template";
+import { guideHeroBlockSchema } from "../../src/components/blocks/guideHero.template";
+import { statLedgerBlockSchema } from "../../src/components/blocks/statLedger.template";
+import { priceLadderBlockSchema } from "../../src/components/blocks/priceLadder.template";
+import { calloutRailBlockSchema } from "../../src/components/blocks/calloutRail.template";
+import { dataTableBlockSchema } from "../../src/components/blocks/dataTable.template";
+import { photoCardGridBlockSchema } from "../../src/components/blocks/photoCardGrid.template";
+import { categoryTilesBlockSchema } from "../../src/components/blocks/categoryTiles.template";
+import { routeLedgerBlockSchema } from "../../src/components/blocks/routeLedger.template";
+import { tradeOffsBlockSchema } from "../../src/components/blocks/tradeOffs.template";
+import { notePanelBlockSchema } from "../../src/components/blocks/notePanel.template";
+import { proofStageBlockSchema } from "../../src/components/blocks/proofStage.template";
+import { relatedChipsBlockSchema } from "../../src/components/blocks/relatedChips.template";
+import { guideCtaBlockSchema } from "../../src/components/blocks/guideCta.template";
 
 export const CommunityCollection: Collection = {
   name: "community",
@@ -39,6 +52,19 @@ export const CommunityCollection: Collection = {
         contentBlockSchema,
         faqBlockSchema,
         ctaBlockSchema,
+        guideHeroBlockSchema,
+        statLedgerBlockSchema,
+        priceLadderBlockSchema,
+        calloutRailBlockSchema,
+        dataTableBlockSchema,
+        photoCardGridBlockSchema,
+        categoryTilesBlockSchema,
+        routeLedgerBlockSchema,
+        tradeOffsBlockSchema,
+        notePanelBlockSchema,
+        proofStageBlockSchema,
+        relatedChipsBlockSchema,
+        guideCtaBlockSchema,
       ],
     },
     { type: "rich-text", name: "body", label: "Body", isBody: true },

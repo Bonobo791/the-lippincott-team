@@ -90,20 +90,27 @@ above rather than bare `astro build`.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
   CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner,
-  ContactForm — page collection only). **Convention: each block is a pair** —
+  ContactForm — page collection only; plus the **community guide blocks**:
+  GuideHero, StatLedger, PriceLadder, CalloutRail, DataTable, PhotoCardGrid,
+  CategoryTiles, RouteLedger, TradeOffs, NotePanel, ProofStage, RelatedChips,
+  GuideCta — registered in **both** the page and community collections).
+  **Convention: each block is a pair** —
   `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts`. **Watch field-name collisions across
+  template in `tina/collections/page.ts` (and `community.ts` when it should be
+  available on community pages). **Watch field-name collisions across
   the block union**: two templates in the same `blocks` field may not reuse a
   field name with a different value type (e.g. `body` rich-text JSON vs
-  string, `image` object vs image string) — Tina's codegen fails with
+  string, `image` object vs image string) — **nullability counts too**
+  (`String` vs `String!` from `required: true`) — Tina's codegen fails with
   "Fields ... conflict". Pick a distinct name (`summary`, `description`,
   `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
-  `tina/collections/community.ts` reuses a reduced 7-template set (hero,
-  split, features, stats, content, faq, cta) — Tina namespaces block
+  `tina/collections/community.ts` registers the 7 legacy templates (hero,
+  split, features, stats, content, faq, cta) plus the 13 community guide
+  blocks — Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
@@ -144,16 +151,26 @@ above rather than bare `astro build`.
   files outside the Tina admin, rerun `pnpm build:local` and restart the dev
   server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
+- The `faq` block has an optional `jsonld` boolean: when enabled, `Faq.astro`
+  emits a `FAQPage` schema.org script built from the block's Q&A items
+  (answers flattened via `richTextToPlainText` in `src/lib/rich-text.ts`).
+  Enable it on at most one FAQ block per page.
 - Split headings: editors mark the accented phrase in plain Tina string fields
   with `**...**` (the brand's light+bold heading device). Render them with
   `src/components/ui/SplitHeading.astro` (parser in
   `src/lib/split-heading.ts`); the accent styling comes from its `accentClass`
   prop.
-- Fonts and tokens: the body font is **Montserrat** (Arimo was removed in the
-  design-fidelity pass); `--font-sans`/`--font-heading` are Montserrat,
-  `--font-serif` is Libre Baskerville. Brand theme tokens live in the
-  `@theme` block of `src/styles/global.css`: `--body`, `--secondary` (navy
-  `#101828`), `--section`, `--chip`, `--stat-label`, and `--radius: 1rem`.
+- Fonts and tokens: the design language is "The Verified Record" (from the
+  system.css spec) — **Fraunces Variable** (300/400) carries display,
+  **Inter Variable** carries body/function; `--font-sans` is Inter and
+  `--font-heading`/`--font-serif` are Fraunces (italic axis imported).
+  Base `h1–h4` weight is 400 — Fraunces 600 reads heavy. Brand theme tokens
+  live in the `@theme` block of `src/styles/global.css`, with `:root` values:
+  `--primary: #d6323c` (red), `--secondary`/`--foreground`/`--ink`/`--tile`:
+  `#17151a` (ink), `--body: #3c3a41`, `--section`/`--muted`/`--accent`:
+  `#f6f2ea` (ivory), `--gold: #c9a15a`, `--stat-label: #7a7780`,
+  `--hairline: #e7e2d6`, `--border`/`--input: #e8e3d9`, and `--radius: 1rem`.
+  Eyebrows on dark surfaces are gold (`.eyebrow.on-dark` → `--gold`), not red.
 - Hero block: four `variant`s — `simple`, `photo`, `glass`, `video` — plus
   `backgroundImage`, `backgroundVideo` (MP4 URL, optional) and
   `eyebrow` fields (eyebrow renders on photo/glass/video). The video variant
@@ -164,6 +181,12 @@ above rather than bare `astro build`.
   ~2 MB silent 720p loops on Cloudflare R2 behind the CDN (URLs referenced
   from Tina), poster-only on mobile — until then, stills only; don't commit
   MP4s to the repo.
+- GuideHero block (community guides): the "stage" hero — a `min-h-[72svh]`
+  ink band with optional `backgroundImage` (full-bleed, gradient scrim),
+  bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold
+  italic accent, and ghost chips (`border-white/30 bg-white/10`). The
+  `answer` capsule renders in a separate ivory (`bg-section`) band directly
+  below the hero. Without a `backgroundImage` the hero is a solid dark band.
 - Apple-style homepage blocks (all render in the `.font-apple` system/Inter
   stack with italic `**...**` accents via `SplitHeading`): `TrustStrip` (flat
   parchment trust bar — title's plain segments = small label, accented = big

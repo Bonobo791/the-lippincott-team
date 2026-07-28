@@ -1,0 +1,72 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { mdxComponents } from '../mdx/components';
+import { safeHref, isExternal } from '../../lib/url';
+import type { PhotoCardGridBlock } from '../../lib/data';
+
+interface Props { data: Omit<PhotoCardGridBlock, '__typename'> }
+
+const { data } = Astro.props;
+const cards = (data.cards ?? []).filter(c => c !== null);
+const gridCols = data.columns === '2' ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3';
+const footerHref = safeHref(data.footerAction?.link);
+---
+<section class="bg-section py-20 md:py-28">
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{(data.title || data.summary) && (
+			<div class="mb-10 grid gap-4 md:mb-14">
+				{data.title && (
+					<div class="h2-mask">
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
+					</div>
+				)}
+				{data.summary && (
+					<div data-tina-field={tinaField(data, 'summary')} class="prose max-w-[56ch] text-[clamp(17px,1.6vw,21px)] [--tw-prose-body:var(--color-body)]">
+						<TinaMarkdown content={data.summary} components={mdxComponents} />
+					</div>
+				)}
+			</div>
+		)}
+		{cards.length > 0 && (
+			<div class={`grid gap-8 ${gridCols}`}>
+				{cards.map((card) => {
+					const href = safeHref(card.link);
+					const inner = (
+						<>
+							{card.image && <img src={card.image} alt={card.title ?? ''} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100" />}
+							<span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(23,21,26,0.82)] via-[rgba(23,21,26,0.15)] to-transparent" aria-hidden="true"></span>
+							<span class="absolute inset-x-0 bottom-0 block p-6">
+								<span class="block text-[1.35rem] font-medium leading-snug text-white">{card.title}</span>
+								{card.line && <span class="mt-1.5 block text-[13px] text-white/75">{card.line}</span>}
+								{card.action && <span class="mt-3 inline-block text-[13px] font-semibold text-gold">{card.action}</span>}
+							</span>
+						</>
+					);
+					return href ? (
+						<a href={href} data-tina-field={tinaField(card)} {...(isExternal(card.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-tile no-underline">
+							{inner}
+						</a>
+					) : (
+						<div data-tina-field={tinaField(card)} class="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-tile">
+							{inner}
+						</div>
+					);
+				})}
+			</div>
+		)}
+		{data.note && (
+			<div data-tina-field={tinaField(data, 'note')} class="prose mt-7 max-w-[68ch] text-sm leading-relaxed [--tw-prose-body:var(--color-muted-foreground)]">
+				<TinaMarkdown content={data.note} components={mdxComponents} />
+			</div>
+		)}
+		{footerHref && data.footerAction?.label && (
+			<div class="mt-10" data-tina-field={tinaField(data, 'footerAction')}>
+				<a href={footerHref} {...(isExternal(data.footerAction.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="inline-flex items-center gap-2 text-[15px] font-semibold text-primary no-underline transition-[gap] duration-200 hover:gap-3.5">
+					{data.footerAction.label} <span aria-hidden="true">→</span>
+				</a>
+			</div>
+		)}
+	</div>
+</section>
