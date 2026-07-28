@@ -70,7 +70,7 @@ import Base from '../layouts/Base.astro';
 		<!-- ============ ANSWER CAPSULE (machine-readable only, visually hidden) ============ -->
 		<div class="capsule" aria-hidden="true">
 			<div class="capsule-inner">
-				<p><strong>Quick answer:</strong> The Lippincott Team is a residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Bridgeland, Towne Lake, Magnolia, Waller and Hockley. The team reports 1,463+ homes sold and 750+ five-star reviews across Google and HAR.com, and has won the Houston Business Journal's Residential Real Estate Award nine times, 2017 through 2025. Phone: <a href="tel:7134941818">713-494-1818</a>.</p>
+				<p><strong>Quick answer:</strong> The Lippincott Team is a residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Bridgeland, Towne Lake, Magnolia, Waller and Hockley. The team reports 1,463+ homes sold and 750+ five-star reviews across Google and HAR.com, and has won the Houston Business Journal's Residential Real Estate Award nine times, 2017 through 2025. Phone: <a href="tel:7134941818" style="font-weight:600;color:var(--ink)">713-494-1818</a>.</p>
 			</div>
 		</div>
 
@@ -362,16 +362,23 @@ import Base from '../layouts/Base.astro';
 
 		<!-- ============ TEAM ============ -->
 		<section class="team dark">
-			<div class="bg"><img src="/uploads/2026/03/SunburstPhotography_LippincottTeam_38-1536x1024.jpg" alt="The Lippincott Team" loading="lazy" decoding="async" /></div>
-			<div class="team-inner">
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px);max-width:20ch">Who is behind the <em>Lippincott Team?</em></h2>
-				<p class="reveal">The Lippincott Team is a full-service team within eXp Realty, led by broker Amy
-					Lippincott, with dedicated buyer specialists, listing specialists and transaction coordinators.
-					Clients work with a team, not a single agent juggling everything. That structure is how the team
-					sustains both its volume and a 4.9 rating across 750+ reviews.</p>
-				<div class="hero-actions reveal" style="margin-top:34px">
-					<a class="btn" href="/about/">Meet the full team</a>
-					<a class="text-link" href="/about/">Read our reviews →</a>
+			<div class="team-split">
+				<div class="team-inner">
+					<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px);max-width:20ch">Who is behind the <em>Lippincott Team?</em></h2>
+					<p class="reveal">The Lippincott Team is a full-service team within eXp Realty, led by broker Amy
+						Lippincott, with dedicated buyer specialists, listing specialists and transaction coordinators.
+						Clients work with a team, not a single agent juggling everything. That structure is how the team
+						sustains both its volume and a 4.9 rating across 750+ reviews.</p>
+					<div class="hero-actions reveal" style="margin-top:34px">
+						<a class="btn" href="/about/">Meet the full team</a>
+						<a class="text-link" href="/about/">Read our reviews →</a>
+					</div>
+				</div>
+				<div class="ph">
+					<video controls muted playsinline preload="metadata" poster="/uploads/2026/03/amy-video-poster.jpg">
+						<source src="https://lippincottteam.com/wp-content/uploads/2026/07/Amy%20Website%20Video%20Horizontal%20PrF_4_prob4-compressed.mp4" type="video/mp4" />
+					</video>
+					<div class="who">Hear it from the team: who we are, how we work, and why Northwest Houston hires us.</div>
 				</div>
 			</div>
 		</section>
@@ -616,7 +623,7 @@ import Base from '../layouts/Base.astro';
 		.home-v2 .btn:hover svg{transform:translateX(4px)}
 
 		/* ---------- hero ---------- */
-		.home-v2 .hero{position:relative;min-height:calc(94svh - 64px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--ink)}
+		.home-v2 .hero{position:relative;min-height:calc(94svh - 72px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--ink)}
 		.home-v2 .hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 		.home-v2 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,21,26,.45) 0%,rgba(23,21,26,.12) 40%,rgba(23,21,26,.82) 100%)}
 		.home-v2 .hero-inner{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:140px 24px 96px}
@@ -769,18 +776,19 @@ import Base from '../layouts/Base.astro';
 		.home-v2 .fsbo-close p{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(19px,2.2vw,25px);color:var(--ink);max-width:34ch;line-height:1.4}
 
 		/* ---------- team ---------- */
-		.home-v2 .team{position:relative;color:#fff;overflow:hidden}
-		.home-v2 .team .bg{position:absolute;inset:0}
-		.home-v2 .team .bg img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
-		.home-v2 .team .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(23,21,26,.88) 0%,rgba(23,21,26,.55) 45%,rgba(23,21,26,.15) 100%)}
-		@media(max-width:720px){
-			.home-v2 .team .bg::after{background:linear-gradient(180deg,rgba(23,21,26,.55) 0%,rgba(23,21,26,.82) 55%,rgba(23,21,26,.92) 100%)}
-			.home-v2 .team .bg img{object-position:center 15%}
-		}
-		.home-v2 .team-inner{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:clamp(100px,13vw,180px) 24px}
-		.home-v2 .team h2{max-width:12ch}
+		.home-v2 .team{background:var(--ink);color:#fff}
+		.home-v2 .team-split{display:grid;grid-template-columns:5fr 7fr}
+		.home-v2 .team .ph{position:relative;min-height:480px;display:flex;flex-direction:column;justify-content:center;background:var(--ink)}
+		.home-v2 .team .ph video{width:100%;display:block}
+		.home-v2 .team .ph .who{padding:14px clamp(20px,2.4vw,36px) 0;font-size:12.5px;letter-spacing:.04em;color:rgba(255,255,255,.6)}
+		.home-v2 .team-inner{display:flex;flex-direction:column;justify-content:center;padding:clamp(56px,7vw,100px) clamp(28px,4vw,72px)}
+		.home-v2 .team h2{max-width:16ch}
 		.home-v2 .team p{margin-top:24px;max-width:44ch;font-size:16.5px;line-height:1.75;color:rgba(255,255,255,.85)}
 		.home-v2 .team .btn{margin-top:34px}
+		@media(max-width:860px){
+			.home-v2 .team-split{grid-template-columns:1fr}
+			.home-v2 .team .ph{order:-1;min-height:0}
+		}
 
 		/* ---------- communities ---------- */
 		.home-v2 .comm{padding:clamp(80px,10vw,140px) 0;background:var(--paper)}

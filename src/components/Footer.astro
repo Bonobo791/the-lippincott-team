@@ -38,23 +38,25 @@ const columns = [
 ].filter((column) => column.links.length > 0);
 ---
 
-<footer class="font-apple border-t border-hairline bg-section text-body">
-	<div class="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-12 px-6 pb-10 pt-14 md:pt-20 lg:grid-cols-6">
-		<div class="col-span-2 space-y-4">
-			{seo?.logo ? (
-				<img src={seo.logo} alt={seo.title ?? 'Logo'} width="52" height="52" class="size-[52px]" />
-			) : null}
-			<div>
-				<p class="text-[17px] font-semibold text-ink">{seo?.title ?? 'The Lippincott Team'}</p>
-				<p class="text-xs uppercase tracking-[0.04em] text-muted-foreground">eXp Realty</p>
+<footer class="font-apple bg-[#100e13] text-sm text-[rgba(246,242,234,0.42)]">
+	<div class="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-6 pt-[72px] lg:grid-cols-[1.6fr_repeat(4,1fr)]">
+		<div class="space-y-4">
+			<div class="flex items-center gap-3 text-white">
+				{seo?.logo ? (
+					<img src={seo.logo} alt={seo.title ?? 'Logo'} width="34" height="34" class="size-[34px]" />
+				) : null}
+				<div>
+					<p class="text-[15px] font-bold leading-[1.1]">{seo?.title ?? 'The Lippincott Team'}</p>
+					<p class="text-[11px] uppercase tracking-[0.18em] text-[rgba(246,242,234,0.62)]">eXp Realty</p>
+				</div>
 			</div>
 			{config?.footerBlurb && (
-				<p class="text-xs leading-relaxed" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
+				<p class="max-w-[38ch] leading-[1.7]" data-tina-field={tinaField(config, "footerBlurb")}>{config.footerBlurb}</p>
 			)}
 			{contact?.email && (
-				<p class="text-xs">
+				<p>
 					Contact us at{' '}
-					<a href={`mailto:${contact.email}`} class="text-primary transition-colors hover:underline">{contact.email}</a>
+					<a href={`mailto:${contact.email}`} class="text-[rgba(246,242,234,0.62)] transition-colors hover:text-white">{contact.email}</a>
 				</p>
 			)}
 			{contactLinks.length > 0 && (
@@ -64,6 +66,7 @@ const columns = [
 							title={link.title}
 							link={link.link}
 							icon={link.icon}
+							class="transition-colors hover:text-white"
 							data-tina-field={tinaField(link, "title")}
 						/>
 					))}
@@ -72,19 +75,19 @@ const columns = [
 		</div>
 		{columns.map((column) => (
 			<nav aria-label={`Footer ${column.heading}`}>
-				<h2 class="mb-3.5 text-sm font-semibold tracking-[-0.01em] text-ink">
+				<h2 class="mb-[18px] text-xs font-semibold uppercase tracking-[0.2em] text-white">
 					{column.href ? (
-						<a href={safeHref(column.href)} class="transition-colors hover:text-primary">{column.heading}</a>
+						<a href={safeHref(column.href)} class="transition-colors hover:text-white">{column.heading}</a>
 					) : (
 						column.heading
 					)}
 				</h2>
-				<ul class="text-[15px] leading-8">
+				<ul class="flex flex-col gap-[11px]">
 					{column.links.map((item) => (
 						<li>
 							<a
 								href={safeHref(item.link)}
-								class="transition-colors hover:text-ink"
+								class="transition-colors hover:text-white"
 								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 							>
 								{item.title}
@@ -95,15 +98,15 @@ const columns = [
 			</nav>
 		))}
 	</div>
-	<div class="border-t border-hairline">
-		<div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-5 text-xs text-muted-foreground sm:flex-row">
+	<div class="mx-auto max-w-[1200px] px-6 pb-10">
+		<div class="mt-14 flex flex-col items-center justify-between gap-3.5 border-t border-[rgba(246,242,234,0.12)] pt-[26px] text-[12.5px] sm:flex-row">
 			<p>
 				&copy; {today.getFullYear()}{' '}
 				<span data-tina-field={seo ? tinaField(seo, "siteOwner") : undefined}>{seo?.siteOwner}</span>. All rights reserved.
 			</p>
-			<p class="flex gap-6">
-				<a href="/privacy-policy/" class="transition-colors hover:text-ink">Privacy Policy</a>
-				<a href="/terms-and-conditions/" class="transition-colors hover:text-ink">Terms &amp; Conditions</a>
+			<p class="flex gap-[22px]">
+				<a href="/privacy-policy/" class="transition-colors hover:text-white">Privacy Policy</a>
+				<a href="/terms-and-conditions/" class="transition-colors hover:text-white">Terms &amp; Conditions</a>
 			</p>
 		</div>
 	</div>
