@@ -181,6 +181,12 @@ above rather than bare `astro build`.
   ~2 MB silent 720p loops on Cloudflare R2 behind the CDN (URLs referenced
   from Tina), poster-only on mobile — until then, stills only; don't commit
   MP4s to the repo.
+- GuideHero block (community guides): the "stage" hero — a `min-h-[72svh]`
+  ink band with optional `backgroundImage` (full-bleed, gradient scrim),
+  bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold
+  italic accent, and ghost chips (`border-white/30 bg-white/10`). The
+  `answer` capsule renders in a separate ivory (`bg-section`) band directly
+  below the hero. Without a `backgroundImage` the hero is a solid dark band.
 - Apple-style homepage blocks (all render in the `.font-apple` system/Inter
   stack with italic `**...**` accents via `SplitHeading`): `TrustStrip` (flat
   parchment trust bar — title's plain segments = small label, accented = big
