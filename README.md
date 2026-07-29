@@ -1,5 +1,7 @@
 # The Lippincott Team
 
+TheLippincottTeam.com
+
 The Lippincott Team is a Houston-area real estate team founded by Amy
 Lippincott. The team helps buyers and sellers navigate northwest Houston with
 in-depth community and market knowledge, thoughtful marketing, effective
