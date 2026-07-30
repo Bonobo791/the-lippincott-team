@@ -1,37 +1,59 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
-import Section from '../ui/Section.astro';
-import Button from '../ui/Button.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { listTeam } from '../../lib/data';
 import type { TeamGridBlock } from '../../lib/data';
 
-interface Props { data: TeamGridBlock }
+interface Props { data: Omit<TeamGridBlock, '__typename'> }
 
 const { data } = Astro.props;
-const members = await listTeam();
+// Roster = members explicitly featured in the team collection, in roster
+// order; the first one renders as the large lead cell.
+const members = (await listTeam()).filter((m) => m.featured === true);
+const [lead, ...rest] = members;
+// Normalize editor input: trim, strip a leading '#', omit when empty.
+const anchorId = data.anchorId?.trim().replace(/^#/, '') || undefined;
 ---
-<Section>
-	{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-center text-4xl font-light tracking-tight lg:text-5xl" />}
-	{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
-	<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-		{members.map((member) => (
-			<div class="group overflow-hidden rounded-2xl bg-white shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)] transition-shadow">
-				{member.photo && (
-					<a href={`/about/${member._sys.filename}/`} class="block bg-section">
-						<img src={member.photo} alt={member.name ?? ''} width={400} height={300} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-contain" />
-					</a>
+<section id={anchorId} class="py-12 md:py-16">
+	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+		{(data.title || data.description) && (
+			<div class="mb-10 grid gap-4 md:mb-14">
+				{data.title && (
+					<div class="h2-mask">
+						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
+					</div>
 				)}
-				<div class="p-6 text-center">
-					<h3 class="text-lg font-bold text-foreground transition-colors group-hover:text-primary">
-						<a href={`/about/${member._sys.filename}/`}>{member.name}</a>
-					</h3>
-					{member.role && <p class="mt-1 text-sm uppercase tracking-wide text-muted-foreground">{member.role}</p>}
-					<div aria-hidden class="mx-auto mt-4 h-0.5 w-[110px] bg-primary"></div>
-					{member.phone && <p class="mt-4 font-bold text-foreground">{member.phone}</p>}
-					<Button variant="outline" href={`/about/${member._sys.filename}/`} class="mt-6 w-full">View Profile</Button>
-				</div>
+				{data.description && <p data-tina-field={tinaField(data, 'description')} class="max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 			</div>
-		))}
+		)}
+		<div class="grid gap-6">
+			{lead && (
+				<a href={`/about/${lead._sys.filename}/`} class="group grid overflow-hidden rounded-2xl border border-border bg-background no-underline transition-colors duration-300 hover:bg-section md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+					{lead.photo && (
+						<img src={lead.photo} alt={lead.name ?? ''} width="640" height="800" loading="lazy" decoding="async" class="aspect-[4/3] size-full object-cover object-top md:aspect-auto md:h-full" />
+					)}
+					<div class="p-7 md:p-10">
+						{lead.role && <span class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{lead.role}</span>}
+						<b class="mt-2 block font-serif text-[clamp(1.6rem,2.6vw,2.2rem)] font-light leading-tight tracking-[-0.02em] text-ink">{lead.name}</b>
+						{data.leadBody && <p data-tina-field={tinaField(data, 'leadBody')} class="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-body">{data.leadBody}</p>}
+					</div>
+				</a>
+			)}
+			{rest.length > 0 && (
+				<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+					{rest.map((member) => (
+						<a href={`/about/${member._sys.filename}/`} class="group overflow-hidden rounded-2xl border border-border bg-background no-underline transition-colors duration-300 hover:bg-section">
+							{member.photo && (
+								<img src={member.photo} alt={member.name ?? ''} width="480" height="600" loading="lazy" decoding="async" class="aspect-[4/5] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100" />
+							)}
+							<div class="p-5">
+								{member.role && <span class="block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{member.role}</span>}
+								<b class="mt-1.5 block font-serif text-lg font-normal leading-snug text-ink">{member.name}</b>
+							</div>
+						</a>
+					))}
+				</div>
+			)}
+		</div>
 	</div>
-</Section>
+</section>

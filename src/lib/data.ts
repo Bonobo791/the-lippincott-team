@@ -122,6 +122,7 @@ export type ProofStageBlock = Extract<PageBlock, { __typename: 'PageBlocksProofS
 export type RelatedChipsBlock = Extract<PageBlock, { __typename: 'PageBlocksRelatedChips' }>;
 export type GuideCtaBlock = Extract<PageBlock, { __typename: 'PageBlocksGuideCta' }>;
 export type ChecklistSplitBlock = Extract<PageBlock, { __typename: 'PageBlocksChecklistSplit' }>;
+export type StepsSplitBlock = Extract<PageBlock, { __typename: 'PageBlocksStepsSplit' }>;
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
 export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;

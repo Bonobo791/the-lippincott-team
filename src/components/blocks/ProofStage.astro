@@ -12,6 +12,10 @@ interface Props { data: Omit<ProofStageBlock, '__typename'> }
 const { data } = Astro.props;
 const metrics = (data.metrics ?? []).filter(m => m !== null);
 const linkHref = safeHref(data.action?.link);
+const hasQuote = !!(data.quote?.text || hasRichText(data.rating));
+// metricsFirst swaps visual order via flex `order` (markup stays single-sourced).
+const quoteSplitClass = `grid items-start gap-10 lg:grid-cols-2 lg:gap-16 ${data.metricsFirst ? 'order-2 mt-14' : 'order-1 mb-14'}`;
+const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.metricsFirst ? 'order-1' : 'order-2'} ${metrics.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`;
 ---
 <section class="relative overflow-hidden bg-tile py-16 text-white md:py-24" data-proof-section>
 	<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
@@ -25,45 +29,47 @@ const linkHref = safeHref(data.action?.link);
 				)}
 			</div>
 		)}
-		{(data.quote?.text || hasRichText(data.rating)) && (
-			<div class="mb-14 grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
-				{data.quote?.text && (
-					<figure data-tina-field={tinaField(data, 'quote')} class="rounded-2xl border border-white/12 p-7 md:p-8">
-						<blockquote class="text-[19px] font-light italic leading-relaxed text-white">{data.quote.text}</blockquote>
-						{data.quote.attribution && <figcaption class="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{data.quote.attribution}</figcaption>}
-					</figure>
-				)}
-				<div>
-					<span class="text-sm tracking-[3px] text-gold" aria-label="Five star rating">★★★★★</span>
-					{hasRichText(data.rating) && (
-						<div data-tina-field={tinaField(data, 'rating')} class="proof-rating prose mt-4 max-w-[52ch] text-[clamp(1.15rem,2vw,1.5rem)] leading-snug">
-							<TinaMarkdown content={data.rating} components={mdxComponents} />
-						</div>
+		<div class="flex flex-col">
+			{hasQuote && (
+				<div class={quoteSplitClass}>
+					{data.quote?.text && (
+						<figure data-tina-field={tinaField(data, 'quote')} class="rounded-2xl border border-white/12 p-7 md:p-8">
+							<blockquote class="text-[19px] font-light italic leading-relaxed text-white">{data.quote.text}</blockquote>
+							{data.quote.attribution && <figcaption class="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{data.quote.attribution}</figcaption>}
+						</figure>
 					)}
-					{linkHref && data.action?.label && (
-						<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
-							{data.action.label} <span aria-hidden="true">→</span>
-						</a>
-					)}
-				</div>
-			</div>
-		)}
-		{metrics.length > 0 && (
-			<div class={`grid gap-px border border-white/12 bg-white/12 ${metrics.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
-				{metrics.map((metric) => (
-					<div data-tina-field={tinaField(metric)} class="bg-tile p-8 transition-colors duration-300 hover:bg-[#2e2e31] md:p-10">
-						<div class="flex items-baseline whitespace-nowrap text-[clamp(2.6rem,5vw,4rem)] font-serif font-light leading-none tracking-[-0.03em]">
-							{typeof metric.value === 'number' ? (
-								<span class="proof-count" data-target={metric.value}>{metric.value.toLocaleString('en-US')}</span>
-							) : null}
-							{metric.suffix && <em class="not-italic text-accent-on-dark">{metric.suffix}</em>}
-						</div>
-						{metric.label && <span class="mt-4 block text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{metric.label}</span>}
-						{metric.source && <span class="mt-1.5 block text-xs text-white/50">{metric.source}</span>}
+					<div>
+						<span class="text-sm tracking-[3px] text-gold" aria-label="Five star rating">★★★★★</span>
+						{hasRichText(data.rating) && (
+							<div data-tina-field={tinaField(data, 'rating')} class="proof-rating prose mt-4 max-w-[52ch] text-[clamp(1.15rem,2vw,1.5rem)] leading-snug">
+								<TinaMarkdown content={data.rating} components={mdxComponents} />
+							</div>
+						)}
+						{linkHref && data.action?.label && (
+							<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
+								{data.action.label} <span aria-hidden="true">→</span>
+							</a>
+						)}
 					</div>
-				))}
-			</div>
-		)}
+				</div>
+			)}
+			{metrics.length > 0 && (
+				<div class={metricsGridClass}>
+					{metrics.map((metric) => (
+						<div data-tina-field={tinaField(metric)} class="bg-tile p-8 transition-colors duration-300 hover:bg-[#2e2e31] md:p-10">
+							<div class="flex items-baseline whitespace-nowrap text-[clamp(2.6rem,5vw,4rem)] font-serif font-light leading-none tracking-[-0.03em]">
+								{typeof metric.value === 'number' ? (
+									<span class="proof-count" data-target={metric.value}>{metric.value.toLocaleString('en-US')}</span>
+								) : null}
+								{metric.suffix && <em class="not-italic text-accent-on-dark">{metric.suffix}</em>}
+							</div>
+							{metric.label && <span class="mt-4 block text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{metric.label}</span>}
+							{metric.source && <span class="mt-1.5 block text-xs text-white/50">{metric.source}</span>}
+						</div>
+					))}
+				</div>
+			)}
+		</div>
 	</div>
 </section>
 <style>

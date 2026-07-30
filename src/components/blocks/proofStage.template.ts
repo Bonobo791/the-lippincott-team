@@ -6,6 +6,7 @@ export const proofStageBlockSchema: Template = {
 	fields: [
 		{ type: 'string', label: 'Eyebrow', name: 'eyebrow' },
 		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic gold accent.', ui: { component: 'textarea' } },
+		{ type: 'boolean', label: 'Metrics first', name: 'metricsFirst', description: 'Render the metrics ledger above the quote split.' },
 		{
 			type: 'object', label: 'Quote', name: 'quote',
 			fields: [
