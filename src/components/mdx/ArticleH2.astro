@@ -2,11 +2,17 @@
 /**
  * h2 override for article bodies: adds a slugified `id` so the "On this page"
  * TOC can deep-link. The slug algorithm must stay in sync with `extractToc`
- * in src/lib/article.ts — both run `slugify` on the heading's plain text.
+ * in src/lib/article.ts — both run `slugify` on the heading's plain text, and
+ * the rendered slot HTML is entity-decoded first so the two always agree.
  */
-import { slugify } from '../../lib/article';
+import { slugify, decodeEntities } from '../../lib/article';
 
 const html = await Astro.slots.render('default');
-const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const text = decodeEntities(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+const id = slugify(text);
 ---
-<h2 id={slugify(text)} class="scroll-mt-24" set:html={html} />
+{id ? (
+	<h2 id={id} class="scroll-mt-24" set:html={html} />
+) : (
+	<h2 set:html={html} />
+)}

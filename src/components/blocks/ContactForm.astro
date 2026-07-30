@@ -9,18 +9,27 @@ interface Props { data: ContactFormBlock }
 const { data } = Astro.props;
 // Rail contact rows come from the site config (single source for phone/email).
 const contact = (await getConfig()).data?.config?.contact ?? null;
-// Config stores "713-494-1818"; the design displays "(713) 494-1818".
-const phoneDisplay = contact?.phone?.replace(/^(\d{3})-(\d{3})-(\d{4})$/, '($1) $2-$3') ?? null;
+// Config stores "713-494-1818"; the design displays "(713) 494-1818". Parse
+// digit-first so dots/parens/spaces in the config don't break the format.
+const phoneDigits = (contact?.phone ?? '').replace(/\D/g, '');
+const phoneDisplay = phoneDigits.length === 10
+	? `(${phoneDigits.slice(0, 3)}) ${phoneDigits.slice(3, 6)}-${phoneDigits.slice(6)}`
+	: (contact?.phone ?? null);
 
 const fieldClasses =
 	'mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-[3px] focus:ring-ring/50';
 const labelClasses = 'text-[13px] font-semibold text-ink';
 
-const steps = [
+// "What happens next": editor-overridable via the block's steps field; these
+// are the design's defaults when the field is unset.
+const defaultSteps = [
 	{ n: '01', title: 'We review your note', body: 'A specialist reads your goals before anyone calls you.' },
 	{ n: '02', title: 'You get a plan', body: 'Pricing data, neighborhood comparisons or a tour list, matched to your move.' },
 	{ n: '03', title: 'You decide', body: 'No obligation either way. The data is yours to keep.' },
 ];
+const editedSteps = (data.steps ?? []).flatMap((s) => (s?.title ? [{ title: s.title, body: s.body ?? '' }] : []));
+const steps = (editedSteps.length > 0 ? editedSteps : defaultSteps)
+	.map((step, i) => ({ ...step, n: String(i + 1).padStart(2, '0') }));
 const assurances = [
 	{ title: 'Free consultation', body: 'Pricing analysis and neighborhood comparisons cost nothing.' },
 	{ title: 'One business day', body: 'A named specialist responds, not an autoresponder.' },
@@ -67,11 +76,11 @@ const assurances = [
 					<div class="sm:col-span-2">
 						<label for="contact-interest" class={labelClasses}>I want to</label>
 						<select id="contact-interest" name="interest" class={fieldClasses}>
-							<option>Sell my home</option>
-							<option>Buy a home</option>
-							<option>Buy and sell at once</option>
-							<option>Relocate to Northwest Houston</option>
-							<option>Get a home valuation</option>
+							<option value="Sell my home">Sell my home</option>
+							<option value="Buy a home">Buy a home</option>
+							<option value="Buy and sell at once">Buy and sell at once</option>
+							<option value="Relocate to Northwest Houston">Relocate to Northwest Houston</option>
+							<option value="Get a home valuation">Get a home valuation</option>
 						</select>
 					</div>
 					<div class="sm:col-span-2">
@@ -99,13 +108,13 @@ const assurances = [
 				)}
 				<div class="border-t border-border pt-7">
 					<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">What happens next</span>
-					<ol class="mt-2 list-none p-0">
+					<ol class="mt-2 list-none p-0" data-tina-field={tinaField(data, 'steps')}>
 						{steps.map((step) => (
 							<li class="flex gap-5 border-t border-border py-5 first:border-t-0">
 								<span class="font-serif text-sm text-gold">{step.n}</span>
 								<div>
 									<b class="text-[15px] font-semibold text-ink">{step.title}</b>
-									<p class="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+									{step.body && <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>}
 								</div>
 							</li>
 						))}
@@ -114,7 +123,7 @@ const assurances = [
 			</aside>
 		</div>
 	</section>
-	<section class="bg-section py-12 md:py-16">
+	<section class="bg-section py-16 md:py-24">
 		<div class="mx-auto grid max-w-[1200px] gap-10 px-6 md:grid-cols-3 md:gap-8 md:px-12">
 			{assurances.map((item) => (
 				<div>
