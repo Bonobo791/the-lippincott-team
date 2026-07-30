@@ -14,9 +14,19 @@ const slug = (Astro.params.slug ?? '').toString();
 const member = await getTeamMember(slug);
 const data = member.data?.team;
 if (!data) return new Response('Not Found', { status: 404 });
+
+const name = data.name ?? 'Team Member';
+const firstName = name.trim().split(/\s+/)[0] ?? name;
+// "Meet Your Local Expert" is the old boilerplate every doc carries — treat it
+// as unset and generate a per-agent meta description instead.
+const BOILERPLATE_DESC = 'Meet Your Local Expert';
+const customDesc = data.description?.trim();
+const description = customDesc && customDesc.toLowerCase() !== BOILERPLATE_DESC.toLowerCase()
+	? customDesc
+	: `${name}${data.role ? ` is a ${data.role.toLowerCase()}` : ''} with The Lippincott Team at eXp Realty, serving buyers and sellers across Northwest Houston. Read ${firstName}'s bio and reach ${firstName} directly.`;
 ---
 
-<Base title={`${data.name ?? 'Team Member'} | The Lippincott Team`} description={data.description ?? ''}>
+<Base title={`${name}${data.role ? `, ${data.role}` : ''} | The Lippincott Team`} description={description}>
 	<TinaIsland name="team" wrapper={islands.team.wrapper} params={{ slug }} primary>
 		<TeamBody data={data} />
 	</TinaIsland>

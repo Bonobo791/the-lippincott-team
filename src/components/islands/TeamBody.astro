@@ -1,120 +1,158 @@
 ---
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
-import { Icon } from 'astro-icon/components';
 import type { CmsTeam } from '../../lib/data';
+import { listTeam } from '../../lib/data';
 import { telHref } from '../../lib/url';
 import { mdxComponents } from '../mdx/components';
-import Button from '../ui/Button.astro';
+import ProofStage from '../blocks/ProofStage.astro';
+import GuideActions from '../ui/GuideActions.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 
 interface Props { data?: CmsTeam | null }
 
 const { data } = Astro.props;
-// Two-tone name headline computed from the name field (no content edits):
-// first word = accent (red bold), rest = white light.
 const nameParts = (data?.name ?? '').trim().split(/\s+/).filter(Boolean);
 const firstName = nameParts[0] ?? '';
+// H1: the optional `headline` field carries the full editorial headline with
+// **…** around the italic accent; fallback is the two-tone name split.
 const splitName = nameParts.length > 1
 	? `**${firstName}** ${nameParts.slice(1).join(' ')}`
 	: `**${firstName}**`;
-// The team schema has no social, address, or TREC fields, so the contact
-// card carries only photo + DIRECT CONTACT phone/email. The stats row
-// reuses the home page stats copy verbatim (live pattern; the team schema
-// has no stat fields). Eyebrow copy ("Meet Your Local Expert") comes from
-// the existing description field; "Our Proven Processes" / CTA labels are
-// live-site copy for this template.
+const h1 = data?.headline?.trim() || splitName;
+
+// Chips row: other roster members, featured first, capped at 3 (plus the two
+// fixed chips below). Runs in both the page and the /tina-island render.
+const currentFilename = data?._sys?.filename;
+const teammates = (await listTeam())
+	.filter((m) => m._sys.filename !== currentFilename)
+	.sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false))
+	.slice(0, 3);
+
+// JSON-LD ProfilePage/Person (design spec). Telephone needs +1 dialing digits.
+const phoneDigits = (data?.phone ?? '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+const jsonLd = data && {
+	'@context': 'https://schema.org',
+	'@type': 'ProfilePage',
+	mainEntity: {
+		'@type': 'Person',
+		name: data.name,
+		...(data.role ? { jobTitle: data.role } : {}),
+		worksFor: { '@type': 'Organization', name: 'The Lippincott Team at eXp Realty' },
+		...(data.email ? { email: `mailto:${data.email}` } : {}),
+		...(phoneDigits ? { telephone: `+1${phoneDigits}` } : {}),
+		...(data.photo ? { image: new URL(data.photo, Astro.url).href } : {}),
+		workLocation: 'Northwest Houston, TX',
+	},
+};
 ---
 {data && (
 	<>
-		<section class="relative overflow-hidden bg-secondary">
-			{data.photo && (
-				<div aria-hidden class="absolute inset-0">
-					<img src={data.photo} alt="" class="size-full object-cover" />
-					<div class="absolute inset-0 bg-secondary/90"></div>
+		<section class="pt-10 md:pt-14">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
+					<a href="/" class="no-underline transition-colors hover:text-primary">Home</a>
+					<span aria-hidden="true">›</span>
+					<a href="/about/" class="no-underline transition-colors hover:text-primary">About</a>
+					<span aria-hidden="true">›</span>
+					<span aria-current="page">{data.name}</span>
+				</nav>
+				<div class="mt-7">
+					<p class="eyebrow">Meet your local expert</p>
+					<div class="h2-mask mt-4">
+						<SplitHeading as="h1" text={h1} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, data.headline?.trim() ? 'headline' : 'name')} class="max-w-[24ch] text-balance text-[clamp(2.2rem,4.5vw,3.5rem)] font-serif font-light leading-[1.08] tracking-[-0.02em] text-ink" />
+					</div>
 				</div>
-			)}
-			<div class="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
-				{data.description && (
-					<span data-tina-field={tinaField(data, 'description')} class="inline-block rounded-full bg-primary/20 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-red-100">{data.description}</span>
+			</div>
+		</section>
+		<section class="py-12 md:py-16">
+			<div class="mx-auto grid max-w-[1200px] items-start gap-10 px-6 md:grid-cols-2 md:px-12 md:gap-16">
+				{data.photo && (
+					<img src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
 				)}
-				<SplitHeading as="h1" text={splitName} accentClass="font-bold text-primary" data-tina-field={tinaField(data, 'name')} class="mt-6 text-balance text-5xl font-light leading-tight tracking-tight text-white md:text-6xl" />
-				{data.role && (
-					<div class="mt-8">
-						<div class="h-[3px] w-[70px] bg-primary" aria-hidden="true"></div>
-						<p data-tina-field={tinaField(data, 'role')} class="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-primary">{data.role}</p>
+				{data.bio && (
+					<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg max-w-none">
+						<TinaMarkdown content={data.bio} components={mdxComponents} />
 					</div>
 				)}
 			</div>
 		</section>
-		<section>
-			<div class="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:grid-cols-[320px_1fr] md:py-24 lg:gap-16">
-				<div>
-					<div class="overflow-hidden rounded-2xl bg-white shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
-						{data.photo && (
-							<img src={data.photo} alt={data.name ?? ''} width={640} height={800} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full object-cover object-top" />
-						)}
-						{(data.phone || data.email) && (
-							<div class="p-8">
-								<p class="text-xs font-bold uppercase tracking-[0.1em] text-primary">Direct Contact</p>
-								<div class="mt-4 flex flex-col gap-3 text-sm">
-									{data.phone && (
-										<a href={telHref(data.phone)} data-tina-field={tinaField(data, 'phone')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
-											<Icon name="tabler:phone" class="size-4" />{data.phone}
-										</a>
-									)}
-									{data.email && (
-										<a href={`mailto:${data.email}`} data-tina-field={tinaField(data, 'email')} class="inline-flex items-center gap-2 transition-colors hover:text-primary">
-											<Icon name="tabler:mail" class="size-4" />{data.email}
-										</a>
-									)}
-								</div>
-							</div>
-						)}
-					</div>
+		<section class="bg-section py-12 md:py-16">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<div class="h2-mask mb-10 md:mb-14">
+					<SplitHeading as="h2" text={`Work with **${firstName} directly.**`} accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 				</div>
-				<div>
-					<p class="flex items-center gap-3 text-sm font-bold uppercase tracking-[0.7px] text-primary">
-						<span class="h-px w-8 bg-primary" aria-hidden="true"></span>Our Proven Processes
-					</p>
-					{data.bio && (
-						<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg mt-6 max-w-none">
-							<TinaMarkdown content={data.bio} components={mdxComponents} />
+				<div class="grid gap-px border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
+					{data.phone && (
+						<div class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none">
+							<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Direct line</span>
+							<a href={telHref(data.phone)} data-tina-field={tinaField(data, 'phone')} class="mt-3 block font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{data.phone}</a>
 						</div>
 					)}
-				</div>
-			</div>
-		</section>
-		<section class="bg-section">
-			<div class="mx-auto max-w-6xl px-6 py-16">
-				<div class="grid gap-6 text-center md:grid-cols-3">
-					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
-						<div class="text-4xl font-extrabold text-foreground">1,463+</div>
-						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">Homes Sold</p>
-					</div>
-					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
-						<div class="text-4xl font-extrabold text-foreground">$400M+</div>
-						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">Volume Sold</p>
-					</div>
-					<div class="rounded-2xl bg-white px-6 py-10 shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]">
-						<div class="text-4xl font-extrabold text-foreground">750+</div>
-						<p class="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-stat-label">5-Star Reviews</p>
+					{data.email && (
+						<div class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none">
+							<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Email</span>
+							<a href={`mailto:${data.email}`} data-tina-field={tinaField(data, 'email')} class="mt-3 block break-all font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{data.email}</a>
+						</div>
+					)}
+					{data.role && (
+						<div class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none">
+							<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Specialty</span>
+							<span data-tina-field={tinaField(data, 'role')} class="mt-3 block font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink">{data.role}</span>
+						</div>
+					)}
+					<div class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none">
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Based in</span>
+						<span class="mt-3 block font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink">Northwest Houston, TX</span>
 					</div>
 				</div>
 			</div>
 		</section>
-		<section>
-			<div class="mx-auto flex max-w-6xl flex-col gap-8 border-t px-6 py-16 md:flex-row md:items-center md:justify-between">
-				<div>
-					<div class="h-[3px] w-[70px] bg-primary" aria-hidden="true"></div>
-					<h2 class="mt-4 text-3xl font-light tracking-tight text-foreground md:text-4xl">Talk to {firstName} about your next home.</h2>
-					<div class="mt-4 flex flex-col gap-1 text-muted-foreground">
-						{data.email && <a href={`mailto:${data.email}`} class="transition-colors hover:text-primary">{data.email}</a>}
-						{data.phone && <a href={telHref(data.phone)} class="transition-colors hover:text-primary">{data.phone}</a>}
-					</div>
+		<ProofStage data={{
+			eyebrow: 'The record',
+			title: 'The record behind **your agent.**',
+			metrics: [
+				{ __typename: 'PageBlocksProofStageMetrics', value: 1463, suffix: '+', label: 'Homes sold', source: 'Team sales records, Northwest Houston' },
+				{ __typename: 'PageBlocksProofStageMetrics', value: 750, suffix: '+', label: 'Five-star reviews', source: 'Google and HAR.com, rated 4.9 on both' },
+				{ __typename: 'PageBlocksProofStageMetrics', value: 9, suffix: '×', label: 'HBJ awards', source: 'Residential Real Estate Award, 2017-2025' },
+			],
+		}} />
+		<section class="bg-section py-14 md:py-20">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<div class="h2-mask mb-8">
+					<SplitHeading as="h2" text="The rest of **the team.**" accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 				</div>
-				<Button href="/contact-us/" size="lg" class="shrink-0 px-8">Talk to Us About Selling</Button>
+				<div class="flex flex-wrap gap-3">
+					<a href="/about/#team" class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">Full roster</a>
+					{teammates.map((m) => (
+						<a href={`/about/${m._sys.filename}/`} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{m.name}</a>
+					))}
+					<a href="/northwest-houston-real-estate/" class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">Northwest Houston guide</a>
+				</div>
 			</div>
 		</section>
+		<section class="relative overflow-hidden bg-tile py-16 text-center text-white md:py-24" data-agent-cta>
+			<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
+				<div class="h2-mask">
+					<SplitHeading as="h2" text={`Talk to ${firstName} about **your next move.**`} accentClass="font-normal italic text-gold" class="mx-auto max-w-[22ch] text-balance text-[clamp(2rem,3.8vw,3rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-white" />
+				</div>
+				<p class="mx-auto mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85">A consultation costs nothing and commits you to nothing. Reach {firstName} directly or book time with the team.</p>
+				<GuideActions actions={[
+					{ label: 'Schedule a Consultation', link: '/contact-us/', type: 'button' },
+					...(data.email ? [{ label: `Email ${firstName}`, link: `mailto:${data.email}`, type: 'link' }] : []),
+				]} class="mt-9 justify-center" />
+			</div>
+		</section>
+		<style>
+			[data-agent-cta]::after {
+				content: '';
+				position: absolute;
+				inset: auto 0 0 0;
+				height: 45%;
+				background: radial-gradient(55% 90% at 50% 115%, rgba(214, 50, 60, 0.2), transparent 70%);
+				pointer-events: none;
+			}
+		</style>
+		{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 	</>
 )}

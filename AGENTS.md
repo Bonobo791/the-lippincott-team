@@ -158,6 +158,14 @@ above rather than bare `astro build`.
   `featured: true`, ordered by the `order` field (lowest first; the first
   member renders as the large lead cell). Bio pages under `/about/<slug>/`
   render all team docs regardless of `featured`.
+- Agent bio pages (`TeamBody.astro`) follow the agent-template design:
+  breadcrumb + H1, portrait/bio split, contact ledger, ink proof band,
+  team chips, personalized CTA, `ProfilePage` JSON-LD. The optional team
+  `headline` field overrides the H1 (with `**…**` around the italic accent);
+  it falls back to the two-tone name split. The proof band reuses the
+  `ProofStage` block component with hardcoded team-wide metrics, and the
+  chips row self-fetches teammates via `listTeam()` (featured first,
+  current agent excluded).
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - The generated client reads content from a **seeded cache**

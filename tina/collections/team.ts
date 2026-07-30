@@ -13,6 +13,10 @@ export const TeamCollection: Collection = {
   fields: [
     { type: "string", name: "name", label: "Name", isTitle: true, required: true },
     { type: "string", name: "role", label: "Role / Title" },
+    {
+      type: "string", name: "headline", label: "Headline",
+      description: "Optional H1 override for the bio page. Wrap the italic accent phrase in **…** (e.g. Amy Lippincott, **broker and founder.**). Defaults to the agent's name.",
+    },
     { type: "string", name: "phone", label: "Phone" },
     { type: "string", name: "email", label: "Email" },
     { type: "image", name: "photo", label: "Photo" },
