@@ -28,8 +28,32 @@
   ],
   "localConfigTools": [],
   "codacyYaml": null,
-  "importResults": null,
-  "cloudVerification": null,
+  "importResults": {
+    "status": "success",
+    "toolsConfigured": 18,
+    "toolsEnabled": [],
+    "toolsDisabled": [],
+    "errors": [],
+    "warnings": [],
+    "codingStandards": [],
+    "forceUsed": false
+  },
+  "cloudVerification": {
+    "reanalysisCompleted": false,
+    "issuesBefore": 88,
+    "issuesAfter": null,
+    "patternsDisabled": [
+      {
+        "patternId": "Biome_lint_correctness_noUndeclaredDependencies",
+        "toolId": "Biome",
+        "reason": "All 88 findings falsely reported that the repository-root package.json was missing.",
+        "issueCount": 88
+      }
+    ],
+    "warnings": [
+      "Codacy's reanalysis command returned after queue preparation; the remote configuration itself was fetched and verified without the rule."
+    ]
+  },
   "notes": [
     "Issue metrics are scoped to Biome_lint_correctness_noUndeclaredDependencies.",
     "The local full-repository baseline could not run because several unrelated Python analyzers could not create their isolated environments.",
