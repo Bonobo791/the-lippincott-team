@@ -208,9 +208,8 @@ above rather than bare `astro build`.
   ink band with optional `backgroundImage` (full-bleed, gradient scrim),
   bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold
   italic accent, ghost chips (`border-white/30 bg-white/10`), and optional
-  `actions` (red button / white text link, same shape as GuideCta's). The
-  `answer` capsule renders in a separate ivory (`bg-section`) band directly
-  below the hero. Without a `backgroundImage` the hero is a solid dark band.
+  `actions` (red button / white text link, same shape as GuideCta's).
+  Without a `backgroundImage` the hero is a solid dark band.
 - Apple-style homepage blocks (all render in the `.font-apple` system/Inter
   stack with italic `**...**` accents via `SplitHeading`): `TrustStrip` (flat
   parchment trust bar — title's plain segments = small label, accented = big
