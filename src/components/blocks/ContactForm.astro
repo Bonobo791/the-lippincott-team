@@ -1,51 +1,127 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
-import Section from '../ui/Section.astro';
-import Button from '../ui/Button.astro';
-import type { ContactFormBlock } from '../../lib/data';
+import SplitHeading from '../ui/SplitHeading.astro';
+import { getConfig, type ContactFormBlock } from '../../lib/data';
+import { telHref } from '../../lib/url';
 
 interface Props { data: ContactFormBlock }
 
 const { data } = Astro.props;
+// Rail contact rows come from the site config (single source for phone/email).
+const contact = (await getConfig()).data?.config?.contact ?? null;
+// Config stores "713-494-1818"; the design displays "(713) 494-1818".
+const phoneDisplay = contact?.phone?.replace(/^(\d{3})-(\d{3})-(\d{4})$/, '($1) $2-$3') ?? null;
 
 const fieldClasses =
-	'mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-[3px] focus:ring-ring/50';
+	'mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-[3px] focus:ring-ring/50';
+const labelClasses = 'text-[13px] font-semibold text-ink';
+
+const steps = [
+	{ n: '01', title: 'We review your note', body: 'A specialist reads your goals before anyone calls you.' },
+	{ n: '02', title: 'You get a plan', body: 'Pricing data, neighborhood comparisons or a tour list, matched to your move.' },
+	{ n: '03', title: 'You decide', body: 'No obligation either way. The data is yours to keep.' },
+];
+const assurances = [
+	{ title: 'Free consultation', body: 'Pricing analysis and neighborhood comparisons cost nothing.' },
+	{ title: 'One business day', body: 'A named specialist responds, not an autoresponder.' },
+	{ title: '4.9 rated, verified', body: '750+ five-star reviews across Google and HAR.com.' },
+];
 ---
-<Section>
-	<div class="mx-auto max-w-2xl">
-		{data.heading && <h2 data-tina-field={tinaField(data, 'heading')} class="text-center text-3xl font-semibold tracking-tight">{data.heading}</h2>}
-		{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-4 text-center text-muted-foreground">{data.intro}</p>}
-		{/*
-			Submissions go to Netlify Forms (static, no JS needed). When Sierra API
-			lead forwarding lands, the endpoint swaps to a Netlify Function — this
-			block and page stay unchanged.
-		*/}
-		<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-10 rounded-2xl border p-6 shadow-sm sm:p-8">
-			<input type="hidden" name="form-name" value="contact" />
-			<p class="hidden" aria-hidden="true">
-				<label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
-			</p>
-			<div class="grid gap-5 sm:grid-cols-2">
+<>
+	<section class="pt-12 pb-10 md:pt-16 md:pb-12">
+		<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+			{data.heading && (
+				<div class="h2-mask">
+					<SplitHeading as="h1" text={data.heading} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'heading')} class="max-w-[24ch] text-balance text-[clamp(2.2rem,4.5vw,3.5rem)] font-serif font-light leading-[1.08] tracking-[-0.02em] text-ink" />
+				</div>
+			)}
+			{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.intro}</p>}
+		</div>
+	</section>
+	<section class="pb-16 md:pb-24">
+		<div class="mx-auto grid max-w-[1200px] items-start gap-12 px-6 md:px-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
+			{/*
+				Submissions go to Netlify Forms (static, no JS needed). When Sierra API
+				lead forwarding lands, the endpoint swaps to a Netlify Function — this
+				block and page stay unchanged.
+			*/}
+			<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
+				<input type="hidden" name="form-name" value="contact" />
+				<p class="hidden" aria-hidden="true">
+					<label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+				</p>
+				<div class="grid gap-5 sm:grid-cols-2">
+					<div>
+						<label for="contact-name" class={labelClasses}>Full name <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder="Jordan Meyers" class={fieldClasses} />
+					</div>
+					<div>
+						<label for="contact-phone" class={labelClasses}>Phone</label>
+						<input id="contact-phone" name="phone" type="tel" autocomplete="tel" placeholder="(713) 555-0142" class={fieldClasses} />
+						<span class="mt-1.5 block text-xs text-muted-foreground">Optional, but fastest for scheduling.</span>
+					</div>
+					<div class="sm:col-span-2">
+						<label for="contact-email" class={labelClasses}>Email <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" class={fieldClasses} />
+					</div>
+					<div class="sm:col-span-2">
+						<label for="contact-interest" class={labelClasses}>I want to</label>
+						<select id="contact-interest" name="interest" class={fieldClasses}>
+							<option>Sell my home</option>
+							<option>Buy a home</option>
+							<option>Buy and sell at once</option>
+							<option>Relocate to Northwest Houston</option>
+							<option>Get a home valuation</option>
+						</select>
+					</div>
+					<div class="sm:col-span-2">
+						<label for="contact-message" class={labelClasses}>Anything we should know?</label>
+						<textarea id="contact-message" name="message" rows={5} placeholder="Timeline, neighborhoods on your list, must-haves." class={fieldClasses}></textarea>
+					</div>
+				</div>
+				<button type="submit" class="btn-magnetic mt-7 inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95">
+					Request my consultation <span aria-hidden="true">→</span>
+				</button>
+				<p class="mt-4 text-xs text-muted-foreground">Free and without obligation. Your information is never sold or shared outside the team.</p>
+			</form>
+			<aside>
+				{phoneDisplay && contact?.phone && (
+					<div class="border-t border-border py-7 first:border-t-0 first:pt-0">
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Call or text</span>
+						<a href={telHref(contact.phone)} class="mt-2.5 block font-serif text-[clamp(1.5rem,2.4vw,1.9rem)] font-light tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{phoneDisplay}</a>
+					</div>
+				)}
+				{contact?.email && (
+					<div class="border-t border-border py-7">
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Email</span>
+						<a href={`mailto:${contact.email}`} class="mt-2.5 block break-all font-serif text-xl font-light tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{contact.email}</a>
+					</div>
+				)}
+				<div class="border-t border-border pt-7">
+					<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">What happens next</span>
+					<ol class="mt-2 list-none p-0">
+						{steps.map((step) => (
+							<li class="flex gap-5 border-t border-border py-5 first:border-t-0">
+								<span class="font-serif text-sm text-gold">{step.n}</span>
+								<div>
+									<b class="text-[15px] font-semibold text-ink">{step.title}</b>
+									<p class="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+								</div>
+							</li>
+						))}
+					</ol>
+				</div>
+			</aside>
+		</div>
+	</section>
+	<section class="bg-section py-12 md:py-16">
+		<div class="mx-auto grid max-w-[1200px] gap-10 px-6 md:grid-cols-3 md:gap-8 md:px-12">
+			{assurances.map((item) => (
 				<div>
-					<label for="contact-name" class="text-sm font-medium">Name <span aria-hidden="true" class="text-primary">*</span></label>
-					<input id="contact-name" name="name" type="text" required autocomplete="name" class={fieldClasses} />
+					<b class="text-[15px] font-semibold text-ink">{item.title}</b>
+					<p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
 				</div>
-				<div>
-					<label for="contact-email" class="text-sm font-medium">Email <span aria-hidden="true" class="text-primary">*</span></label>
-					<input id="contact-email" name="email" type="email" required autocomplete="email" class={fieldClasses} />
-				</div>
-				<div class="sm:col-span-2">
-					<label for="contact-phone" class="text-sm font-medium">Phone</label>
-					<input id="contact-phone" name="phone" type="tel" autocomplete="tel" class={fieldClasses} />
-				</div>
-				<div class="sm:col-span-2">
-					<label for="contact-message" class="text-sm font-medium">Message <span aria-hidden="true" class="text-primary">*</span></label>
-					<textarea id="contact-message" name="message" required rows={5} class={fieldClasses}></textarea>
-				</div>
-			</div>
-			<div class="mt-6">
-				<Button size="lg" class="w-full sm:w-auto">Send Message</Button>
-			</div>
-		</form>
-	</div>
-</Section>
+			))}
+		</div>
+	</section>
+</>

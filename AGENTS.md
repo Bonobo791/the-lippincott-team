@@ -166,6 +166,19 @@ above rather than bare `astro build`.
   `ProofStage` block component with hardcoded team-wide metrics, and the
   chips row self-fetches teammates via `listTeam()` (featured first,
   current agent excluded).
+- Blog: posts carry a `category` select (Communities, Buying, Selling,
+  Pricing, Financing, Market, Relocating, Living) shown as the kicker label
+  on the index and article pages. The article template (`BlogBody.astro`)
+  renders breadcrumb, byline meta row (author comes from the
+  `amy-lippincott-2` team doc — the schema has no author field), a "The
+  short answer" capsule from `description`, a sticky "On this page" TOC and
+  reading time derived from the body (`src/lib/article.ts` — `extractToc`,
+  `readingTimeMinutes`; h2 anchors come from the `ArticleH2` TinaMarkdown
+  override, whose slug algorithm must stay in sync with `extractToc`), an
+  inline CTA panel, author box, and category-first related reads. The
+  `contactForm` block renders the entire contact page (SplitHeading H1 from
+  `heading`, Netlify form, config-driven contact rail, reassurance strip) —
+  `contact-us.mdx` is that single block.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - The generated client reads content from a **seeded cache**
