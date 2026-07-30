@@ -7,7 +7,7 @@ export const checklistSplitBlockSchema: Template = {
 		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.' },
 		{ type: 'rich-text', label: 'Body', name: 'body', description: 'Left-column prose next to the checklist.' },
 		{
-			type: 'object', label: 'Items', name: 'items', list: true,
+			type: 'object', label: 'Items', name: 'checks', list: true,
 			ui: {
 				defaultItem: { bold: 'Verify the exact attendance zone', text: 'for every address, before you tour' },
 				itemProps: (i: { bold?: string; text?: string }) => ({ label: `${i.bold ?? ''} ${i.text ?? ''}`.trim() }),
@@ -21,7 +21,7 @@ export const checklistSplitBlockSchema: Template = {
 	ui: {
 		defaultItem: {
 			title: 'How we map a **school-first search.**',
-			items: [{ bold: 'Verify the exact attendance zone', text: 'for every address, before you tour' }],
+			checks: [{ bold: 'Verify the exact attendance zone', text: 'for every address, before you tour' }],
 		},
 	},
 };

@@ -93,7 +93,7 @@ above rather than bare `astro build`.
   ContactForm — page collection only; plus the **community guide blocks**:
   GuideHero, StatLedger, PriceLadder, CalloutRail, DataTable, PhotoCardGrid,
   CategoryTiles, RouteLedger, TradeOffs, NotePanel, ProofStage, RelatedChips,
-  GuideCta — registered in **both** the page and community collections).
+  GuideCta, ChecklistSplit — registered in **both** the page and community collections).
   **Convention: each block is a pair** —
   `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
@@ -109,7 +109,7 @@ above rather than bare `astro build`.
   `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
   `tina/collections/community.ts` registers the 7 legacy templates (hero,
-  split, features, stats, content, faq, cta) plus the 13 community guide
+  split, features, stats, content, faq, cta) plus the 14 community guide
   blocks — Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the

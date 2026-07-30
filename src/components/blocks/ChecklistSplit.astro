@@ -9,7 +9,7 @@ import type { ChecklistSplitBlock } from '../../lib/data';
 interface Props { data: Omit<ChecklistSplitBlock, '__typename'> }
 
 const { data } = Astro.props;
-const items = (data.items ?? []).filter(i => i !== null);
+const items = (data.checks ?? []).filter(i => i !== null);
 ---
 {/* Ivory split band: heading + prose on the left, red-tick checklist on the
     right (bold lead-in + plain text per item). */}
