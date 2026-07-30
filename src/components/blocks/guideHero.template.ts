@@ -8,8 +8,6 @@ export const guideHeroBlockSchema: Template = {
 		{ type: 'string', label: 'Eyebrow', name: 'eyebrow', description: 'Small red-tick label above the headline (e.g. "Communities").' },
 		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.', ui: { component: 'textarea' } },
 		{ type: 'image', label: 'Background Image', name: 'backgroundImage', description: 'Full-bleed photo behind the headline (dark scrim is added). Without one the hero renders as a solid dark band.' },
-		{ type: 'string', label: 'Answer Label', name: 'answerLabel', description: 'Eyebrow inside the answer capsule (e.g. "The short answer").' },
-		{ type: 'rich-text', label: 'Answer', name: 'answer', description: 'Short direct-answer capsule shown in the ivory band below the hero.' },
 		chipsField({ bold: '$445,000', label: 'median list price' }),
 		{
 			type: 'object', label: 'Actions', name: 'actions', list: true,
@@ -25,7 +23,6 @@ export const guideHeroBlockSchema: Template = {
 		defaultItem: {
 			eyebrow: 'Communities',
 			title: 'Living in **Cypress, TX.**',
-			answerLabel: 'The short answer',
 		},
 	},
 };

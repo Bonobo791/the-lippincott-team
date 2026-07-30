@@ -30,6 +30,7 @@ import NotePanel from './NotePanel.astro';
 import ProofStage from './ProofStage.astro';
 import RelatedChips from './RelatedChips.astro';
 import GuideCta from './GuideCta.astro';
+import ChecklistSplit from './ChecklistSplit.astro';
 import type { CmsPage, CmsCommunity } from '../../lib/data';
 
 interface Props {
@@ -76,6 +77,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'ProofStage': return <ProofStage data={block as never} />;
 			case 'RelatedChips': return <RelatedChips data={block as never} />;
 			case 'GuideCta': return <GuideCta data={block as never} />;
+			case 'ChecklistSplit': return <ChecklistSplit data={block as never} />;
 		}
 	})();
 	return <div data-tina-field={tinaField(block)}>{rendered}</div>;

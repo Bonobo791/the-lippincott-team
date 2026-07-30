@@ -29,6 +29,7 @@ import { notePanelBlockSchema } from '../../src/components/blocks/notePanel.temp
 import { proofStageBlockSchema } from '../../src/components/blocks/proofStage.template';
 import { relatedChipsBlockSchema } from '../../src/components/blocks/relatedChips.template';
 import { guideCtaBlockSchema } from '../../src/components/blocks/guideCta.template';
+import { checklistSplitBlockSchema } from '../../src/components/blocks/checklistSplit.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -94,6 +95,7 @@ export const PageCollection: Collection = {
 				proofStageBlockSchema,
 				relatedChipsBlockSchema,
 				guideCtaBlockSchema,
+				checklistSplitBlockSchema,
 			],
 		},
 	],
