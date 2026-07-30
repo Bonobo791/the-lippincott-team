@@ -24,8 +24,20 @@ const assertSafePath = (value: string) => {
 		throw new Error(`Unsafe content path: ${value}`);
 };
 
-export const getConfig = () =>
-	requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
+// Memoized: the config is site-global and several consumers (Base chrome,
+// ContactForm rail) need it per page — one in-flight/resolved promise serves
+// them all instead of a Tina query per consumer. Content can't change
+// mid-build; in dev the seeded-cache workflow already expects a restart.
+function fetchConfig() {
+	return requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
+}
+let configCache: ReturnType<typeof fetchConfig> | null = null;
+export function getConfig() {
+	if (!configCache) {
+		configCache = fetchConfig();
+	}
+	return configCache;
+}
 
 export const getPage = (slug: string) => {
 	assertSafePath(slug);

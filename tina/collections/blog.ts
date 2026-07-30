@@ -31,6 +31,13 @@ export const BlogCollection: Collection = {
       type: "datetime",
     },
     {
+      name: "category",
+      label: "Category",
+      type: "string",
+      options: ["Communities", "Buying", "Selling", "Pricing", "Financing", "Market", "Relocating", "Living"],
+      description: "Shown as the kicker label on the blog index and article page.",
+    },
+    {
       name: "updatedDate",
       label: "Updated Date",
       type: "datetime",

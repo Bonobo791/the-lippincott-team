@@ -1,44 +1,85 @@
 ---
 import Base from '../../layouts/Base.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
-import { getConfig, listBlogs } from '../../lib/data';
+import SplitHeading from '../../components/ui/SplitHeading.astro';
+import GuideActions from '../../components/ui/GuideActions.astro';
+import { listBlogs } from '../../lib/data';
 
 const posts = await listBlogs();
-const config = (await getConfig()).data?.config ?? null;
+const [featured, ...rest] = posts;
+const linkArrow = 'mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary no-underline transition-[gap] duration-200 hover:gap-3';
 ---
 
 <Base
-	title={config?.seo?.title ?? 'Blog'}
-	description={config?.seo?.description ?? 'Welcome to my website!'}
+	title="Blog | Northwest Houston Real Estate Guides | The Lippincott Team"
+	description="Guides to buying, selling and living in Northwest Houston from the Lippincott Team: pricing, communities, market data and moving advice."
 >
-	<div class="bg-section">
-		<header class="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
-			<h1 class="text-5xl font-bold tracking-tight">Blog</h1>
-		</header>
-		<div class="mx-auto max-w-6xl px-6 pb-12">
-			<ul class="grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-3">
-				{posts.map((post) => (
-					<li class="h-full">
-						<a href={`/blog/${post._sys.filename}/`} class="group flex h-full flex-col overflow-hidden rounded-2xl bg-card shadow-[0_10px_40px_rgba(16,24,40,0.08)] transition-shadow hover:shadow-[0_16px_50px_rgba(16,24,40,0.12)]">
+	<section class="pt-12 pb-10 md:pt-16 md:pb-12">
+		<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+			<p class="eyebrow">Blog</p>
+			<div class="h2-mask mt-4">
+				<SplitHeading as="h1" text="Field guides to **Northwest Houston.**" accentClass="font-normal italic text-primary" class="max-w-[24ch] text-balance text-[clamp(2.2rem,4.5vw,3.5rem)] font-serif font-light leading-[1.08] tracking-[-0.02em] text-ink" />
+			</div>
+			<p class="mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">Pricing strategy, community guides and market data for Cypress, Tomball, Katy and Bridgeland, written by the team that sells here.</p>
+		</div>
+	</section>
+	{featured && (
+		<section class="pb-12 md:pb-16">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<a href={`/blog/${featured._sys.filename}/`} class="group block border border-border bg-background p-8 no-underline transition-colors duration-300 hover:bg-section md:p-12">
+					<span class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+						Latest{featured.category ? ` · ${featured.category}` : ''}{featured.pubDate && <> · <FormattedDate date={new Date(featured.pubDate)} /></>}
+					</span>
+					<h2 class="mt-4 max-w-[24ch] font-serif text-[clamp(1.75rem,3.4vw,2.75rem)] font-light leading-[1.15] tracking-[-0.02em] text-ink">{featured.title}</h2>
+					{featured.description && <p class="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">{featured.description}</p>}
+					<span class={linkArrow}>Read the article <span aria-hidden="true">→</span></span>
+				</a>
+			</div>
+		</section>
+	)}
+	{rest.length > 0 && (
+		<section class="pb-16 md:pb-24">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<div class="grid gap-px border border-border bg-border md:grid-cols-2">
+					{rest.map((post) => (
+						<a href={`/blog/${post._sys.filename}/`} class="group flex flex-col gap-5 bg-background p-6 no-underline transition-colors duration-300 hover:bg-section sm:flex-row md:p-7">
 							{post.heroImage && (
-								<img width={720} height={450} src={post.heroImage} alt={post.title ?? ''} class="aspect-[16/10] w-full object-cover" />
+								<img src={post.heroImage} alt={post.title ?? ''} width={400} height={300} loading="lazy" class="aspect-[4/3] w-full shrink-0 rounded-lg object-cover sm:w-40" />
 							)}
-							<div class="flex flex-1 flex-col p-6">
-								<h2 class="text-[1.375rem] font-bold leading-snug text-primary">{post.title}</h2>
-								{post.description && (
-									<p class="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">{post.description}</p>
-								)}
-								<span class="mb-6 mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-primary">Read More »</span>
-								{post.pubDate && (
-									<p class="mt-auto border-t border-[#E5E7EB] pt-4 text-xs text-muted-foreground">
-										<FormattedDate date={new Date(post.pubDate)} />
-									</p>
-								)}
+							<div>
+								<span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+									{post.category ?? 'Guides'}{post.pubDate && <> · <FormattedDate date={new Date(post.pubDate)} /></>}
+								</span>
+								<h2 class="mt-2.5 font-serif text-xl font-light leading-snug tracking-[-0.01em] text-ink">{post.title}</h2>
+								{post.description && <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{post.description}</p>}
+								<span class={linkArrow}>Read the article <span aria-hidden="true">→</span></span>
 							</div>
 						</a>
-					</li>
-				))}
-			</ul>
+					))}
+				</div>
+			</div>
+		</section>
+	)}
+	<section class="relative overflow-hidden bg-tile py-16 text-center text-white md:py-24" data-blog-cta>
+		<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
+			<div class="h2-mask">
+				<SplitHeading as="h2" text="Reading is the first step. **Selling is the record.**" accentClass="font-normal italic text-gold" class="mx-auto max-w-[22ch] text-balance text-[clamp(2rem,3.8vw,3rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-white" />
+			</div>
+			<p class="mx-auto mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85">1,463+ homes sold across Northwest Houston, rated 4.9 on Google and HAR.com across 750+ five-star reviews.</p>
+			<div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+				<GuideActions actions={[{ label: 'Schedule a Consultation', link: '/contact-us/', type: 'button' }]} />
+				<a href="/about/" class="inline-flex items-center whitespace-nowrap rounded-full border border-white/30 px-7 py-4 text-sm font-semibold text-white no-underline transition-colors duration-200 hover:border-white hover:bg-white/10">Meet the team</a>
+			</div>
 		</div>
-	</div>
+	</section>
+	<style>
+		[data-blog-cta]::after {
+			content: '';
+			position: absolute;
+			inset: auto 0 0 0;
+			height: 45%;
+			background: radial-gradient(55% 90% at 50% 115%, rgba(214, 50, 60, 0.2), transparent 70%);
+			pointer-events: none;
+		}
+	</style>
 </Base>

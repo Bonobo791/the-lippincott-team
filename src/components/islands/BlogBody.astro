@@ -1,76 +1,155 @@
 ---
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
-import { getTeamMember, type CmsBlog } from '../../lib/data';
-import FormattedDate from '../FormattedDate.astro';
-import Button from '../ui/Button.astro';
-import { mdxComponents } from '../mdx/components';
+import { getTeamMember, listBlogs, type CmsBlog } from '../../lib/data';
+import { extractToc, readingTimeMinutes } from '../../lib/article';
 import { hasRichText } from '../../lib/rich-text';
+import FormattedDate from '../FormattedDate.astro';
+import GuideActions from '../ui/GuideActions.astro';
+import { mdxComponents } from '../mdx/components';
+import ArticleH2 from '../mdx/ArticleH2.astro';
 
 interface Props {
 	data?: CmsBlog | null;
 }
 
 const { data } = Astro.props;
-// Author box: the blog schema has no author field and every migrated post is
-// bylined to Amy on the live site, so her team doc is the source for
-// photo/name/role/bio. The sidebar card reuses the home page CTA copy
-// verbatim (live's "Looking to Buy?" copy exists nowhere in our content).
+// Byline + author box: the blog schema has no author field and every migrated
+// post is bylined to Amy on the live site, so her team doc is the source for
+// photo/name/role/bio.
 const author = data
 	? await getTeamMember('amy-lippincott-2')
 		.then((res) => res.data?.team ?? null)
 		.catch(() => null)
 	: null;
+
+const toc = extractToc(data?.body);
+const minutes = readingTimeMinutes(data?.body);
+const displayDate = data?.updatedDate ?? data?.pubDate ?? null;
+// Label follows the field actually shown: pubDate without an updatedDate is
+// "Published", not "Updated".
+const dateLabel = data?.updatedDate ? 'Updated' : 'Published';
+// Article body with anchored h2s for the TOC.
+const articleComponents = { ...mdxComponents, h2: ArticleH2 };
+
+// Related reads: same category first, most recent inside each tier,
+// excluding this post.
+const related = data
+	? (await listBlogs())
+		.filter((p) => p._sys.filename !== data._sys.filename)
+		.sort((a, b) => {
+			const catMatch = Number(b.category === data.category) - Number(a.category === data.category);
+			if (catMatch !== 0) return catMatch;
+			return new Date(b.pubDate ?? 0).valueOf() - new Date(a.pubDate ?? 0).valueOf();
+		})
+		.slice(0, 3)
+	: [];
 ---
 {data && (
-	<div class="mx-auto max-w-6xl px-6 py-12">
-		<div class="mb-10 text-center">
-			{data.pubDate && (
-				<div data-tina-field={tinaField(data, 'pubDate')} class="text-sm text-muted-foreground">
-					<FormattedDate date={new Date(data.pubDate)} />
-					{data.updatedDate && (
-						<span data-tina-field={tinaField(data, 'updatedDate')} class="italic"> · Last updated <FormattedDate date={new Date(data.updatedDate)} /></span>
+	<>
+		<section class="pt-10 md:pt-14">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				<nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
+					<a href="/" class="no-underline transition-colors hover:text-primary">Home</a>
+					<span aria-hidden="true">›</span>
+					<a href="/blog/" class="no-underline transition-colors hover:text-primary">Blog</a>
+					<span aria-hidden="true">›</span>
+					<span aria-current="page">{data.title}</span>
+				</nav>
+				<h1 data-tina-field={tinaField(data, 'title')} class="mt-7 max-w-[24ch] text-balance font-serif text-[clamp(2rem,4vw,3.25rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">{data.title}</h1>
+				<div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
+					{author && (
+						<div class="flex items-center gap-3">
+							{author.photo && <img src={author.photo} alt={author.name ?? ''} width={44} height={44} class="size-11 rounded-full object-cover" />}
+							<div>
+								<b class="block text-sm font-semibold text-ink">{author.name}</b>
+								{author.role && <span class="block text-xs text-muted-foreground">{author.role}, The Lippincott Team at eXp Realty</span>}
+							</div>
+						</div>
 					)}
+					{displayDate && (
+						<span data-tina-field={tinaField(data, data.updatedDate ? 'updatedDate' : 'pubDate')} class="text-[13px] text-muted-foreground">{dateLabel} <FormattedDate date={new Date(displayDate)} /></span>
+					)}
+					<span class="text-[13px] text-muted-foreground">{minutes} min read</span>
 				</div>
-			)}
-			{data.title && <h1 data-tina-field={tinaField(data, 'title')} class="mt-2 text-4xl font-bold tracking-tight">{data.title}</h1>}
-		</div>
-		<div class="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-10">
-			<div class="w-full max-w-[665px]">
-				{hasRichText(data.body) && (
-					<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
-						<TinaMarkdown content={data.body} components={mdxComponents} />
+			</div>
+		</section>
+		<section class="py-12 md:py-16">
+			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+				{data.description && (
+					<div data-tina-field={tinaField(data, 'description')} class="rounded-2xl border border-border bg-section p-6 md:p-8">
+						<span class="eyebrow">The short answer</span>
+						<p class="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-body">{data.description}</p>
 					</div>
 				)}
-				{author && (
-					<div class="mt-12 rounded-2xl bg-section p-8">
-						<div class="flex flex-col gap-6 sm:flex-row">
+				{data.heroImage && (
+					<img src={data.heroImage} alt={data.title ?? ''} width={1200} height={675} data-tina-field={tinaField(data, 'heroImage')} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />
+				)}
+			</div>
+		</section>
+		<section class="pb-16 md:pb-24">
+			<div class="mx-auto grid max-w-[1200px] items-start gap-12 px-6 md:px-12 lg:grid-cols-[220px_minmax(0,720px)_minmax(0,1fr)] lg:gap-10">
+				{toc.length > 0 ? (
+					<aside aria-label="Table of contents" class="hidden lg:sticky lg:top-24 lg:block">
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">On this page</span>
+						<div class="mt-4 flex flex-col gap-3">
+							{toc.map((entry) => (
+								<a href={`#${entry.id}`} class="text-[13px] leading-snug text-muted-foreground no-underline transition-colors hover:text-primary">{entry.text}</a>
+							))}
+						</div>
+					</aside>
+				) : <div aria-hidden="true" class="hidden lg:block" />}
+				<article>
+					{hasRichText(data.body) && (
+						<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
+							<TinaMarkdown content={data.body} components={articleComponents} />
+						</div>
+					)}
+					<div class="mt-12 flex flex-col gap-6 rounded-2xl border border-border bg-section p-7 sm:flex-row sm:items-center sm:justify-between md:p-8">
+						<div>
+							<h2 class="font-serif text-2xl font-light tracking-[-0.01em] text-ink">Want the same analysis on your home?</h2>
+							<p class="mt-2 text-sm leading-relaxed text-muted-foreground">A data-backed pricing report for your subdivision, free and without obligation.</p>
+						</div>
+						<GuideActions actions={[{ label: 'Schedule a Consultation', link: '/contact-us/', type: 'button' }]} class="shrink-0" />
+					</div>
+					{author && (
+						<footer class="mt-10 flex flex-col gap-6 border-t border-border pt-10 sm:flex-row">
 							{author.photo && (
-								<img src={author.photo} alt={author.name ?? ''} width={80} height={80} class="size-20 shrink-0 rounded-full object-cover" />
+								<img src={author.photo} alt={author.name ?? ''} width={96} height={96} class="size-24 shrink-0 rounded-full object-cover" />
 							)}
 							<div>
-								<h2 class="text-xl font-bold text-foreground">About {author.name}</h2>
-								{author.role && <p class="mt-1 text-sm text-muted-foreground">{author.role}</p>}
-								{author.bio && (
-									<div class="prose mt-3 max-w-none text-sm text-muted-foreground">
+								<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">About the author</span>
+								<h2 class="mt-2 font-serif text-2xl font-light tracking-[-0.01em] text-ink">{author.name}</h2>
+								{hasRichText(author.bio) && (
+									<div class="prose mt-3 max-w-none text-sm [--tw-prose-body:var(--color-muted-foreground)]">
 										<TinaMarkdown content={author.bio} components={mdxComponents} />
 									</div>
 								)}
 							</div>
-						</div>
-					</div>
-				)}
+						</footer>
+					)}
+				</article>
+				<div aria-hidden="true" class="hidden lg:block" />
 			</div>
-			<aside class="w-full shrink-0 lg:w-[340px]">
-				<div class="rounded-2xl bg-secondary p-8 text-center shadow-xl">
-					<h2 class="text-2xl font-bold text-white">Ready to Start Your Home Journey?</h2>
-					<p class="mt-4 text-sm leading-relaxed text-stat-label">Let's discuss how we can help you achieve your real estate goals. Our team is ready to provide expert guidance and personalized service.</p>
-					<div class="mt-8 flex flex-col gap-4">
-						<Button href="/contact-us/" class="w-full">Schedule a Consultation</Button>
-						<Button href="https://www.thelippincottteam.com/featured-listings/" variant="outline" class="w-full rounded-2xl border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white">View Listings</Button>
+		</section>
+		{related.length > 0 && (
+			<section class="bg-section py-16 md:py-24">
+				<div class="mx-auto max-w-[1200px] px-6 md:px-12">
+					<p class="eyebrow">Keep reading</p>
+					<h2 class="mt-4 font-serif text-[clamp(1.9rem,3.2vw,2.5rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">More from the team.</h2>
+					<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+						{related.map((post) => (
+							<a href={`/blog/${post._sys.filename}/`} class="group no-underline">
+								{post.heroImage && (
+									<img src={post.heroImage} alt={post.title ?? ''} width={480} height={320} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
+								)}
+								<span class="mt-5 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{post.category ?? 'Guides'}</span>
+								<h3 class="mt-2 font-serif text-xl font-light leading-snug tracking-[-0.01em] text-ink transition-colors group-hover:text-primary">{post.title}</h3>
+							</a>
+						))}
 					</div>
 				</div>
-			</aside>
-		</div>
-	</div>
+			</section>
+		)}
+	</>
 )}

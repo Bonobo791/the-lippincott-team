@@ -143,6 +143,12 @@
 	color: var(--primary);
 }
 
+/* Migrated posts contain bare URLs as link text — let them wrap instead of
+   overflowing the measure. */
+.prose a {
+	overflow-wrap: anywhere;
+}
+
 /* ---------------------------------------------------------------------------
    Apple-style redesign (homepage blocks + site chrome). The `.font-apple`
    stack mirrors the design's system/Inter font; the global `--font-sans` is
