@@ -30,6 +30,7 @@ import { proofStageBlockSchema } from '../../src/components/blocks/proofStage.te
 import { relatedChipsBlockSchema } from '../../src/components/blocks/relatedChips.template';
 import { guideCtaBlockSchema } from '../../src/components/blocks/guideCta.template';
 import { checklistSplitBlockSchema } from '../../src/components/blocks/checklistSplit.template';
+import { stepsSplitBlockSchema } from '../../src/components/blocks/stepsSplit.template';
 
 export const PageCollection: Collection = {
 	name: 'page',
@@ -96,6 +97,7 @@ export const PageCollection: Collection = {
 				relatedChipsBlockSchema,
 				guideCtaBlockSchema,
 				checklistSplitBlockSchema,
+				stepsSplitBlockSchema,
 			],
 		},
 	],

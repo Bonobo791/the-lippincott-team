@@ -93,7 +93,7 @@ above rather than bare `astro build`.
   ContactForm — page collection only; plus the **community guide blocks**:
   GuideHero, StatLedger, PriceLadder, CalloutRail, DataTable, PhotoCardGrid,
   CategoryTiles, RouteLedger, TradeOffs, NotePanel, ProofStage, RelatedChips,
-  GuideCta, ChecklistSplit — registered in **both** the page and community collections).
+  GuideCta, ChecklistSplit, StepsSplit — registered in **both** the page and community collections).
   **Convention: each block is a pair** —
   `<Name>.astro` (rendering) + `<name>.template.ts` (Tina
   `Template` schema). Multi-word blocks use camelCase template filenames
@@ -109,7 +109,7 @@ above rather than bare `astro build`.
   `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
   `tina/collections/community.ts` registers the 7 legacy templates (hero,
-  split, features, stats, content, faq, cta) plus the 14 community guide
+  split, features, stats, content, faq, cta) plus the 15 community guide
   blocks — Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
@@ -154,6 +154,10 @@ above rather than bare `astro build`.
 ## Key conventions
 
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
+- The `/about/` roster (`teamGrid` block) shows only team docs with
+  `featured: true`, ordered by the `order` field (lowest first; the first
+  member renders as the large lead cell). Bio pages under `/about/<slug>/`
+  render all team docs regardless of `featured`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - The generated client reads content from a **seeded cache**

@@ -24,6 +24,10 @@ export const TeamCollection: Collection = {
       type: "number", name: "order", label: "Roster Order",
       description: "Lower numbers appear first in the About page roster grid.",
     },
+    {
+      type: "boolean", name: "featured", label: "Show in team roster",
+      description: "Include this member in the About page roster grid. Bio pages are unaffected.",
+    },
     { type: "rich-text", name: "bio", label: "Bio", isBody: true },
   ],
 };
