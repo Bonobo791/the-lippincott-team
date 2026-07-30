@@ -28,10 +28,16 @@ const assertSafePath = (value: string) => {
 // ContactForm rail) need it per page — one in-flight/resolved promise serves
 // them all instead of a Tina query per consumer. Content can't change
 // mid-build; in dev the seeded-cache workflow already expects a restart.
-const fetchConfig = () =>
-	requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
+function fetchConfig() {
+	return requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
+}
 let configCache: ReturnType<typeof fetchConfig> | null = null;
-export const getConfig = () => (configCache ??= fetchConfig());
+export function getConfig() {
+	if (!configCache) {
+		configCache = fetchConfig();
+	}
+	return configCache;
+}
 
 export const getPage = (slug: string) => {
 	assertSafePath(slug);
