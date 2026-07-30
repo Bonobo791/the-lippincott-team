@@ -20,3 +20,14 @@ export function richTextToPlainText(node?: unknown): string {
 	};
 	return walk(node).replace(/\s+/g, ' ').trim();
 }
+
+/**
+ * True when a Tina rich-text field actually contains text. Tina hands back an
+ * empty root-node object for unset rich-text fields, which is *truthy* — a
+ * plain `data.note && ...` guard renders a phantom container (margins and
+ * all). Use this in template conditionals instead.
+ */
+export function hasRichText(node?: unknown): boolean {
+	if (typeof node === 'string') return node.trim().length > 0;
+	return richTextToPlainText(node).length > 0;
+}

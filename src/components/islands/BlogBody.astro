@@ -5,6 +5,7 @@ import { getTeamMember, type CmsBlog } from '../../lib/data';
 import FormattedDate from '../FormattedDate.astro';
 import Button from '../ui/Button.astro';
 import { mdxComponents } from '../mdx/components';
+import { hasRichText } from '../../lib/rich-text';
 
 interface Props {
 	data?: CmsBlog | null;
@@ -36,7 +37,7 @@ const author = data
 		</div>
 		<div class="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-10">
 			<div class="w-full max-w-[665px]">
-				{data.body && (
+				{hasRichText(data.body) && (
 					<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
 						<TinaMarkdown content={data.body} components={mdxComponents} />
 					</div>

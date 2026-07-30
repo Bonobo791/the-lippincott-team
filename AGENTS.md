@@ -162,6 +162,13 @@ above rather than bare `astro build`.
   files outside the Tina admin, rerun `pnpm build:local` and restart the dev
   server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
+  In template conditionals, never test a rich-text field with plain truthiness
+  (`data.note && ...`) — Tina returns an empty root-node **object** for unset
+  fields, which is truthy and renders phantom containers with margins. Use
+  `hasRichText(field)` from `src/lib/rich-text.ts` instead.
+- Section vertical rhythm: transparent-surface blocks use `py-12 md:py-16`;
+  background/dark bands use `py-16 md:py-24` (matches the design spec's dense
+  `clamp(40px,5vw,64px)` bands; stacked sections sum both paddings).
 - The `faq` block has an optional `jsonld` boolean: when enabled, `Faq.astro`
   emits a `FAQPage` schema.org script built from the block's Q&A items
   (answers flattened via `richTextToPlainText` in `src/lib/rich-text.ts`).

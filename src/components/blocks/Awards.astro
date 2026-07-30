@@ -13,7 +13,7 @@ interface Props { data: Omit<AwardsBlock, '__typename'> }
 const { data } = Astro.props;
 const items = (data.items ?? []).filter(i => i !== null);
 ---
-<section class="font-apple bg-section py-20 md:py-32">
+<section class="font-apple bg-section py-16 md:py-24">
 	<div class="mx-auto grid max-w-[1200px] gap-12 px-6 md:px-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
 		<div class="self-start lg:sticky lg:top-[110px]">
 			{data.title && (
