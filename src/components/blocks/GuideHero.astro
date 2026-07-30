@@ -4,6 +4,8 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { mdxComponents } from '../mdx/components';
+import GuideActions from '../ui/GuideActions.astro';
+import { hasRichText } from '../../lib/rich-text';
 import type { GuideHeroBlock } from '../../lib/data';
 
 interface Props { data: Omit<GuideHeroBlock, '__typename'> }
@@ -37,10 +39,11 @@ const chips = (data.chips ?? []).filter(c => c !== null);
 				))}
 			</div>
 		)}
+		<GuideActions actions={data.actions} class="mt-10" />
 	</div>
 </section>
 {/* The short-answer capsule opens the paper band below the hero. */}
-{data.answer && (
+{hasRichText(data.answer) && (
 	<section class="bg-section pt-[clamp(40px,5vw,64px)]">
 		<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 			<div data-tina-field={tinaField(data, 'answer')} class="max-w-[860px] rounded-2xl border border-border bg-background p-7 md:p-8">

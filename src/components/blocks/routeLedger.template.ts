@@ -1,4 +1,5 @@
 import type { Template } from 'tinacms';
+import { chipsField } from './shared-fields';
 
 export const routeLedgerBlockSchema: Template = {
 	name: 'routeLedger',
@@ -6,14 +7,7 @@ export const routeLedgerBlockSchema: Template = {
 	fields: [
 		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.' },
 		{ type: 'rich-text', label: 'Summary', name: 'summary' },
-		{
-			type: 'object', label: 'Chips', name: 'chips', list: true,
-			ui: { defaultItem: { bold: '25-30 mi', label: 'to downtown Houston' }, itemProps: (i: { bold?: string; label?: string }) => ({ label: `${i.bold ?? ''} ${i.label ?? ''}`.trim() }) },
-			fields: [
-				{ type: 'string', label: 'Bold', name: 'bold' },
-				{ type: 'string', label: 'Label', name: 'label' },
-			],
-		},
+		chipsField({ bold: '25-30 mi', label: 'to downtown Houston' }),
 		{
 			type: 'object', label: 'Routes', name: 'routes', list: true,
 			ui: {

@@ -20,7 +20,7 @@ const parsed = stats.map((s) => {
 	};
 });
 ---
-<section data-stats-section class="font-apple relative overflow-hidden bg-tile py-20 text-white md:py-28">
+<section data-stats-section class="font-apple relative overflow-hidden bg-tile py-16 text-white md:py-24">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		{data.title && <p data-tina-field={tinaField(data, 'title')} class="eyebrow on-dark relative">{data.title}</p>}
 		{data.description && <p data-tina-field={tinaField(data, 'description')} class="relative mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-[#cccccc]">{data.description}</p>}

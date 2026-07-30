@@ -3,6 +3,7 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { mdxComponents } from '../mdx/components';
+import { hasRichText } from '../../lib/rich-text';
 import type { RouteLedgerBlock } from '../../lib/data';
 
 interface Props { data: Omit<RouteLedgerBlock, '__typename'> }
@@ -11,16 +12,16 @@ const { data } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 const routes = (data.routes ?? []).filter(r => r !== null);
 ---
-<section class="bg-section py-20 md:py-28">
+<section class="bg-section py-12 md:py-16">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
-		{(data.title || data.summary) && (
+		{(data.title || hasRichText(data.summary)) && (
 			<div class="mb-8 grid gap-4 md:mb-10">
 				{data.title && (
 					<div class="h2-mask">
 						<SplitHeading as="h2" text={data.title} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, 'title')} class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 					</div>
 				)}
-				{data.summary && (
+				{hasRichText(data.summary) && (
 					<div data-tina-field={tinaField(data, 'summary')} class="prose max-w-[56ch] text-[clamp(17px,1.6vw,21px)] [--tw-prose-body:var(--color-body)]">
 						<TinaMarkdown content={data.summary} components={mdxComponents} />
 					</div>
@@ -42,7 +43,7 @@ const routes = (data.routes ?? []).filter(r => r !== null);
 				{routes.map((route) => (
 					<div data-tina-field={tinaField(route)} class="grid gap-1 border-b border-hairline py-4 md:grid-cols-[minmax(170px,230px)_1fr] md:gap-7 md:py-[18px]">
 						<span class="text-[15px] font-semibold text-ink">{route.name}</span>
-						{route.destination && (
+						{hasRichText(route.destination) && (
 							<div data-tina-field={tinaField(route, 'destination')} class="prose max-w-none text-[15px] leading-relaxed [--tw-prose-body:var(--color-body)]">
 								<TinaMarkdown content={route.destination} components={mdxComponents} />
 							</div>
@@ -51,7 +52,7 @@ const routes = (data.routes ?? []).filter(r => r !== null);
 				))}
 			</div>
 		)}
-		{data.note && (
+		{hasRichText(data.note) && (
 			<div data-tina-field={tinaField(data, 'note')} class="prose mt-7 max-w-[68ch] text-sm leading-relaxed [--tw-prose-body:var(--color-muted-foreground)]">
 				<TinaMarkdown content={data.note} components={mdxComponents} />
 			</div>

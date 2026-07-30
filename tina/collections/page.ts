@@ -49,6 +49,13 @@ export const PageCollection: Collection = {
 				"Shown in the browser tab and search results — not on the page itself. To change the heading visitors see at the top of the page, edit the Headline of the page's Hero block (if it has one) in Page Sections below.",
 		},
 		{
+			name: 'description',
+			label: 'Meta Description (SEO)',
+			type: 'string',
+			ui: { component: 'textarea' },
+			description: 'Shown in search results under the meta title. Leave empty to fall back to the site-wide description from Global Config.',
+		},
+		{
 			type: 'object',
 			list: true,
 			name: 'blocks',

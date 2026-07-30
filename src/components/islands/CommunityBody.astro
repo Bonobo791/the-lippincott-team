@@ -5,6 +5,7 @@ import type { CmsCommunity } from '../../lib/data';
 import { communityPath } from '../../lib/data';
 import { sierraLinks } from '../../lib/sierra-links';
 import { mdxComponents } from '../mdx/components';
+import { hasRichText } from '../../lib/rich-text';
 import Blocks from '../blocks/Blocks.astro';
 import Button from '../ui/Button.astro';
 import CommunityFaqHeading from '../mdx/CommunityFaqHeading.astro';
@@ -51,7 +52,7 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 				{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mt-4 text-lg text-muted-foreground">{data.intro}</p>}
 			</div>
 		)}
-		{data.body && (
+		{hasRichText(data.body) && (
 			<div class="mx-auto max-w-[720px] px-6 py-16">
 				<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none prose-a:font-bold">
 					<TinaMarkdown content={data.body} components={bodyComponents} />

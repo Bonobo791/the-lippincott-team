@@ -1,0 +1,49 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import { safeHref, isExternal } from '../../lib/url';
+
+interface ActionItem {
+	[key: string]: unknown;
+	type?: string | null;
+	label?: string | null;
+	link?: string | null;
+}
+
+interface Props {
+	actions?: (ActionItem | null)[] | null;
+	/** Extra classes for the wrapping row (margins, justification). */
+	class?: string;
+}
+
+const { actions: raw, class: className } = Astro.props;
+const actions = (raw ?? []).flatMap((action) => {
+	if (!action) return [];
+	const href = safeHref(action.link);
+	if (!href) return [];
+	const externalAttrs = isExternal(action.link)
+		? { target: '_blank', rel: 'noopener noreferrer' }
+		: {};
+	return [{ action, href, externalAttrs }];
+});
+---
+{actions.length > 0 && (
+	<div class={`flex flex-wrap items-center gap-4 ${className ?? ''}`}>
+		{actions.map(({ action, href, externalAttrs }) => (
+			action.type === 'link' ? (
+				<a
+					href={href}
+					data-tina-field={tinaField(action)}
+					{...externalAttrs}
+					class="self-center border-b border-white/35 pb-0.5 text-sm font-semibold text-white/85 no-underline transition-colors duration-200 hover:border-white hover:text-white"
+				>{action.label}</a>
+			) : (
+				<a
+					href={href}
+					data-tina-field={tinaField(action)}
+					{...externalAttrs}
+					class="btn-magnetic inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95"
+				>{action.label} <span aria-hidden="true">→</span></a>
+			)
+		))}
+	</div>
+)}

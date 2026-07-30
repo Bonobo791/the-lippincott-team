@@ -13,7 +13,7 @@ interface Props { data: Omit<TestimonialShowcaseBlock, '__typename'> }
 const { data } = Astro.props;
 const reviews = (data.testimonials ?? []).filter(r => r !== null);
 ---
-<section class="font-apple bg-background py-20 md:py-32" data-testimonial-showcase>
+<section class="font-apple bg-background py-16 md:py-24" data-testimonial-showcase>
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		{data.title && (
 			<div class="h2-mask">

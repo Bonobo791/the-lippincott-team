@@ -2,6 +2,7 @@
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { mdxComponents } from '../mdx/components';
+import { hasRichText } from '../../lib/rich-text';
 import type { NotePanelBlock } from '../../lib/data';
 
 interface Props { data: Omit<NotePanelBlock, '__typename'> }
@@ -12,7 +13,7 @@ const { data } = Astro.props;
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		<div class="max-w-[860px] rounded-2xl border border-border bg-section p-6 md:p-8">
 			{data.label && <span data-tina-field={tinaField(data, 'label')} class="mb-3 block text-xs font-semibold uppercase tracking-[0.18em] text-primary">{data.label}</span>}
-			{data.body && (
+			{hasRichText(data.body) && (
 				<div data-tina-field={tinaField(data, 'body')} class="prose max-w-[68ch] text-[15px] leading-relaxed [--tw-prose-body:var(--color-body)]">
 					<TinaMarkdown content={data.body} components={mdxComponents} />
 				</div>

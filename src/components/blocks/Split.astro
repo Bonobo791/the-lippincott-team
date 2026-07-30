@@ -4,6 +4,7 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
+import { hasRichText } from '../../lib/rich-text';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import { cn } from '../../lib/cn';
@@ -19,7 +20,7 @@ const actions = (data.actions ?? []).filter(a => a !== null);
 		<div class={cn('space-y-6', data.reverse && 'md:order-2')}>
 			{data.eyebrow && <span data-tina-field={tinaField(data, 'eyebrow')} class="inline-block rounded-full bg-chip px-4 py-1.5 text-sm font-bold uppercase tracking-[0.7px] text-primary">{data.eyebrow}</span>}
 			{data.title && <SplitHeading as="h2" text={data.title} accentClass="font-bold" data-tina-field={tinaField(data, 'title')} class="text-balance text-3xl font-semibold lg:text-4xl" />}
-			{data.body && (
+			{hasRichText(data.body) && (
 				<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none text-muted-foreground">
 					<TinaMarkdown content={data.body} components={mdxComponents} />
 				</div>
