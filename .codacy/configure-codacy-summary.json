@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "enabledPatterns": { "before": 5656, "after": 5655 },
+    "enabledTools": { "before": 18, "after": 18 },
+    "issues": { "before": 88, "after": 0 },
+    "analysisRuntime": { "before": null, "after": 265 }
+  },
+  "toolChanges": [],
+  "patternChanges": [
+    {
+      "patternId": "Biome_lint_correctness_noUndeclaredDependencies",
+      "toolId": "Biome",
+      "action": "disabled",
+      "reason": "All 88 Cloud findings incorrectly report that the repository-root package.json is missing, including declared Astro, TinaCMS, Playwright, and utility dependencies.",
+      "delta": -88,
+      "parameters": []
+    }
+  ],
+  "securityCoverage": {
+    "deduplication": [],
+    "newCoverage": [],
+    "noisyButKept": []
+  },
+  "keyImprovements": [
+    "Disabled the one Biome dependency rule that generated 88 false positives.",
+    "Verified the affected checklistSplit template locally with Biome: 0 findings.",
+    "Preserved every Security-category pattern and all 18 configured tools."
+  ],
+  "localConfigTools": [],
+  "codacyYaml": null,
+  "importResults": null,
+  "cloudVerification": null,
+  "notes": [
+    "Issue metrics are scoped to Biome_lint_correctness_noUndeclaredDependencies.",
+    "The local full-repository baseline could not run because several unrelated Python analyzers could not create their isolated environments.",
+    "The local config does not affect Codacy Cloud until imported."
+  ]
+}
