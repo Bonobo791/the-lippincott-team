@@ -13,7 +13,7 @@ const rows = (data.rows ?? []).filter(r => r !== null);
 // Numeric-looking cells get the big light figure treatment; text cells stay body copy.
 const isNumeric = (text?: string | null) => !!text && /^[\d#$%.,+\-–—×x ]+$/.test(text.trim());
 ---
-<section class="py-20 md:py-28">
+<section id={data.anchorId ?? undefined} class="py-20 md:py-28">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 		{(data.title || data.summary) && (
 			<div class="mb-10 grid gap-4 md:mb-14">

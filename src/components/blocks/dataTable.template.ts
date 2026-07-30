@@ -6,6 +6,7 @@ export const dataTableBlockSchema: Template = {
 	fields: [
 		{ type: 'string', label: 'Title', name: 'title', description: 'Wrap a phrase in **double asterisks** to render it as the italic accent.' },
 		{ type: 'rich-text', label: 'Summary', name: 'summary' },
+		{ type: 'string', label: 'Anchor ID', name: 'anchorId', description: 'Optional HTML id on the section so jump links (e.g. "#communities") can target it.' },
 		{
 			type: 'object', label: 'Headers', name: 'headers', list: true,
 			ui: { defaultItem: { heading: 'Column' }, itemProps: (i: { heading?: string }) => ({ label: i.heading ?? '' }) },

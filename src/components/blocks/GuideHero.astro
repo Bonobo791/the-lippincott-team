@@ -4,12 +4,17 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { mdxComponents } from '../mdx/components';
+import { safeHref, isExternal } from '../../lib/url';
 import type { GuideHeroBlock } from '../../lib/data';
 
 interface Props { data: Omit<GuideHeroBlock, '__typename'> }
 
 const { data } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
+const actions = (data.actions ?? []).flatMap((action) => {
+	const href = safeHref(action?.link);
+	return action && href ? [{ action, href }] : [];
+});
 ---
 {/* Stage hero: full-bleed photo on an ink band, bottom-left content, ghost
     chips. Without a backgroundImage it renders as a solid dark band. */}
@@ -34,6 +39,27 @@ const chips = (data.chips ?? []).filter(c => c !== null);
 						{chip.bold && <b class="font-semibold text-white">{chip.bold}</b>}
 						{chip.label}
 					</span>
+				))}
+			</div>
+		)}
+		{actions.length > 0 && (
+			<div class="mt-10 flex flex-wrap items-center gap-4">
+				{actions.map(({ action, href }) => (
+					action.type === 'link' ? (
+						<a
+							href={href}
+							data-tina-field={tinaField(action)}
+							{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							class="self-center border-b border-white/35 pb-0.5 text-sm font-semibold text-white/85 no-underline transition-colors duration-200 hover:border-white hover:text-white"
+						>{action.label}</a>
+					) : (
+						<a
+							href={href}
+							data-tina-field={tinaField(action)}
+							{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							class="btn-magnetic inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 active:scale-95"
+						>{action.label} <span aria-hidden="true">→</span></a>
+					)
 				))}
 			</div>
 		)}

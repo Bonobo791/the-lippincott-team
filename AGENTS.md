@@ -166,6 +166,11 @@ above rather than bare `astro build`.
   emits a `FAQPage` schema.org script built from the block's Q&A items
   (answers flattened via `richTextToPlainText` in `src/lib/rich-text.ts`).
   Enable it on at most one FAQ block per page.
+- The `dataTable` block has an optional `anchorId` field that sets the
+  section's HTML `id`, so jump links (e.g. `#communities`) can target it.
+- Page docs (`page` collection) carry `seoTitle` plus an optional
+  `description` (meta description) — `[...slug].astro` falls back to the
+  site-wide `config.seo.description` when the per-page field is empty.
 - Split headings: editors mark the accented phrase in plain Tina string fields
   with `**...**` (the brand's light+bold heading device). Render them with
   `src/components/ui/SplitHeading.astro` (parser in
@@ -195,7 +200,8 @@ above rather than bare `astro build`.
 - GuideHero block (community guides): the "stage" hero — a `min-h-[72svh]`
   ink band with optional `backgroundImage` (full-bleed, gradient scrim),
   bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold
-  italic accent, and ghost chips (`border-white/30 bg-white/10`). The
+  italic accent, ghost chips (`border-white/30 bg-white/10`), and optional
+  `actions` (red button / white text link, same shape as GuideCta's). The
   `answer` capsule renders in a separate ivory (`bg-section`) band directly
   below the hero. Without a `backgroundImage` the hero is a solid dark band.
 - Apple-style homepage blocks (all render in the `.font-apple` system/Inter
@@ -271,7 +277,9 @@ There is **no test suite, linter, or formatter configured** in this project
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud
-  cloud check).
+  cloud check). Note: in the pinned tinacms version the lock is only written
+  by `tinacms dev`, not `tinacms build` — after a schema change, run
+  `pnpm dev` once (then stop it) to regenerate `tina/tina-lock.json`.
 
 ## Deployment
 

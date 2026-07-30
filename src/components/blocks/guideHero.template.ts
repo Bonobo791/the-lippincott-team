@@ -17,6 +17,15 @@ export const guideHeroBlockSchema: Template = {
 				{ type: 'string', label: 'Label', name: 'label' },
 			],
 		},
+		{
+			type: 'object', label: 'Actions', name: 'actions', list: true,
+			ui: { defaultItem: { label: 'Schedule a Consultation', type: 'button', link: '/contact-us/' }, itemProps: (i: { label?: string }) => ({ label: i.label ?? '' }) },
+			fields: [
+				{ type: 'string', label: 'Label', name: 'label' },
+				{ type: 'string', label: 'Type', name: 'type', options: [{ label: 'Button', value: 'button' }, { label: 'Link', value: 'link' }] },
+				{ type: 'string', label: 'Link', name: 'link' },
+			],
+		},
 	],
 	ui: {
 		defaultItem: {
