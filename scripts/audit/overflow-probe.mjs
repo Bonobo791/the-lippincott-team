@@ -20,6 +20,15 @@ await page.waitForTimeout(500);
 const result = await page.evaluate(() => {
 	const vw = document.documentElement.clientWidth;
 	const docW = document.documentElement.scrollWidth;
+	// Elements inside a horizontal scrollport (overflow-x: auto/scroll) are
+	// *meant* to extend past the viewport — clipping there is the fix, not a bug.
+	const inScroller = (el) => {
+		for (let a = el.parentElement; a; a = a.parentElement) {
+			const ox = getComputedStyle(a).overflowX;
+			if (ox === 'auto' || ox === 'scroll') return true;
+		}
+		return false;
+	};
 	const offenders = [];
 	for (const el of document.querySelectorAll('body *')) {
 		const r = el.getBoundingClientRect();
@@ -31,17 +40,19 @@ const result = await page.evaluate(() => {
 				cls,
 				left: Math.round(r.left),
 				right: Math.round(r.right),
+				benign: inScroller(el),
 				text: (el.childElementCount === 0 ? el.textContent : '')?.trim().slice(0, 60) ?? '',
 			});
 		}
 	}
-	return { vw, docW, offenders: offenders.slice(0, 25), total: offenders.length };
+	const genuine = offenders.filter((o) => !o.benign);
+	return { vw, docW, offenders: genuine.slice(0, 25), total: genuine.length, benign: offenders.length - genuine.length };
 });
 
 console.log(`viewport=${result.vw} scrollWidth=${result.docW} overflowX=${result.docW > result.vw}`);
-console.log(`offenders=${result.total}`);
+console.log(`offenders=${result.total} (inside scrollports, expected: ${result.benign})`);
 for (const o of result.offenders) {
 	console.log(`  <${o.tag} class="${o.cls}"> [${o.left}..${o.right}] ${o.text}`);
 }
 await browser.close();
-process.exit(result.docW > result.vw ? 1 : 0);
+process.exit(result.docW > result.vw || result.total > 0 ? 1 : 0);
