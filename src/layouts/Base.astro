@@ -22,6 +22,9 @@ const config = (await getConfig()).data?.config ?? null;
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} image={image} />
+		{/* .home-v2 pages hide .reveal sections until their motion JS runs;
+		    without JS they must render fully visible. */}
+		<noscript><style>.home-v2 .reveal{opacity:1;transform:none}</style></noscript>
 	</head>
 	<body>
 		<TinaIsland name="global" wrapper={islands.global.wrapper}>

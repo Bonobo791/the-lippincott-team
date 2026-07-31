@@ -1,7 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import V2Motion from '../components/v2/V2Motion.astro';
+import { getConfig } from '../lib/data';
+import { telHref } from '../lib/url';
 import '../styles/v2.css';
+
+const phone = (await getConfig()).data?.config?.contact?.phone;
 ---
 
 <Base
@@ -187,7 +191,7 @@ import '../styles/v2.css';
 						<h3>Your numbers, in writing.</h3>
 						<p>A buying plan with your monthly payment, cash to close, and the communities that fit. Free, and yours to keep either way.</p>
 						<a class="btn" href="/contact-us/">Request your buying plan →</a>
-						<p class="alt">Prefer to talk first? <a href="tel:+17134941818">(713) 494-1818</a></p>
+						{phone && <p class="alt">Prefer to talk first? <a href={telHref(phone)}>{phone}</a></p>}
 					</div>
 				</div>
 			</div>
@@ -303,7 +307,7 @@ import '../styles/v2.css';
 				<p>A written buying plan with your real monthly number, cash to close, and the communities that fit. Free, and yours to keep either way.</p>
 				<div class="final-actions">
 					<a class="btn" href="/contact-us/">Schedule a Consultation →</a>
-					<a class="text-link" href="tel:+17134941818">Call (713) 494-1818 →</a>
+					{phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
 				</div>
 			</div>
 		</section>

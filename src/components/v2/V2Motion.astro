@@ -4,47 +4,78 @@
  * pages (buy/sell). Reveal-on-scroll + [data-count] count-ups, same behavior
  * as the homepage's inline script (which keeps its own copy because it also
  * drives the awards monument). Everything no-ops under prefers-reduced-motion.
+ *
+ * Resilience: with JS disabled a <noscript> rule in Base.astro keeps .reveal
+ * content visible; without IntersectionObserver every numeral renders its
+ * final value immediately. Lifecycle mirrors Base.astro's motion script:
+ * bind once, init on astro:page-load, teardown observers/timers on
+ * astro:before-swap so nothing outlives a ClientRouter navigation.
  */
 ---
 
 <script is:inline data-astro-rerun>
 	(function () {
+		if (window.__v2MotionBound) return;
+		window.__v2MotionBound = true;
 		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		// count-up helper
 		function countUp(el, target, opts) {
 			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
+			if (!el.firstChild) return;
 			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
 			var t0 = performance.now();
 			(function tick(t) {
 				var p = Math.min((t - t0) / dur, 1);
 				var e = 1 - Math.pow(1 - p, 3);
-				el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
+				if (el.firstChild) el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
 				if (p < 1) requestAnimationFrame(tick);
 			})(t0);
 		}
 
-		// reveal on scroll + count-up triggers
-		var statsDone = new WeakSet();
-		var io = new IntersectionObserver(function (entries) {
-			entries.forEach(function (en) {
-				if (!en.isIntersecting) return;
-				var el = en.target;
-				el.classList.add('in');
-				el.querySelectorAll('.num[data-count]').forEach(function (n) {
-					if (statsDone.has(n)) return; statsDone.add(n);
+		var io = null, failSafe = 0;
+
+		function teardown() {
+			if (io) { io.disconnect(); io = null; }
+			if (failSafe) { clearTimeout(failSafe); failSafe = 0; }
+		}
+
+		function init() {
+			teardown();
+			// No IntersectionObserver: reveal everything and render final numerals.
+			if (!('IntersectionObserver' in window)) {
+				document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { el.classList.add('in'); });
+				document.querySelectorAll('.home-v2 .num[data-count]').forEach(function (n) {
 					countUp(n, +n.dataset.count, { prefix: n.dataset.prefix || '', suffix: n.dataset.suffix || '' });
 				});
-				io.unobserve(el);
-			});
-		}, { threshold: 0.2 });
-		document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { io.observe(el); });
+				return;
+			}
+			var statsDone = new WeakSet();
+			io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (en) {
+					if (!en.isIntersecting) return;
+					var el = en.target;
+					el.classList.add('in');
+					el.querySelectorAll('.num[data-count]').forEach(function (n) {
+						if (statsDone.has(n)) return; statsDone.add(n);
+						countUp(n, +n.dataset.count, { prefix: n.dataset.prefix || '', suffix: n.dataset.suffix || '' });
+					});
+					io.unobserve(el);
+				});
+			}, { threshold: 0.2 });
+			document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { io.observe(el); });
 
-		// fail-safe: never leave above-fold content hidden
-		setTimeout(function () {
-			document.querySelectorAll('.home-v2 .reveal:not(.in)').forEach(function (el) {
-				if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
-			});
-		}, 1600);
+			// fail-safe: never leave above-fold content hidden
+			failSafe = setTimeout(function () {
+				document.querySelectorAll('.home-v2 .reveal:not(.in)').forEach(function (el) {
+					if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
+				});
+			}, 1600);
+		}
+
+		// Re-init after every ClientRouter swap; astro:page-load fires on first
+		// load too, and before-swap drops observers tied to the old DOM.
+		document.addEventListener('astro:page-load', init);
+		document.addEventListener('astro:before-swap', teardown);
 	})();
 </script>

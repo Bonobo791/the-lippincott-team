@@ -531,12 +531,13 @@ import '../styles/v2.css';
 		// count-up helper
 		function countUp(el, target, opts) {
 			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
+			if (!el.firstChild) return;
 			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
 			var t0 = performance.now();
 			(function tick(t) {
 				var p = Math.min((t - t0) / dur, 1);
 				var e = 1 - Math.pow(1 - p, 3);
-				el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
+				if (el.firstChild) el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
 				if (p < 1) requestAnimationFrame(tick);
 			})(t0);
 		}
