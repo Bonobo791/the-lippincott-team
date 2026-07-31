@@ -77,7 +77,7 @@
 @media(max-width:720px){.home-v2 .stats-grid{grid-template-columns:1fr;gap:48px}}
 
 /* ---------- testimonials ---------- */
-.home-v2 .testi{padding:clamp(64px,8vw,96px) 0;background:var(--paper)}
+.home-v2 .testi{padding:clamp(64px,8vw,96px) 0;background:var(--ivory)}
 .home-v2 .testi-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(40px,5vw,72px);align-items:stretch}
 .home-v2 .testi-left{display:flex;flex-direction:column;gap:18px}
 .home-v2 .testi video{width:100%;border-radius:18px;box-shadow:0 24px 60px rgba(23,21,26,.18)}
@@ -145,7 +145,7 @@
 @media(max-width:900px){.home-v2 .help-sell-grid{grid-template-columns:1fr}.home-v2 .jobs{grid-template-columns:1fr}}
 
 /* ---------- buyer help (numbered steps) ---------- */
-.home-v2 .help-buy{padding:clamp(64px,8vw,96px) 0;background:var(--paper)}
+.home-v2 .help-buy{padding:clamp(64px,8vw,96px) 0;background:var(--ivory)}
 .home-v2 .steps{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(28px,3.4vw,48px)}
 .home-v2 .step{border-top:2px solid var(--ink);padding-top:26px}
 .home-v2 .step .n{font-family:var(--serif);font-weight:300;font-size:clamp(40px,4vw,56px);line-height:1;color:var(--red)}
