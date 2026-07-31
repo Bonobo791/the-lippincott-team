@@ -1,0 +1,317 @@
+---
+import Base from '../layouts/Base.astro';
+import V2Motion from '../components/v2/V2Motion.astro';
+import { getConfig } from '../lib/data';
+import { telHref } from '../lib/url';
+import '../styles/v2.css';
+
+const phone = (await getConfig()).data?.config?.contact?.phone;
+---
+
+<Base
+	title="Buy a Home in Northwest Houston | The Lippincott Team"
+	description="1,463+ homes sold in Cypress, Tomball, Katy and Magnolia. Buy with a team that negotiates every dollar and puts your numbers in writing."
+	image="/uploads/2026/03/cypress-scaled.jpg"
+>
+	<script type="application/ld+json" is:inline>
+	{
+	  "@context": "https://schema.org",
+	  "@type": "FAQPage",
+	  "mainEntity": [
+	    {"@type": "Question", "name": "Do I have to pay my buyer's agent out of pocket?", "acceptedAnswer": {"@type": "Answer", "text": "Not necessarily. Since August 2024, buyers sign a written agreement before touring, and it states exactly what your agent earns. Compensation is negotiable and can be as low as $0. Sellers can still pay it, and you can ask for that inside your offer. In a market closing at 95 to 98% of asking, concessions like this are on the table."}},
+	    {"@type": "Question", "name": "How much do I need for a down payment?", "acceptedAnswer": {"@type": "Answer", "text": "Less than the 20% you have heard. First-time buyers put down a median of 10% in 2025, and 92% financed their purchase. FHA loans need 3.5% down with a 580 credit score. VA loans need no down payment at all. Your written buying plan shows the exact number for your situation."}},
+	    {"@type": "Question", "name": "Is now a good time to buy in Northwest Houston?", "acceptedAnswer": {"@type": "Answer", "text": "The data says buyers hold their strongest position in years: 5.2 months of supply, 52 days on market, closings at 95 to 98% of asking, and a median price cut of $12,500. Rates sit at 6.66%, below a year ago. Nobody times a market perfectly, but leverage this clear is rare."}},
+	    {"@type": "Question", "name": "What are closing costs, and can I avoid them?", "acceptedAnswer": {"@type": "Answer", "text": "Budget 2% to 5% of the purchase price for lender, title and escrow fees. You cannot skip them, but you can negotiate them. Seller credits toward closing costs are a standard part of the offers we write in this market."}},
+	    {"@type": "Question", "name": "How long does it take to buy a house?", "acceptedAnswer": {"@type": "Answer", "text": "The median search ran 10 weeks in 2025. In Northwest Houston, homes sit 40 to 59 days on market, so you can inspect and negotiate without panic. Most of our buyers close 30 to 45 days after contract."}},
+	    {"@type": "Question", "name": "Can I look at homes before signing anything?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Open houses need no paperwork, ever. A written agreement is required before private tours with an agent, nationally since August 17, 2024. Ours comes with a plain-English walkthrough first, and it is negotiable. If we are not a fit, you walk away."}}
+	  ]
+	}
+	</script>
+
+	<div class="home-v2">
+		<!-- ============ HERO ============ -->
+		<section class="hero stage">
+			<img class="hs-media" src="/uploads/2026/03/cypress-scaled.jpg" alt="Aerial over the lakes, fairways and neighborhoods of a Cypress, Texas golf-course community" fetchpriority="high" decoding="async" />
+			<div class="hero-inner">
+				<span class="eyebrow gold">Buy · Northwest Houston</span>
+				<h1>In a buyer's market, <em>leverage wins.</em></h1>
+				<div class="gchips">
+					<span class="gchip"><b>1,463+</b> homes sold in NW Houston</span>
+					<span class="gchip"><b>95-98%</b> of asking, six communities, Jun 2026</span>
+					<span class="gchip"><b>4.92/5</b> across 685 HAR.com surveys</span>
+				</div>
+				<div class="hero-actions">
+					<a class="btn" href="/contact-us/">Start your buying plan →</a>
+					<a class="text-link" href="#process">See how we buy</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ MARKET REALITY ============ -->
+		<section class="band">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The market</span>
+				<h2 class="display sec reveal">The June 2026 market, <em>on your side.</em></h2>
+				<p class="lede reveal">Sellers outnumber buyers for the first time in years. That is not a reason to wait for a better rate. It is a reason to negotiate harder than the market expects.</p>
+				<div class="market-grid reveal">
+					<div class="mkt">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">$345,000</div></a>
+						<div class="lbl">Houston metro median</div>
+						<div class="src">HAR · Jun 2026 · flat vs 2025</div>
+					</div>
+					<div class="mkt">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">52</div></a>
+						<div class="lbl">Metro days on market</div>
+						<div class="src">HAR · Jun 2026 · up from 50</div>
+					</div>
+					<div class="mkt dark-tile">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">5.2</div></a>
+						<div class="lbl">Months of metro supply</div>
+						<div class="src">Buyer's market · HAR · Jun 2026</div>
+					</div>
+					<div class="mkt">
+						<a href="https://trerc.tamu.edu/reports/texas-housing-insight-june-2026/" target="_blank" rel="noopener"><div class="num">$12,500</div></a>
+						<div class="lbl">Median seller price cut</div>
+						<div class="src">Texas A&amp;M · 3.6% of list · 2026</div>
+					</div>
+				</div>
+				<div class="jobs three reveal" style="margin-top:2px">
+					<div class="job">
+						<span class="tag red">What leverage looks like</span>
+						<p>Sellers are meeting the market. Homes across our six communities <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">closed at 95 to 98% of asking</a> in June 2026, and the median seller took <a href="https://trerc.tamu.edu/reports/texas-housing-insight-june-2026/" target="_blank" rel="noopener">a $12,500 cut, 3.6% of list</a>, before negotiating. Concessions are back on the table: closing-cost credits, repairs, rate buydowns.</p>
+					</div>
+					<div class="job">
+						<span class="tag red">Where the room is</span>
+						<p>Every community tells its own story. Hockley <a href="https://www.realtor.com/local/market/texas/harris-county/hockley" target="_blank" rel="noopener">closed at 95% of asking</a> in June 2026, Waller <a href="https://www.realtor.com/local/market/texas/waller-county/waller" target="_blank" rel="noopener">at 97%</a>, with 49 to 59 days on market. Cypress and Tomball moved faster at 40 to 42 days, and still closed under asking. We read the micro-market before we write the offer.</p>
+					</div>
+					<div class="job">
+						<span class="tag red">What a rate really costs</span>
+						<p>The 30-year fixed averaged <a href="https://www.freddiemac.com/pmms/archive" target="_blank" rel="noopener">6.66% on July 30, 2026</a>, down from <a href="https://freddiemac.gcs-web.com/news-releases/news-release-details/mortgage-rates-average-658" target="_blank" rel="noopener">6.74% a year ago</a>. Freddie Mac's chief economist says <a href="https://freddiemac.gcs-web.com/news-releases/news-release-details/mortgage-rates-average-658" target="_blank" rel="noopener">shopping lenders can save thousands</a> over the life of a loan. We put vetted lenders in front of every buyer, and they compete.</p>
+					</div>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">See what June 2026 buys you →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FOUR JOBS ============ -->
+		<section class="band ivory">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The work</span>
+				<h2 class="display sec reveal">Four jobs decide <em>your deal.</em></h2>
+				<div class="jobs paper reveal" style="margin-top:52px">
+					<div class="job">
+						<span class="tag">01 · Know your number</span>
+						<h3>A payment, not a sticker price</h3>
+						<p>Taxes, insurance, HOA and closing costs of <a href="https://yourhome.fanniemae.com/calculators-tools/closing-costs-calculator" target="_blank" rel="noopener">2% to 5% of the price</a> decide what a home really costs each month. Before your first tour, you get a written number: payment, cash to close, and the communities that fit it.</p>
+					</div>
+					<div class="job">
+						<span class="tag">02 · Find the right one</span>
+						<h3>Curated, not scrolled</h3>
+						<p><a href="https://virginiarealtors.org/2025/12/08/key-takeaways-from-nars-2025-profile-of-home-buyers-and-sellers/" target="_blank" rel="noopener">Fifty-six percent of buyers call finding the right home the hardest part</a> of the process. We pre-tour and shortlist. Flaws get flagged in person. Flood and insurance history get checked before you fall in love.</p>
+					</div>
+					<div class="job">
+						<span class="tag">03 · Negotiate the deal</span>
+						<h3>List price is an opening position</h3>
+						<p>Our communities <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">closed at 95 to 98% of asking</a> in June 2026. We build your offer from sold comps, then negotiate price, closing costs and repairs as one package.</p>
+					</div>
+					<div class="job">
+						<span class="tag">04 · Close without surprises</span>
+						<h3>Beyond the standard inspection</h3>
+						<p>A standard inspection does not catch everything. Sewer lines, drainage and electrical panels can hide five figures in repairs. We bring inspectors we trust, read every report with you, and renegotiate when the report says to.</p>
+					</div>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Put the four jobs to work →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ REPRESENTED COMPARISON ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">The comparison</span>
+				<h2 class="display sec reveal">Buying solo vs <em>buying represented.</em></h2>
+				<p class="lede reveal">You can tour open houses alone, and you should. But when you offer on a home without representation, the agent across the table works for the seller.</p>
+				<div class="panel-ink reveal">
+					<div class="dgrid two">
+						<div class="dtile">
+							<span class="slabel">Bought with an agent</span>
+							<span class="num gold">88%</span>
+							<p class="cap">Share of buyers who purchased through an agent or broker</p>
+						</div>
+						<div class="dtile">
+							<span class="slabel">Bought without one</span>
+							<span class="num">12%</span>
+							<p class="cap">Everyone else, NAR 2025 Profile</p>
+						</div>
+					</div>
+					<p class="body"><a href="https://www.nar.realtor/press-releases/first-time-home-buyer-share-falls-to-historic-low-of-21-median-age-rises-to-40" target="_blank" rel="noopener">Eighty-eight percent of buyers purchased through an agent or broker</a> in NAR's 2025 Profile of Home Buyers and Sellers, and 91% say they would use their agent again or recommend them to a friend. The verdict on representation is in, and it is not close.</p>
+					<div class="dgrid three spaced">
+						<div class="dtile">
+							<span class="num sm">54%</span>
+							<span class="slabel">Agent caught issues they would have missed</span>
+							<span class="ssrc">NAR · 2025</span>
+						</div>
+						<div class="dtile">
+							<span class="num sm">76%</span>
+							<span class="slabel">First-time buyers: agent explained the process</span>
+							<span class="ssrc">NAR · 2025</span>
+						</div>
+						<div class="dtile">
+							<span class="num sm">91%</span>
+							<span class="slabel">Would use their agent again</span>
+							<span class="ssrc">NAR · 2025</span>
+						</div>
+					</div>
+					<p class="note">The fair question is what it costs you. Buyer agreements are <a href="https://www.nar.realtor/the-facts/consumer-guide-to-written-buyer-agreements" target="_blank" rel="noopener">negotiable, down to $0</a>, and you can <a href="https://www.nar.realtor/the-facts/nar-member-resource-dos-and-donts-when-working-with-buyers" target="_blank" rel="noopener">ask the seller to cover your agent's fee</a> inside your offer. We explain ours in plain English before you sign anything.</p>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Buy represented, not solo →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ WHAT THE TEAM DOES ============ -->
+		<section class="band">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The service</span>
+				<h2 class="display sec reveal">What the team does <em>for buyers.</em></h2>
+				<div class="split2">
+					<div class="plist reveal">
+						<p>Every buyer gets the same system, whether it is a $300,000 starter in Hockley or a $900,000 lake home in Towne Lake:</p>
+						<ul>
+							<li><b>A written buying plan</b> built on your real monthly number, not an algorithm's pre-qualification</li>
+							<li><b>Curated tours</b> with flaws flagged in person, shortlists ranked against sold comps</li>
+							<li><b>Flood history, insurance costs and HOA health</b> checked before you offer</li>
+							<li><b>Offer strategy</b> from sold comps, never from the list price</li>
+							<li><b>Negotiation across the whole deal</b>: price, closing costs, repairs and rate buydowns</li>
+							<li><b>Inspection and appraisal managed</b>, with renegotiation when reports warrant it</li>
+							<li><b>A transaction coordinator</b> running title, survey and timelines until you have the keys</li>
+						</ul>
+						<p><a href="https://virginiarealtors.org/2025/12/08/key-takeaways-from-nars-2025-profile-of-home-buyers-and-sellers/" target="_blank" rel="noopener">Eighty-five percent of buyers ranked their agent the most useful source of information</a>, ahead of online listings. Ours is measured in public: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685 completed client surveys on HAR.com, averaging 4.92 out of 5</a>.</p>
+					</div>
+					<div class="cta-card reveal">
+						<span class="tag gold">Start here</span>
+						<h3>Your numbers, in writing.</h3>
+						<p>A buying plan with your monthly payment, cash to close, and the communities that fit. Free, and yours to keep either way.</p>
+						<a class="btn" href="/contact-us/">Request your buying plan →</a>
+						{phone && <p class="alt">Prefer to talk first? <a href={telHref(phone)}>{phone}</a></p>}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ PROCESS ============ -->
+		<section class="band ivory" id="process">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The process</span>
+				<h2 class="display sec reveal">From first tour to <em>your keys.</em></h2>
+				<div class="rail reveal">
+					<ol>
+						<li><span class="n">01</span><div><b>Consultation and pre-approval</b><p>We map your real monthly number and cash to close, then introduce lenders who compete for your loan.</p></div></li>
+						<li><span class="n">02</span><div><b>The agreement, in plain English</b><p>Before any private tour, a written buyer agreement spells out what we do and what we are paid. It is <a href="https://www.nar.realtor/the-facts/consumer-guide-to-written-buyer-agreements" target="_blank" rel="noopener">negotiable by design</a>, and we walk every line with you.</p></div></li>
+						<li><span class="n">03</span><div><b>The search</b><p>Curated tours across the six communities. We flag the flaws, check flood and insurance history, and kill the homes that do not deserve you.</p></div></li>
+						<li><span class="n">04</span><div><b>Offer and negotiation</b><p>Your offer is built from sold comps and the seller's situation: price, closing costs, repairs, timeline.</p></div></li>
+						<li><span class="n">05</span><div><b>Inspection and appraisal</b><p>Independent inspectors, every report read together. If the findings change the deal, we renegotiate it.</p></div></li>
+						<li><span class="n">06</span><div><b>Closing day</b><p>Final walkthrough, documents verified, keys in hand. Then we stay your agents.</p></div></li>
+					</ol>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Start at step 01 →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ RECORD ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">The record</span>
+				<h2 class="display sec reveal">The record behind <em>your purchase.</em></h2>
+				<div class="rec-split" style="margin-top:52px">
+					<figure class="quote bordered reveal" style="margin:0">
+						<p>"Working with Amy and her team was an absolute pleasure from start to finish. No wonder they are #1 in Cypress."</p>
+						<figcaption class="src">Verified HAR.com client survey</figcaption>
+					</figure>
+					<div class="rating reveal">
+						<span class="stars" aria-label="Five star rating">★★★★★</span>
+						<p>Rated <em>4.9 on Google and HAR.com</em> across more than 750 five-star reviews.</p>
+						<a class="link-arrow gold" href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener" style="margin-top:24px">See all reviews →</a>
+					</div>
+				</div>
+				<div class="dgrid three reveal">
+					<div class="dtile">
+						<span class="num" data-count="1463">0<span>+</span></span>
+						<span class="slabel">Homes sold</span>
+						<span class="ssrc">Team sales records, Northwest Houston</span>
+					</div>
+					<div class="dtile">
+						<span class="num" data-count="750">0<span>+</span></span>
+						<span class="slabel">Five-star reviews</span>
+						<span class="ssrc">Google and HAR.com, rated 4.9 on both</span>
+					</div>
+					<div class="dtile">
+						<a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener"><span class="num" data-count="98">0<span>%</span></span></a>
+						<span class="slabel">Of asking in Cypress</span>
+						<span class="ssrc">List-to-sale ratio · Realtor.com · Jun 2026</span>
+					</div>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your purchase →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FAQ ============ -->
+		<section class="faq">
+			<div class="wrap">
+				<h2 class="display sec reveal">Buying, <em>answered.</em></h2>
+				<div class="faq-list">
+					<details class="reveal">
+						<summary>Do I have to pay my buyer's agent out of pocket? <span class="plus">+</span></summary>
+						<p>Not necessarily. Since August 2024, buyers sign a written agreement before touring, and it states exactly what your agent earns. Compensation is <a href="https://www.nar.realtor/the-facts/consumer-guide-to-written-buyer-agreements" target="_blank" rel="noopener">negotiable, and can be as low as $0</a>. Sellers can still pay it, and you can <a href="https://www.nar.realtor/the-facts/nar-member-resource-dos-and-donts-when-working-with-buyers" target="_blank" rel="noopener">ask for that inside your offer</a>. In a market closing at 95 to 98% of asking, concessions like this are on the table.</p>
+					</details>
+					<details class="reveal">
+						<summary>How much do I need for a down payment? <span class="plus">+</span></summary>
+						<p>Less than the 20% you have heard. First-time buyers put down a <a href="https://www.nar.realtor/press-releases/first-time-home-buyer-share-falls-to-historic-low-of-21-median-age-rises-to-40" target="_blank" rel="noopener">median of 10%</a> in 2025, and <a href="https://www.nar.realtor/press-releases/first-time-home-buyer-share-falls-to-historic-low-of-21-median-age-rises-to-40" target="_blank" rel="noopener">92% financed their purchase</a>. FHA loans need <a href="https://www.nar.realtor/fha/fha-loan-requirements" target="_blank" rel="noopener">3.5% down with a 580 credit score</a>. VA loans need <a href="https://www.va.gov/housing-assistance/home-loans/loan-types/purchase-loan/" target="_blank" rel="noopener">no down payment at all</a>. Your written buying plan shows the exact number for your situation.</p>
+					</details>
+					<details class="reveal">
+						<summary>Is now a good time to buy in Northwest Houston? <span class="plus">+</span></summary>
+						<p>The data says buyers hold their strongest position in years: <a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener">5.2 months of supply</a>, <a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener">52 days on market</a>, closings at <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">95 to 98% of asking</a>, and a <a href="https://trerc.tamu.edu/reports/texas-housing-insight-june-2026/" target="_blank" rel="noopener">median price cut of $12,500</a>. Rates sit at <a href="https://www.freddiemac.com/pmms/archive" target="_blank" rel="noopener">6.66%</a>, below a year ago. Nobody times a market perfectly, but leverage this clear is rare.</p>
+					</details>
+					<details class="reveal">
+						<summary>What are closing costs, and can I avoid them? <span class="plus">+</span></summary>
+						<p>Budget <a href="https://yourhome.fanniemae.com/calculators-tools/closing-costs-calculator" target="_blank" rel="noopener">2% to 5% of the purchase price</a> for lender, title and escrow fees. You cannot skip them, but you can negotiate them. Seller credits toward closing costs are a standard part of the offers we write in this market.</p>
+					</details>
+					<details class="reveal">
+						<summary>How long does it take to buy a house? <span class="plus">+</span></summary>
+						<p>The median search ran <a href="https://virginiarealtors.org/2025/12/08/key-takeaways-from-nars-2025-profile-of-home-buyers-and-sellers/" target="_blank" rel="noopener">10 weeks</a> in 2025. Here, homes sit 40 to 59 days, so you can inspect and negotiate without panic. Most of our buyers close 30 to 45 days after contract.</p>
+					</details>
+					<details class="reveal">
+						<summary>Can I look at homes before signing anything? <span class="plus">+</span></summary>
+						<p>Yes. Open houses need no paperwork, ever. A written agreement is required before private tours with an agent, nationally <a href="https://www.nar.realtor/the-facts/consumer-guide-to-written-buyer-agreements" target="_blank" rel="noopener">since August 17, 2024</a>. Ours comes with a plain-English walkthrough first, and it is negotiable. If we are not a fit, you walk away.</p>
+					</details>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Ask us your question →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ RELATED ============ -->
+		<section class="band dense flush-top">
+			<div class="wrap">
+				<h2 class="display sec reveal">Keep <em>researching.</em></h2>
+				<div class="chiprow reveal">
+					<a class="chip" href="/northwest-houston-real-estate/">Northwest Houston market data</a>
+					<a class="chip" href="/northwest-houston-schools-real-estate/">Schools across the northwest suburbs</a>
+					<a class="chip" href="/northwest-houston-real-estate/cypress-tx-real-estate/">Living in Cypress guide</a>
+					<a class="chip" href="/about/">Meet the team</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ FINAL CTA ============ -->
+		<section class="final dark">
+			<div class="reveal">
+				<h2>Find out what you can <em>actually buy.</em></h2>
+				<p>A written buying plan with your real monthly number, cash to close, and the communities that fit. Free, and yours to keep either way.</p>
+				<div class="final-actions">
+					<a class="btn" href="/contact-us/">Schedule a Consultation →</a>
+					{phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<V2Motion />
+</Base>

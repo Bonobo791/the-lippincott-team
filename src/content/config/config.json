@@ -37,11 +37,11 @@
     },
     {
       "title": "Buyers",
-      "link": "https://www.thelippincottteam.com/buyers/"
+      "link": "/buy/"
     },
     {
       "title": "Sellers",
-      "link": "https://www.thelippincottteam.com/sellers/"
+      "link": "/sell/"
     },
     { "title": "About", "link": "/about/" },
     { "title": "Contact", "link": "/contact-us/" },

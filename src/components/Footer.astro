@@ -24,7 +24,7 @@ const childrenOf = (item: CmsConfigNav | null) =>
 	(item?.children ?? []).filter((child): child is CmsConfigNavChild => child !== null);
 const communitiesNav = nav.find((item) => item.link?.startsWith('/northwest-houston-real-estate')) ?? null;
 const schoolsNav = nav.find((item) => item.link?.startsWith('/northwest-houston-schools-real-estate')) ?? null;
-const companyNav = nav.filter((item) => ['/about/', '/blog/', '/contact-us/'].includes(item.link ?? ''));
+const companyNav = nav.filter((item) => ['/buy/', '/sell/', '/about/', '/blog/', '/contact-us/'].includes(item.link ?? ''));
 const columns = [
 	{ heading: 'Communities', href: communitiesNav?.link ?? null, links: childrenOf(communitiesNav) },
 	{ heading: 'Schools', href: schoolsNav?.link ?? null, links: childrenOf(schoolsNav) },

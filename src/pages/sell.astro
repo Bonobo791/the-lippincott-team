@@ -1,0 +1,311 @@
+---
+import Base from '../layouts/Base.astro';
+import V2Motion from '../components/v2/V2Motion.astro';
+import { getConfig } from '../lib/data';
+import { telHref } from '../lib/url';
+import '../styles/v2.css';
+
+const phone = (await getConfig()).data?.config?.contact?.phone;
+---
+
+<Base
+	title="Sell Your Home in Northwest Houston | The Lippincott Team"
+	description="1,463+ homes sold in Cypress, Tomball, Katy and Magnolia. Get a written, data-backed price for your home and a team that markets it across every channel."
+	image="/uploads/2026/03/bridgeland.jpg"
+>
+	<script type="application/ld+json" is:inline>
+	{
+	  "@context": "https://schema.org",
+	  "@type": "FAQPage",
+	  "mainEntity": [
+	    {"@type": "Question", "name": "How much is my home worth?", "acceptedAnswer": {"@type": "Answer", "text": "Your home's value comes from recent sold comps in your community, adjusted for size, condition and location. We prepare that analysis in writing, free, and you keep it whether or not you list with us."}},
+	    {"@type": "Question", "name": "Is now a good time to sell in Northwest Houston?", "acceptedAnswer": {"@type": "Answer", "text": "It depends more on your next move than on the headlines. June 2026 is a buyer's market with 5.2 months of supply and a 52-day median sale timeline across the metro, but well-priced homes in Cypress, Tomball and Katy still went under contract in about six weeks. The right question is what waiting costs against your next purchase."}},
+	    {"@type": "Question", "name": "How long will it take to sell?", "acceptedAnswer": {"@type": "Answer", "text": "Median days on market ran 40 to 59 across Cypress, Tomball, Katy, Magnolia, Waller and Hockley in June 2026. Add two to four weeks of prep and roughly 30 days from contract to close: most sellers should plan on three to five months end to end."}},
+	    {"@type": "Question", "name": "Should I sell my house myself instead?", "acceptedAnswer": {"@type": "Answer", "text": "If you already know your buyer, possibly: 30% of by-owner sellers sold to a friend, relative or neighbor. On the open market, agent-assisted sales closed at a median $425,000 against $360,000 for solo sales in NAR's 2025 Profile, and only 5% of sellers chose the solo path, an all-time low."}},
+	    {"@type": "Question", "name": "What does it cost to sell a house?", "acceptedAnswer": {"@type": "Answer", "text": "Every fee is explained in writing before you sign anything: compensation, title and closing costs, and any prep spending we recommend, each with the expected return attached. The consultation and the written valuation cost nothing."}}
+	  ]
+	}
+	</script>
+
+	<div class="home-v2">
+		<!-- ============ HERO ============ -->
+		<section class="hero stage">
+			<img class="hs-media" src="/uploads/2026/03/bridgeland.jpg" alt="Golden-hour aerial over the lakes and homes of Bridgeland in Cypress, Texas" fetchpriority="high" decoding="async" />
+			<div class="hero-inner">
+				<span class="eyebrow gold">Sell · Northwest Houston</span>
+				<h1>In a buyer's market, <em>proof sells.</em></h1>
+				<div class="gchips">
+					<span class="gchip"><b>1,463+</b> homes sold in NW Houston</span>
+					<span class="gchip"><b>98%</b> of asking in Cypress, Jun 2026</span>
+					<span class="gchip"><b>4.92/5</b> across 685 HAR.com surveys</span>
+				</div>
+				<div class="hero-actions">
+					<a class="btn" href="/contact-us/">Find out what your home is worth →</a>
+					<a class="text-link" href="#process">See how we sell</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ MARKET REALITY ============ -->
+		<section class="band">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The market</span>
+				<h2 class="display sec reveal">The June 2026 market, <em>in plain numbers.</em></h2>
+				<p class="lede reveal">Buyers have more choices than they have had in years. That is not a reason to wait. It is a reason to price and present your home better than the competition does.</p>
+				<div class="market-grid reveal">
+					<div class="mkt">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">$345,000</div></a>
+						<div class="lbl">Houston metro median</div>
+						<div class="src">HAR · Jun 2026</div>
+					</div>
+					<div class="mkt">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">52</div></a>
+						<div class="lbl">Metro days on market</div>
+						<div class="src">HAR · Jun 2026 · up from 50</div>
+					</div>
+					<div class="mkt dark-tile">
+						<a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener"><div class="num">5.2</div></a>
+						<div class="lbl">Months of metro supply</div>
+						<div class="src">Buyer's market · HAR · Jun 2026</div>
+					</div>
+					<div class="mkt">
+						<a href="https://trerc.tamu.edu/reports/texas-housing-insight-june-2026/" target="_blank" rel="noopener"><div class="num">$12,500</div></a>
+						<div class="lbl">Median seller price cut</div>
+						<div class="src">Texas A&amp;M · 3.6% of list · 2026</div>
+					</div>
+				</div>
+				<div class="jobs three reveal" style="margin-top:2px">
+					<div class="job">
+						<span class="tag red">What buyers do with leverage</span>
+						<p>They compare, negotiate and ask for concessions. Homes across the region <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">sell at 95 to 98% of asking</a>, so the list price sets the ceiling for every conversation that follows.</p>
+					</div>
+					<div class="job">
+						<span class="tag red">What still sells fast</span>
+						<p>Well-priced homes. Cypress, Tomball and Katy sellers <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">went under contract in 40 to 42 median days</a> in June 2026, about six weeks from list to accepted offer.</p>
+					</div>
+					<div class="job">
+						<span class="tag red">What gets cut</span>
+						<p>Overpriced listings. The median Texas seller cut <a href="https://trerc.tamu.edu/reports/texas-housing-insight-june-2026/" target="_blank" rel="noopener">$12,500, or 3.6% of the initial list price</a>, this spring. The first price is the one that has to be right.</p>
+					</div>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Get your June 2026 price →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FOUR JOBS ============ -->
+		<section class="band ivory">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The work</span>
+				<h2 class="display sec reveal">Four jobs decide <em>your price.</em></h2>
+				<div class="jobs paper reveal" style="margin-top:52px">
+					<div class="job">
+						<span class="tag">01 · Price it right</span>
+						<h3>A number built from sold homes, not a guess</h3>
+						<p>Pricing is the hardest part of selling solo: <a href="https://www.nar.realtor/news/real-estate-news/fsbos-reach-all-time-low-more-sellers-rely-on-agents" target="_blank" rel="noopener">17% of for-sale-by-owner sellers name it their single hardest task</a>. We build your price from recent sold comps in your community, adjusted for size, condition and location, and we show you the math in writing.</p>
+					</div>
+					<div class="job">
+						<span class="tag">02 · Prepare it</span>
+						<h3>A prep plan with a return on every dollar</h3>
+						<p><a href="https://www.nar.realtor/news/real-estate-news/fsbos-reach-all-time-low-more-sellers-rely-on-agents" target="_blank" rel="noopener">Twelve percent of solo sellers say preparing the home was the hardest step</a>. We walk your home room by room, tell you what is worth fixing and what is not, and bring the stagers, cleaners and photographers to execute it.</p>
+					</div>
+					<div class="job">
+						<span class="tag">03 · Market it</span>
+						<h3>Every channel, not just a sign in the yard</h3>
+						<p><a href="https://www.nar.realtor/news/real-estate-news/fsbos-reach-all-time-low-more-sellers-rely-on-agents" target="_blank" rel="noopener">Forty percent of for-sale-by-owner homes are never actively marketed</a>. Yours launches on the MLS, syndicates to every major portal, and runs as professional photography, paid campaigns and email to our buyer list.</p>
+					</div>
+					<div class="job">
+						<span class="tag">04 · Negotiate it</span>
+						<h3>Three negotiations, not one</h3>
+						<p>In a buyer's market the offer is only the first negotiation. The inspection and the appraisal are the second and third. We defend your price through all of them, and we do it more than a hundred times a year across Northwest Houston.</p>
+					</div>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Put the four jobs to work →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FSBO COMPARISON ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">The comparison</span>
+				<h2 class="display sec reveal">Selling solo vs <em>selling represented.</em></h2>
+				<p class="lede reveal">The National Association of Realtors tracks both paths every year. The gap is not small, and it is not narrowing.</p>
+				<div class="panel-ink reveal">
+					<div class="dgrid two">
+						<div class="dtile">
+							<span class="slabel">Sold with an agent</span>
+							<span class="num gold">$425,000</span>
+							<p class="cap">Median sale price, agent-assisted homes</p>
+						</div>
+						<div class="dtile">
+							<span class="slabel">Sold by owner</span>
+							<span class="num">$360,000</span>
+							<p class="cap">Median sale price, for-sale-by-owner homes</p>
+						</div>
+					</div>
+					<p class="body"><a href="https://www.nar.realtor/news/real-estate-news/nar-2025-profile-of-home-buyers-sellers-reveals-market-extremes" target="_blank" rel="noopener">Agent-assisted sales closed at a median $425,000 against $360,000 for solo sales</a>, a $65,000 gap in the 2025 Profile of Home Buyers and Sellers. Only 5% of sellers went it alone, the lowest share since NAR began tracking in 1981, and 91% sold with an agent.</p>
+					<div class="dgrid three spaced">
+						<div class="dtile">
+							<span class="num sm">5%</span>
+							<span class="slabel">Sold by owner</span>
+							<span class="ssrc">All-time low · NAR 2025</span>
+						</div>
+						<div class="dtile">
+							<span class="num sm">91%</span>
+							<span class="slabel">Sold with an agent</span>
+							<span class="ssrc">Matching the record high · NAR 2025</span>
+						</div>
+						<div class="dtile">
+							<span class="num sm">$65K</span>
+							<span class="slabel">Median gap</span>
+							<span class="ssrc">Agent-assisted vs solo · NAR 2025</span>
+						</div>
+					</div>
+					<p class="note">The honest exception: <a href="https://www.nar.realtor/news/real-estate-news/nar-2025-profile-of-home-buyers-sellers-reveals-market-extremes" target="_blank" rel="noopener">30% of by-owner sellers sold to a friend, relative or neighbor</a>. If your buyer is already in the family, selling solo can work. If you need the open market to find your buyer, the numbers above are the comparison that matters.</p>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Sell represented, not solo →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ WHAT THE TEAM DOES ============ -->
+		<section class="band">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The service</span>
+				<h2 class="display sec reveal">What the team does <em>for sellers.</em></h2>
+				<div class="split2">
+					<div class="plist reveal">
+						<p>Every listing gets the same system, whether it is a $300,000 starter in Hockley or a $900,000 lake home in Towne Lake:</p>
+						<ul>
+							<li><b>A written valuation</b> built from sold comps in your community, not an algorithm's estimate of the corridor</li>
+							<li><b>A prep and staging plan</b> with vetted contractors, ranked by expected return</li>
+							<li><b>Professional photography</b>, floor plans and video, shot when your home looks its best</li>
+							<li><b>Full market launch</b>: MLS, every major portal, paid campaigns and email to our active buyer list</li>
+							<li><b>Weekly reporting</b> on showings, feedback and where your price sits against new competition</li>
+							<li><b>Negotiation through closing</b>: offers, inspection, appraisal and the final walkthrough</li>
+						</ul>
+						<p>Thirty-five percent of sellers say an agent's reputation was a deciding factor in who they hired. Ours is measured in public: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685 completed client surveys on HAR.com, averaging 4.92 out of 5</a>.</p>
+					</div>
+					<div class="cta-card reveal">
+						<span class="tag gold">Start here</span>
+						<h3>Your number, in writing.</h3>
+						<p>A valuation from sold comps in your community, prepared by a specialist who walks your home first. Free, and yours to keep whether or not you list with us.</p>
+						<a class="btn" href="/contact-us/">Request your valuation →</a>
+						{phone && <p class="alt">Prefer to talk first? <a href={telHref(phone)}>{phone}</a></p>}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ PROCESS ============ -->
+		<section class="band ivory" id="process">
+			<div class="wrap">
+				<span class="eyebrow red reveal">The process</span>
+				<h2 class="display sec reveal">From first walkthrough to <em>closing day.</em></h2>
+				<div class="rail reveal">
+					<ol>
+						<li><span class="n">01</span><div><b>Consultation and valuation</b><p>We walk your home, pull the sold comps and hand you a written price range with the reasoning behind it.</p></div></li>
+						<li><span class="n">02</span><div><b>Pricing strategy</b><p>Together we pick the launch price: the one that pulls the most buyers through the door in the first two weekends.</p></div></li>
+						<li><span class="n">03</span><div><b>Prep and staging</b><p>Repairs worth making get made, staging gets set, and photography happens when the home is ready for it.</p></div></li>
+						<li><span class="n">04</span><div><b>Launch and marketing</b><p>MLS, portals, paid campaigns and email go live together. You get showing feedback every week, in writing.</p></div></li>
+						<li><span class="n">05</span><div><b>Offers and negotiation</b><p>We compare every offer on net proceeds and certainty, then negotiate price, concessions and timeline on your side.</p></div></li>
+						<li><span class="n">06</span><div><b>Contract to close</b><p>A transaction coordinator runs inspection, appraisal, title and closing timelines until you have the check.</p></div></li>
+					</ol>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Start at step 01 →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ RECORD ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">The record</span>
+				<h2 class="display sec reveal">The record behind <em>your sale.</em></h2>
+				<div class="rec-split" style="margin-top:52px">
+					<figure class="quote bordered reveal" style="margin:0">
+						<p>"Working with Amy and her team was an absolute pleasure from start to finish. No wonder they are #1 in Cypress."</p>
+						<figcaption class="src">Verified HAR.com client survey</figcaption>
+					</figure>
+					<div class="rating reveal">
+						<span class="stars" aria-label="Five star rating">★★★★★</span>
+						<p>Rated <em>4.9 on Google and HAR.com</em> across more than 750 five-star reviews.</p>
+						<a class="link-arrow gold" href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener" style="margin-top:24px">See all reviews →</a>
+					</div>
+				</div>
+				<div class="dgrid three reveal">
+					<div class="dtile">
+						<span class="num" data-count="1463">0<span>+</span></span>
+						<span class="slabel">Homes sold</span>
+						<span class="ssrc">Team sales records, Northwest Houston</span>
+					</div>
+					<div class="dtile">
+						<span class="num" data-count="750">0<span>+</span></span>
+						<span class="slabel">Five-star reviews</span>
+						<span class="ssrc">Google and HAR.com, rated 4.9 on both</span>
+					</div>
+					<div class="dtile">
+						<a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener"><span class="num" data-count="98">0<span>%</span></span></a>
+						<span class="slabel">Of asking in Cypress</span>
+						<span class="ssrc">List-to-sale ratio · Realtor.com · Jun 2026</span>
+					</div>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your sale →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FAQ ============ -->
+		<section class="faq">
+			<div class="wrap">
+				<h2 class="display sec reveal">Selling, <em>answered.</em></h2>
+				<div class="faq-list">
+					<details class="reveal">
+						<summary>How much is my home worth? <span class="plus">+</span></summary>
+						<p>Your home's value comes from recent sold comps in your community, adjusted for size, condition and location. We prepare that analysis in writing, free, and you keep it whether or not you list with us. Online estimators use corridor-wide data; a valuation from a specialist who has walked your home is the number buyers and appraisers will actually test.</p>
+					</details>
+					<details class="reveal">
+						<summary>Is now a good time to sell in Northwest Houston? <span class="plus">+</span></summary>
+						<p>It depends more on your next move than on the headlines. June 2026 is a buyer's market: <a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener">5.2 months of supply and a 52-day median sale timeline across the metro</a>. But well-priced homes in Cypress, Tomball and Katy still went under contract in about six weeks, and <a href="https://www.har.com/content/department/mls" target="_blank" rel="noopener">pending sales rose 12.3% year over year</a>. The right question is what waiting costs against your next purchase, and we model both sides with you.</p>
+					</details>
+					<details class="reveal">
+						<summary>How long will it take to sell? <span class="plus">+</span></summary>
+						<p>Across the six communities we track, <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">median days on market ran 40 to 59 in June 2026</a>: 40 in Cypress, 42 in Tomball, 41 in Katy at the fast end, 59 in Waller at the slow end. Add two to four weeks of prep before launch and roughly 30 days from contract to close, and most sellers should plan on a three to five month timeline end to end.</p>
+					</details>
+					<details class="reveal">
+						<summary>Should I sell my house myself instead? <span class="plus">+</span></summary>
+						<p>If you already know your buyer, possibly. <a href="https://www.nar.realtor/news/real-estate-news/nar-2025-profile-of-home-buyers-sellers-reveals-market-extremes" target="_blank" rel="noopener">Thirty percent of by-owner sellers sold to a friend, relative or neighbor</a>. On the open market the comparison is stark: agent-assisted sales closed at a median $425,000 against $360,000 for solo sales, and only 5% of sellers chose the solo path, an all-time low. Pricing, preparation and marketing are the three tasks solo sellers themselves rate hardest.</p>
+					</details>
+					<details class="reveal">
+						<summary>What does it cost to sell a house? <span class="plus">+</span></summary>
+						<p>Every fee is explained in writing before you sign anything: compensation, title and closing costs, and any prep spending we recommend, each with the expected return attached. The consultation and the written valuation cost nothing, and the data is yours to keep either way.</p>
+					</details>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Ask us your question →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ RELATED ============ -->
+		<section class="band dense flush-top">
+			<div class="wrap">
+				<h2 class="display sec reveal">Keep <em>researching.</em></h2>
+				<div class="chiprow reveal">
+					<a class="chip" href="/blog/how-real-estate-agents-price-homes/">How agents price homes in 2026</a>
+					<a class="chip" href="/northwest-houston-real-estate/">Northwest Houston market data</a>
+					<a class="chip" href="/about/">Meet the team</a>
+					<a class="chip" href="/northwest-houston-real-estate/cypress-tx-real-estate/">Living in Cypress guide</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ FINAL CTA ============ -->
+		<section class="final dark">
+			<div class="reveal">
+				<h2>Find out what your home is <em>actually worth.</em></h2>
+				<p>A written valuation from sold comps in your community. Free, and yours to keep either way.</p>
+				<div class="final-actions">
+					<a class="btn" href="/contact-us/">Schedule a Consultation →</a>
+					{phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<V2Motion />
+</Base>
