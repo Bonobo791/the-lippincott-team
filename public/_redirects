@@ -12,3 +12,7 @@
 
 # WordPress author archives (all posts are by the team).
 /author/*  /about/  301
+
+# Legacy buyer/seller section URLs now live at /buy/ and /sell/.
+/buyers/*  /buy/  301
+/sellers/*  /sell/  301

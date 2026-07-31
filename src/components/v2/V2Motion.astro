@@ -1,0 +1,50 @@
+---
+/**
+ * V2Motion — shared "Verified Record" scroll motion for the static one-off
+ * pages (buy/sell). Reveal-on-scroll + [data-count] count-ups, same behavior
+ * as the homepage's inline script (which keeps its own copy because it also
+ * drives the awards monument). Everything no-ops under prefers-reduced-motion.
+ */
+---
+
+<script is:inline data-astro-rerun>
+	(function () {
+		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		// count-up helper
+		function countUp(el, target, opts) {
+			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
+			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
+			var t0 = performance.now();
+			(function tick(t) {
+				var p = Math.min((t - t0) / dur, 1);
+				var e = 1 - Math.pow(1 - p, 3);
+				el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
+				if (p < 1) requestAnimationFrame(tick);
+			})(t0);
+		}
+
+		// reveal on scroll + count-up triggers
+		var statsDone = new WeakSet();
+		var io = new IntersectionObserver(function (entries) {
+			entries.forEach(function (en) {
+				if (!en.isIntersecting) return;
+				var el = en.target;
+				el.classList.add('in');
+				el.querySelectorAll('.num[data-count]').forEach(function (n) {
+					if (statsDone.has(n)) return; statsDone.add(n);
+					countUp(n, +n.dataset.count, { prefix: n.dataset.prefix || '', suffix: n.dataset.suffix || '' });
+				});
+				io.unobserve(el);
+			});
+		}, { threshold: 0.2 });
+		document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { io.observe(el); });
+
+		// fail-safe: never leave above-fold content hidden
+		setTimeout(function () {
+			document.querySelectorAll('.home-v2 .reveal:not(.in)').forEach(function (el) {
+				if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
+			});
+		}, 1600);
+	})();
+</script>

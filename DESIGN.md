@@ -94,7 +94,7 @@ This real-estate site persuades the way a well-sourced investigation does: every
 
 The surface is editorial, not corporate: Fraunces at its lightest weight sets headlines, quotations, and every meaningful numeral, with a single italic accent phrase per heading carrying the one red (on light) or gold (on dark). Inter does all the functional work — body copy, uppercase micro-labels, UI. Pages move through calm bands of paper and ivory, punctuated by near-black ink stages where the proof lives: stats, team video, the awards wall, the final call to action. Hairline grids — 1px gaps between tiles — organize services, market data, and trophies like entries in a ledger.
 
-This world currently ships on the static homepage (`src/pages/index.astro`, scoped under `.home-v2`) and is the system's primary voice. The Tina block-driven inner pages still run the earlier Montserrat/Apple system recorded in the Legacy section below; new work should follow this document, and the legacy record exists only until those surfaces migrate.
+This world currently ships on the static homepage (`src/pages/index.astro`) and the static buyer/seller pages (`src/pages/buy.astro`, `src/pages/sell.astro`) — all scoped under `.home-v2` and sharing `src/styles/v2.css` — and is the system's primary voice. The Tina block-driven inner pages still run the earlier Montserrat/Apple system recorded in the Legacy section below; new work should follow this document, and the legacy record exists only until those surfaces migrate.
 
 **Key Characteristics:**
 - Evidence as ornament: sourced stats, quoted reviews with attributions, and award criteria are the visual content
@@ -215,7 +215,7 @@ Pill-shaped, single-color, and motion-simple: they lift and deepen on hover, nev
 - **Style:** A 2-up hairline ledger on the awards ink stage with a full-width featured card. Each entry leads with the awarding organization (11px gold uppercase label), the award name in Fraunces 400, and its published criteria in 14.5px Ivory Dim — the evidence is the design.
 
 ### Navigation
-- The homepage renders inside the shared site chrome (sticky dark header, dark footer) documented in the Legacy section; the homepage body itself owns no navigation components.
+- The homepage and the buyer/seller pages render inside the shared site chrome (sticky dark header, dark footer) documented in the Legacy section; the page bodies themselves own no navigation components.
 
 ## Do's and Don'ts
 
@@ -239,7 +239,7 @@ Pill-shaped, single-color, and motion-simple: they lift and deepen on hover, nev
 
 ## Legacy System (inner pages)
 
-The Tina block-driven inner pages (everything except the homepage) still ship the earlier "Cinematic Brokerage" system. Until those surfaces migrate, treat this as their record of truth; the living sources are `src/styles/global.css` and `src/components/blocks/`.
+The Tina block-driven inner pages (everything except the homepage and the buyer/seller pages) still ship the earlier "Cinematic Brokerage" system. Until those surfaces migrate, treat this as their record of truth; the living sources are `src/styles/global.css` and `src/components/blocks/`.
 
 - **Palette:** Team Crimson `#c22737` (hover `#9e1e2c`), Crimson on Dark `#e8596b`, Deep Navy `#101828`, Parchment `#f5f5f6`, Tile `#272729`, Rating Gold `#f2b01e` (stars only), Border Cool `#e4e7ec`, Blush Chip `#fbe9ec`.
 - **Typography:** Montserrat Variable globally; the system/Inter stack inside `.font-apple` surfaces (homepage blocks, chrome) — never mixed within one surface. Headline accents come from the editor's `**...**` split-heading device via `SplitHeading.astro` — light+bold on classic surfaces, semibold+italic on Apple surfaces.

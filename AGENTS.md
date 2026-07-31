@@ -132,6 +132,12 @@ above rather than bare `astro build`.
   Tina-block-driven: self-contained editorial design with its own scoped
   palette/typography — Fraunces Variable + Inter Variable — inside the shared
   `Base` chrome; `home.mdx` is kept in Tina but no longer rendered),
+  `buy.astro` and `sell.astro` (**static one-off buyer/seller pages** in the
+  same "Verified Record" design world as the homepage, per `DESIGN.md` — not
+  Tina-editable; both share the homepage's stylesheet `src/styles/v2.css`
+  (extracted verbatim from index.astro and imported by all three pages) and
+  the reveal/count-up script `src/components/v2/V2Motion.astro`, each carries
+  its own FAQPage JSON-LD),
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
