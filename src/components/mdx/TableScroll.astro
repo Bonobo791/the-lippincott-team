@@ -7,8 +7,10 @@
  * table role for some screen readers (VoiceOver) and change intrinsic
  * column sizing. The wrapper's overflow-x also zeroes its min-content
  * contribution, so wide tables can no longer force grid tracks wider.
+ * role=region + tabindex=0 make the scrollport keyboard-scrollable and
+ * announced as a labelled region.
  */
 const html = await Astro.slots.render('default');
 ---
 
-<div class="table-scroll"><table set:html={html} /></div>
+<div class="table-scroll" role="region" tabindex="0" aria-label="Scrollable table"><table set:html={html} /></div>
