@@ -99,7 +99,7 @@ const related = data
 						</div>
 					</aside>
 				) : <div aria-hidden="true" class="hidden lg:block" />}
-				<article>
+				<article class="min-w-0">
 					{hasRichText(data.body) && (
 						<div data-tina-field={tinaField(data, 'body')} class="prose prose-lg max-w-none">
 							<TinaMarkdown content={data.body} components={articleComponents} />

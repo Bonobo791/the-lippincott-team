@@ -1,0 +1,16 @@
+---
+/**
+ * table override for rich-text bodies: wraps the table in a horizontal
+ * scrollport so tables wider than the measure scroll sideways instead of
+ * stretching the page. The table element itself keeps its native display and
+ * semantics — putting display:block on the table instead would drop its
+ * table role for some screen readers (VoiceOver) and change intrinsic
+ * column sizing. The wrapper's overflow-x also zeroes its min-content
+ * contribution, so wide tables can no longer force grid tracks wider.
+ * role=region + tabindex=0 make the scrollport keyboard-scrollable and
+ * announced as a labelled region.
+ */
+const html = await Astro.slots.render('default');
+---
+
+<div class="table-scroll" role="region" tabindex="0" aria-label="Scrollable table"><table set:html={html} /></div>

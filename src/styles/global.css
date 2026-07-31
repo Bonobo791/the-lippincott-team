@@ -130,7 +130,13 @@
 
 /* Tables in rich-text prose (community neighborhood comparisons): hairline
    borders, comfortable cell padding, and a bold red first column. Unlayered
-   so it wins over the typography plugin's layered table styles. */
+   so it wins over the typography plugin's layered table styles. Tables wider
+   than the measure scroll inside their .table-scroll wrapper (see
+   src/components/mdx/TableScroll.astro) instead of stretching the page. */
+.prose .table-scroll {
+	overflow-x: auto;
+}
+
 .prose table th,
 .prose table td {
 	border: 1px solid var(--border);
