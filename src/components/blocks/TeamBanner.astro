@@ -16,7 +16,7 @@ const { data } = Astro.props;
 <section class="font-apple relative overflow-hidden text-white">
 	{data.backgroundImage && (
 		<div class="absolute inset-0" data-tina-field={tinaField(data, 'backgroundImage')}>
-			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={80} loading="lazy" decoding="async" class="size-full object-cover" />
+			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} loading="lazy" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
 	<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(100deg,rgba(194,39,55,.88)_0%,rgba(142,27,40,.72)_34%,rgba(0,0,0,.55)_68%,rgba(0,0,0,.35)_100%)]"></div>
