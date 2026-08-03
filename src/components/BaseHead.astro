@@ -21,7 +21,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image = '/logo.webp' } = Astro.props;
 
 // GA4 measurement ID, overridable per environment without a code change.
-const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';// Send hits only from production builds, and on Netlify only from the
+const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';
+
+// Send hits only from production builds, and on Netlify only from the
 // production context (deploy previews/branch deploys build with
 // NODE_ENV=production but get CONTEXT=deploy-preview/branch-deploy).
 // When CONTEXT is unset (local builds, non-Netlify hosts) PROD alone decides.
