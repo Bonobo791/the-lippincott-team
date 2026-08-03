@@ -231,10 +231,14 @@ above rather than bare `astro build`.
   is the Apple-style full-viewport hero: bottom-left content, gradient scrim,
   drifting light beams, and a masked-line headline reveal (editors split the
   reveal lines with a line break in the headline). With no `backgroundVideo`
-  it renders `backgroundImage` as a full-bleed still. Video hosting plan:
-  ~2 MB silent 720p loops on Cloudflare R2 behind the CDN (URLs referenced
-  from Tina), poster-only on mobile — until then, stills only; don't commit
-  MP4s to the repo.
+  it renders `backgroundImage` as a full-bleed still. Video hosting:
+  the homepage's three videos are self-hosted from `public/uploads/` and
+  served by the Netlify CDN — always re-encode to web-friendly H.264
+  (`libx264` CRF 24–28, AAC 96k, `+faststart`) before committing, and keep
+  every file well under GitHub's 100 MB limit (current set: 8–30 MB from
+  35–468 MB originals). Posters are webp. Larger future videos (e.g. hero
+  `backgroundVideo` loops) should still go to Cloudflare R2 behind the CDN
+  rather than into the repo.
 - GuideHero block (community guides): the "stage" hero — a `min-h-[72svh]`
   ink band with optional `backgroundImage` (full-bleed, gradient scrim),
   bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold

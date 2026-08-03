@@ -9,6 +9,9 @@ import '../styles/v2.css';
 	description="The Lippincott Team helps Northwest Houston sellers price, stage and sell, and buyers find the right home. 1,463+ sold, rated 4.9. Free consultation."
 	image="/uploads/2026/03/header-houston.jpeg"
 >
+	{/* The hero video's poster is the LCP image — discover it from the HTML head
+	    instead of waiting for the <video> element to be parsed. */}
+	<link slot="head" rel="preload" as="image" href="/uploads/2026/06/hero-poster.webp" fetchpriority="high" />
 	<script type="application/ld+json" is:inline>
 	{
 	  "@context": "https://schema.org",
@@ -55,8 +58,8 @@ import '../styles/v2.css';
 	<div class="home-v2">
 		<!-- ============ HERO ============ -->
 		<section class="hero">
-			<video autoplay muted loop playsinline poster="/uploads/2026/06/hero-poster.jpg">
-				<source src="https://lippincottteam.com/wp-content/uploads/2026/06/Lippincott-Hero-no-pool.mp4" type="video/mp4" />
+			<video autoplay muted loop playsinline poster="/uploads/2026/06/hero-poster.webp">
+				<source src="/uploads/2026/06/Lippincott-Hero-no-pool.mp4" type="video/mp4" />
 			</video>
 			<div class="hero-inner">
 				<span class="kicker">#1 Team in Northwest Houston</span>
@@ -131,8 +134,8 @@ import '../styles/v2.css';
 			<div class="wrap">
 				<div class="testi-grid">
 					<div class="testi-left reveal">
-						<video controls muted playsinline preload="metadata" poster="/uploads/2026/03/testimonial-poster.jpg">
-							<source src="https://lippincottteam.com/wp-content/uploads/2026/03/testimonial_Edwards_v1_horizontal.mp4.mp4" type="video/mp4" />
+						<video controls muted playsinline preload="metadata" poster="/uploads/2026/03/testimonial-poster.webp">
+							<source src="/uploads/2026/03/testimonial-Edwards-horizontal.mp4" type="video/mp4" />
 						</video>
 						<div class="who">George and Deborah Edwards, Lippincott Team clients, on camera</div>
 						<div class="review-card">
@@ -235,7 +238,7 @@ import '../styles/v2.css';
 						<img src="/uploads/2026/03/cypress-1536x863.jpg" alt="Cypress, TX" width="1536" height="863" loading="lazy" decoding="async" /><span class="meta"><span class="city">Cypress</span><span class="char">Master-planned lakes, Cy-Fair ISD, the 290 corridor</span><span class="go">View Listings →</span></span>
 					</a>
 					<a class="comm-card reveal" href="/northwest-houston-real-estate/tomball-tx-real-estate/">
-						<img src="/uploads/2026/03/tomball-scaled.jpg" alt="Tomball, TX" width="2560" height="1438" loading="lazy" decoding="async" /><span class="meta"><span class="city">Tomball</span><span class="char">Small-town main street, acreage lots, Tomball ISD</span><span class="go">View Listings →</span></span>
+						<img src="/uploads/2026/03/tomball-1.jpg" alt="Tomball, TX" width="800" height="396" loading="lazy" decoding="async" /><span class="meta"><span class="city">Tomball</span><span class="char">Small-town main street, acreage lots, Tomball ISD</span><span class="go">View Listings →</span></span>
 					</a>
 					<a class="comm-card reveal" href="/northwest-houston-real-estate/katy-tx-real-estate/">
 						<img src="/uploads/2026/03/Picture_for_Katy.jpg" alt="Katy, TX" width="517" height="259" loading="lazy" decoding="async" /><span class="meta"><span class="city">Katy</span><span class="char">West-side growth, Katy ISD, Energy Corridor access</span><span class="go">View Listings →</span></span>
@@ -309,8 +312,8 @@ import '../styles/v2.css';
 					</div>
 				</div>
 				<div class="ph">
-					<video controls muted playsinline preload="metadata" poster="/uploads/2026/07/team-video-poster.jpg">
-						<source src="https://lippincottteam.com/wp-content/uploads/2026/07/Amy%20Website%20Video%20Horizontal%20PrF_4_prob4-compressed.mp4" type="video/mp4" />
+					<video controls muted playsinline preload="metadata" poster="/uploads/2026/07/team-video-poster.webp">
+						<source src="/uploads/2026/07/amy-website-video-horizontal.mp4" type="video/mp4" />
 					</video>
 					<div class="who">Hear it from the team: who we are, how we work, and why Northwest Houston hires us.</div>
 				</div>

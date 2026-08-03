@@ -21,13 +21,20 @@ const isCurrent = (href?: string | null) =>
 	!isExternal(href) && ((href ?? '/').replace(/\/+$/, '') || '/') === currentPath;
 // CMS-provided URL — only allow http(s)/root-relative before rendering.
 const logoSrc = safeHref(seo?.logo);
+// The bundled logo ships 64/96/114px variants; serve the size the viewport
+// actually needs (32px mobile / 38px desktop, up to 3× DPR). Only wire the
+// srcset while the config still points at that bundled asset.
+const logoSrcset =
+	logoSrc === '/logo.webp'
+		? { srcset: '/logo-64.webp 64w, /logo-96.webp 96w, /logo.webp 114w', sizes: '(max-width: 640px) 32px, 38px' }
+		: {};
 ---
 
 <header class="font-apple sticky top-0 z-20 w-full border-b border-[rgba(246,242,234,0.12)] bg-[rgba(23,21,26,0.82)] backdrop-blur-[14px]">
 	<div class="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-6 px-6">
 		<a href="/" class="flex shrink-0 items-center gap-3 text-white">
 			{logoSrc ? (
-				<img src={logoSrc} alt="" width="38" height="38" class="size-[38px] max-sm:size-8" data-tina-field={tinaField(seo, "logo")} />
+				<img src={logoSrc} {...logoSrcset} alt="" width="38" height="38" class="size-[38px] max-sm:size-8" data-tina-field={tinaField(seo, "logo")} />
 			) : null}
 			<span class="text-[15px] font-bold leading-[1.1] max-sm:whitespace-nowrap max-sm:text-[13px]">
 				{seo?.title ?? 'The Lippincott Team'}
