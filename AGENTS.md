@@ -233,7 +233,7 @@ above rather than bare `astro build`.
   reveal lines with a line break in the headline). With no `backgroundVideo`
   it renders `backgroundImage` as a full-bleed still. Video hosting:
   the homepage's three videos are self-hosted from `public/uploads/` and
-  served by the Netlify CDN — always re-encode to web-friendly H.264
+  served by the Netlify CDN — re-encode to web-friendly H.264
   (`libx264` CRF 24–28, AAC 96k, `+faststart`) before committing, and keep
   every file well under GitHub's 100 MB limit (current set: 8–30 MB from
   35–468 MB originals). Posters are webp. Larger future videos (e.g. hero

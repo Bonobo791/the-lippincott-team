@@ -25,7 +25,7 @@ const logoSrc = safeHref(seo?.logo);
 // actually needs (32px mobile / 38px desktop, up to 3× DPR). Only wire the
 // srcset while the config still points at that bundled asset.
 const logoSrcset =
-	logoSrc === '/logo.webp'
+	logoSrc?.endsWith('/logo.webp') === true
 		? { srcset: '/logo-64.webp 64w, /logo-96.webp 96w, /logo.webp 114w', sizes: '(max-width: 640px) 32px, 38px' }
 		: {};
 ---
