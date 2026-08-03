@@ -22,6 +22,8 @@ const config = (await getConfig()).data?.config ?? null;
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} image={image} />
+		{/* Per-page head additions (e.g. the homepage's LCP poster preload). */}
+		<slot name="head" />
 		{/* .home-v2 pages hide .reveal sections until their motion JS runs;
 		    without JS they must render fully visible. */}
 		<noscript><style>.home-v2 .reveal{opacity:1;transform:none}</style></noscript>
