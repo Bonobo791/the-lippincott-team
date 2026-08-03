@@ -20,7 +20,7 @@ const segments = splitHeading(text);
 <Tag class={className} {...rest}>
 	{segments.map((segment) => (
 		segment.accent
-			? <span class={`leading-[1.3] ${accentClass}`}>{segment.text}</span>
+			? <span class={`leading-[1.25] ${accentClass}`}>{segment.text}</span>
 			: <Fragment>{segment.text}</Fragment>
 	))}
 </Tag>

@@ -197,10 +197,12 @@
 }
 .h2-mask > * {
 	display: block;
-	/* Keep Fraunces descenders (j/g/y) and italic overhang inside the clip
-	   window — the mask clips at the child's box, so the padding must live
-	   on the child. 108% translate still hides it fully before reveal. */
-	padding: 0.06em 0.12em 0.18em 0;
+	/* Keep Fraunces descenders (j/g/y) inside the clip window — the mask
+	   clips at the child's box, so the padding must live on the child. No
+	   horizontal padding: masks are wider than their max-w-* heading
+	   children, and right padding would shrink ch-measured text widths and
+	   change wrapping. 108% translate still hides it fully before reveal. */
+	padding: 0.06em 0 0.18em 0;
 	transform: translateY(108%);
 	transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
 }
