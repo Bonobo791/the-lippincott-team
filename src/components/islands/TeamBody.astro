@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsTeam } from '../../lib/data';
@@ -68,7 +69,7 @@ const jsonLd = data && {
 		<section class="py-12 md:py-16">
 			<div class="mx-auto grid max-w-[1200px] items-start gap-10 px-6 md:grid-cols-2 md:px-12 md:gap-16">
 				{data.photo && (
-					<img src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
+					<Image src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 768px) 420px, 100vw" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
 				)}
 				{data.bio && (
 					<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg max-w-none">

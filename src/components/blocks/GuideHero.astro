@@ -15,7 +15,7 @@ const chips = (data.chips ?? []).filter(c => c !== null);
 <section class="relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white">
 	{data.backgroundImage && (
 		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
-			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
+			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
 	<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>

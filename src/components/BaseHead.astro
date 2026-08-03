@@ -3,6 +3,12 @@
 // all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
+// Preload the three variable faces global.css @imports (Inter + Fraunces
+// roman/italic) — same hashed URLs the bundled @font-face rules reference,
+// so the fonts start with the HTML instead of waiting on the CSS parse.
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import frauncesWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
+import frauncesItalicWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2?url';
 
 interface Props {
 	title: string;
@@ -15,8 +21,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image = '/logo.webp' } = Astro.props;
 
 // GA4 measurement ID, overridable per environment without a code change.
-const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';
-// Send hits only from production builds, and on Netlify only from the
+const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';// Send hits only from production builds, and on Netlify only from the
 // production context (deploy previews/branch deploys build with
 // NODE_ENV=production but get CONTEXT=deploy-preview/branch-deploy).
 // When CONTEXT is unset (local builds, non-Netlify hosts) PROD alone decides.
@@ -48,9 +53,10 @@ gtag('config', ${JSON.stringify(gaId)});`}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
 
-<!-- Tina Cloud rewrites media URLs to assets.tina.io in production; warm the connection. -->
-<link rel="preconnect" href="https://assets.tina.io" crossorigin />
-<link rel="dns-prefetch" href="https://assets.tina.io" />
+<!-- Font preloads (see frontmatter imports). -->
+<link rel="preload" as="font" type="font/woff2" href={interWoff2} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={frauncesWoff2} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={frauncesItalicWoff2} crossorigin />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
