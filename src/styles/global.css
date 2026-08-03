@@ -197,6 +197,10 @@
 }
 .h2-mask > * {
 	display: block;
+	/* Keep Fraunces descenders (j/g/y) and italic overhang inside the clip
+	   window — the mask clips at the child's box, so the padding must live
+	   on the child. 108% translate still hides it fully before reveal. */
+	padding: 0.06em 0.12em 0.18em 0;
 	transform: translateY(108%);
 	transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
 }
@@ -211,6 +215,8 @@
 }
 .mask-line > span {
 	display: block;
+	/* Same clip-window padding as .h2-mask: descenders must not be sliced. */
+	padding-bottom: 0.1em;
 	transform: translateY(112%);
 	animation: lineUp 1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
 }

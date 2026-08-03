@@ -23,7 +23,7 @@ const chips = (data.chips ?? []).filter(c => c !== null);
 		{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
 		{data.title && (
 			<div class="h2-mask mt-5">
-				<SplitHeading as="h1" text={data.title} accentClass="font-normal italic text-gold" data-tina-field={tinaField(data, 'title')} class="max-w-[18ch] text-[clamp(2.4rem,5vw,4.2rem)] font-serif font-light leading-[1.06] tracking-[-0.02em] text-white" />
+				<SplitHeading as="h1" text={data.title} accentClass="font-normal italic text-gold" data-tina-field={tinaField(data, 'title')} class="max-w-[18ch] text-[clamp(2.4rem,5vw,4.2rem)] font-serif font-light leading-[1.12] tracking-[-0.02em] text-white" />
 			</div>
 		)}
 		{chips.length > 0 && (
