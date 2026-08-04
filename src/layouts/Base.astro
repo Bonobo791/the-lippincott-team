@@ -151,13 +151,20 @@ gtag('js', new Date());
 gtag('config', ${JSON.stringify(gaId)});
 if (!window.__gaLoaderBound) {
 	window.__gaLoaderBound = true;
-	var __gaLoaded = false;
+	var __gaState = 0; // 0=idle, 1=loading, 2=loaded
 	var __loadGa = function () {
-		if (__gaLoaded) return;
-		__gaLoaded = true;
+		if (__gaState !== 0) return;
+		__gaState = 1;
 		var s = document.createElement('script');
 		s.async = true;
-		s.src = 'https://www.googletagmanager.com/gtag/js?id=${gaId}';
+		s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(${JSON.stringify(gaId)});
+		s.onload = function () { __gaState = 2; };
+		s.onerror = function () {
+			// Transient failure: reset so a later ClientRouter rerun retries.
+			__gaState = 0;
+			s.remove();
+			window.__gaLoaderBound = false;
+		};
 		document.head.appendChild(s);
 	};
 	var __gaTimer = setTimeout(__loadGa, 6000);
