@@ -16,6 +16,17 @@ interface Props {
 
 const { title, description, image } = Astro.props;
 const config = (await getConfig()).data?.config ?? null;
+
+// GA4 measurement ID, overridable per environment without a code change.
+const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';
+
+// Send hits only from production builds, and on Netlify only from the
+// production context (deploy previews/branch deploys build with
+// NODE_ENV=production but get CONTEXT=deploy-preview/branch-deploy).
+// When CONTEXT is unset (local builds, non-Netlify hosts) PROD alone decides.
+const includeAnalytics =
+	import.meta.env.PROD &&
+	(process.env.CONTEXT === undefined || process.env.CONTEXT === 'production');
 ---
 
 <!doctype html>
@@ -122,5 +133,24 @@ const config = (await getConfig()).data?.config ?? null;
 				});
 			}
 		</script>
+		{/* Google Analytics (GA4) — direct gtag.js snippet at the end of the body
+		    so tracking stays off the head's critical path. The gtag.js loader
+		    runs once; the inline config has data-astro-rerun so ClientRouter
+		    navigations re-fire the config call and keep sending pageviews. */}
+		{
+			includeAnalytics && (
+				<>
+					<script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+					<script
+						is:inline
+						data-astro-rerun
+						set:html={`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', ${JSON.stringify(gaId)});`}
+					/>
+				</>
+			)
+		}
 	</body>
 </html>

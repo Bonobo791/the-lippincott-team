@@ -63,8 +63,8 @@ Both build scripts prefix the subcommand with `NODE_ENV=production` on purpose:
 the tinacms CLI bundles its config via Vite in-process, and Vite defaults
 `process.env.NODE_ENV` to `development` when unset — without the prefix that
 value leaks into `astro build` and flips `import.meta.env.PROD` to false
-(which would silently drop the production-only GA4 snippet in
-`src/components/BaseHead.astro`).
+(which would silently drop the production-only GA4 snippet at the end of
+`<body>` in `src/layouts/Base.astro`).
 
 **Build order matters**: `tinacms build` must run before `astro build` so the
 generated client/types in `tina/__generated__/` exist. Always use the scripts
@@ -345,8 +345,9 @@ Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
 `/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
 All other migrated WP URLs map 1:1 onto existing routes.
 
-Analytics: GA4 loads via a direct gtag.js snippet in
-`src/components/BaseHead.astro`, gated on `import.meta.env.PROD` **and**
+Analytics: GA4 loads via a direct gtag.js snippet rendered at the end of
+`<body>` in `src/layouts/Base.astro` (moved out of the head to keep tracking
+off the critical path), gated on `import.meta.env.PROD` **and**
 Netlify's `CONTEXT` being `production` (or unset) — see the
 `NODE_ENV=production` note under "Build and dev commands". Netlify deploy
 previews build with `NODE_ENV=production` but get `CONTEXT=deploy-preview`,
