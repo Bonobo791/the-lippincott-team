@@ -345,16 +345,23 @@ Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
 `/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
 All other migrated WP URLs map 1:1 onto existing routes.
 
-Analytics: GA4 loads via a direct gtag.js snippet rendered at the end of
-`<body>` in `src/layouts/Base.astro` (moved out of the head to keep tracking
-off the critical path), gated on `import.meta.env.PROD` **and**
+Analytics: GA4 loads via a single inline script rendered at the end of
+`<body>` in `src/layouts/Base.astro`, gated on `import.meta.env.PROD` **and**
 Netlify's `CONTEXT` being `production` (or unset) — see the
 `NODE_ENV=production` note under "Build and dev commands". Netlify deploy
-previews build with `NODE_ENV=production` but get `CONTEXT=deploy-preview`,
-so preview traffic is **excluded**; only local dev is also excluded. The
-measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`), and
-the inline config script carries `data-astro-rerun` so `<ClientRouter/>`
-navigations keep sending pageviews.
+previews and branch deploys build with `NODE_ENV=production` but get
+`CONTEXT=deploy-preview`/`branch-deploy`, so that traffic is **excluded**;
+local dev is also excluded. The
+measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`). The
+inline script starts the `dataLayer` queue immediately (so the initial
+`page_view` and `<ClientRouter/>` re-fires are captured from page load), but
+the **gtag.js library itself is interaction/idle-gated**: it is injected on
+the first `pointerdown`/`keydown`/`scroll`/`touchstart` or after a 6 s idle
+fallback, because its bootstrap does forced-reflow layout queries (~150 ms in
+PSI traces) that no script placement can avoid. The script carries
+`data-astro-rerun` so navigations keep sending pageviews; a
+`window.__gaLoaderBound` guard (window survives ClientRouter swaps) keeps the
+loader from double-binding on reruns.
 
 Environment variables (see `.env.example`):
 
