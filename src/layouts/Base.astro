@@ -134,23 +134,42 @@ const includeAnalytics =
 				});
 			}
 		</script>
-		{/* Google Analytics (GA4) — direct gtag.js snippet at the end of the body
-		    so tracking stays off the head's critical path. The gtag.js loader
-		    runs once; the inline config has data-astro-rerun so ClientRouter
-		    navigations re-fire the config call and keep sending pageviews. */}
+		{/* Google Analytics (GA4) at the end of the body. The dataLayer queue
+		    starts immediately (so the initial page_view and ClientRouter re-fires
+		    are captured), but the gtag.js library itself is only injected on
+		    first engagement (pointerdown/keydown/scroll/touchstart) or after 6s
+		    idle — its bootstrap does forced-reflow layout queries (~150ms) that
+		    should never run before the page settles. */}
 		{
 			includeAnalytics && (
-				<>
-					<script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-					<script
-						is:inline
-						data-astro-rerun
-						set:html={`window.dataLayer = window.dataLayer || [];
+				<script
+					is:inline
+					data-astro-rerun
+					set:html={`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', ${JSON.stringify(gaId)});`}
-					/>
-				</>
+gtag('config', ${JSON.stringify(gaId)});
+if (!window.__gaLoaderBound) {
+	window.__gaLoaderBound = true;
+	var __gaLoaded = false;
+	var __loadGa = function () {
+		if (__gaLoaded) return;
+		__gaLoaded = true;
+		var s = document.createElement('script');
+		s.async = true;
+		s.src = 'https://www.googletagmanager.com/gtag/js?id=${gaId}';
+		document.head.appendChild(s);
+	};
+	var __gaTimer = setTimeout(__loadGa, 6000);
+	var __onEngage = function () {
+		clearTimeout(__gaTimer);
+		__loadGa();
+	};
+	['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (e) {
+		window.addEventListener(e, __onEngage, { passive: true, once: true });
+	});
+}`}
+				/>
 			)
 		}
 	</body>
