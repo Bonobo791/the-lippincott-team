@@ -18,7 +18,8 @@ const { title, description, image } = Astro.props;
 const config = (await getConfig()).data?.config ?? null;
 
 // GA4 measurement ID, overridable per environment without a code change.
-const gaId = import.meta.env.PUBLIC_GA_ID ?? 'G-ZREVRSHYJB';
+// trim+|| so an explicitly blank PUBLIC_GA_ID falls back to the default.
+const gaId = import.meta.env.PUBLIC_GA_ID?.trim() || 'G-ZREVRSHYJB';
 
 // Send hits only from production builds, and on Netlify only from the
 // production context (deploy previews/branch deploys build with
