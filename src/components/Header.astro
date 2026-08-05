@@ -198,5 +198,11 @@ const logoSrcset =
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') setOpen(false);
 		});
+		// Above the desktop-nav breakpoint the panel is display:none — close
+		// the menu on the way up so body overflow never stays locked with no
+		// visible way to reopen it.
+		window.matchMedia('(min-width: 1320px)').addEventListener('change', (e) => {
+			if (e.matches) setOpen(false);
+		});
 	}
 </script>
