@@ -10,6 +10,11 @@ interface Props { data: Omit<GuideHeroBlock, '__typename'>; stackOnMobile?: bool
 const { data, stackOnMobile = false } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 const stacked = stackOnMobile && data.backgroundImage;
+// Tina field bindings: the mobile card edits `mobileImage` when one is set;
+// when it falls back to the background image, only one of the two elements
+// may carry the `backgroundImage` binding (duplicate data-tina-field).
+const mobileTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'backgroundImage');
+const desktopTinaField = stacked && !data.mobileImage ? undefined : tinaField(data, 'backgroundImage');
 ---
 {/* Stage hero: full-bleed photo on an ink band, bottom-left content, ghost
     chips. Without a backgroundImage it renders as a solid dark band. When
@@ -18,12 +23,12 @@ const stacked = stackOnMobile && data.backgroundImage;
     overlay text never lands on faces. */}
 <section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "max-md:min-h-0 max-md:flex-col max-md:items-stretch"]}>
 	{stacked && (
-		<div data-tina-field={tinaField(data, 'backgroundImage')} class="px-5 pt-6 md:hidden">
+		<div data-tina-field={mobileTinaField} class="px-5 pt-6 md:hidden">
 			<Image src={(data.mobileImage ?? data.backgroundImage)!} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="eager" decoding="async" class="w-full rounded-2xl object-cover" />
 		</div>
 	)}
 	{data.backgroundImage && (
-		<div data-tina-field={stacked ? undefined : tinaField(data, 'backgroundImage')} class:list={["absolute inset-0", stacked && "max-md:hidden"]}>
+		<div data-tina-field={desktopTinaField} class:list={["absolute inset-0", stacked && "max-md:hidden"]}>
 			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
