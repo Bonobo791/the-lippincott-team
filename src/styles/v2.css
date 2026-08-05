@@ -284,7 +284,56 @@
 .home-v2 .band.ink{background:var(--ink);color:var(--ivory)}
 .home-v2 .band.dense{padding:clamp(48px,6vw,72px) 0}
 .home-v2 .band.flush-top{padding-top:0}
+.home-v2 .band.flush-bottom{padding-bottom:0}
+.home-v2 h1.display{font-family:var(--serif);font-weight:300;font-size:clamp(34px,4.6vw,60px);line-height:1.12;letter-spacing:-.01em;color:var(--ink)}
+.home-v2 h1.display em{font-style:italic;font-weight:400;color:var(--red)}
 .home-v2 h2.display.sec{font-size:clamp(30px,3.8vw,48px)}
+
+/* ---------- live review feed (third-party HAR widget) ----------
+   The widget emits fixed inline-style markup (floats, #003366/#CC0000
+   colors, bordered boxes). These overrides re-skin it into the Verified
+   Record world — attribute-substring selectors + !important beat the
+   inline styles without depending on fragile child indexes. */
+.home-v2 .feed{margin-top:48px}
+.home-v2 #har-feed > div + div{margin-top:20px !important}
+
+/* header card: photo + overall rating */
+.home-v2 #har-feed > div:first-child{border:1px solid var(--line) !important;border-radius:18px;padding:clamp(22px,3vw,32px) !important;background:#fff;display:flex;align-items:center;gap:clamp(20px,3vw,32px)}
+.home-v2 #har-feed > div:first-child > div{float:none !important}
+.home-v2 #har-feed > div:first-child > div:first-child{width:auto !important;flex:none}
+.home-v2 #har-feed > div:first-child > div:first-child img{width:104px !important;height:auto;border-radius:14px}
+.home-v2 #har-feed [style*="font-size:24px"]{font-family:var(--serif);font-weight:400 !important;font-size:clamp(26px,3vw,34px) !important;color:var(--ink);padding-bottom:10px !important;letter-spacing:-.01em}
+.home-v2 #har-feed > div:first-child [style*="color:#003366"]{color:var(--muted) !important;font-size:11.5px !important;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.home-v2 #har-feed [style*="color:#0099FF"]{color:var(--red) !important;font-size:17px !important;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:3px;padding-top:6px !important}
+.home-v2 #har-feed [style*="color:#666666"]{color:var(--muted) !important;font-size:13px !important}
+.home-v2 #har-feed [style*="color:#0033CC"]{color:var(--red-deep) !important;font-size:13.5px !important;text-decoration:underline;text-decoration-color:rgba(127,125,130,.45);text-underline-offset:3px}
+@media(max-width:540px){.home-v2 #har-feed > div:first-child{flex-direction:column;align-items:flex-start}}
+
+/* category + comments boxes: shared card chrome */
+.home-v2 #har-feed > div:nth-child(2),
+.home-v2 #har-feed > div:nth-child(3){border:1px solid var(--line) !important;border-radius:18px !important;overflow:hidden;background:#fff}
+/* header bars */
+.home-v2 #har-feed [style*="SubHdrBg"]{background:var(--ink) !important;color:var(--ivory);font-size:12.5px !important;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:16px 22px !important}
+/* category rows */
+.home-v2 #har-feed > div:nth-child(2) > div[style*="border-top"]{border-color:var(--line) !important;padding:18px 22px !important}
+.home-v2 #har-feed [style*="width:150px"]{float:none !important;width:auto !important;color:var(--ink) !important;font-family:var(--serif);font-weight:400;font-size:19px}
+.home-v2 #har-feed [style*="color:#CC0000"]{float:none !important;color:var(--red) !important;display:flex;align-items:center;gap:3px;margin-top:8px;font-size:15px !important}
+.home-v2 #har-feed [style*="color:#444444"]{color:var(--muted) !important;font-size:13px !important;line-height:1.65;padding-top:8px !important}
+.home-v2 #har-feed img.pb-1{width:17px !important;height:17px !important}
+
+/* comments scroll area */
+.home-v2 #har-feed [style*="overflow-y:auto"]{height:340px !important;background:var(--paper) !important;border-top-color:var(--line) !important}
+.home-v2 #har-feed [style*="overflow-y:auto"] > div{border-top-color:var(--line) !important;padding:16px 22px !important}
+.home-v2 #har-feed [style*="overflow-y:auto"] > div:first-child{border-top:none !important}
+.home-v2 #har-feed [style*="color:#333333"]{color:var(--body) !important;font-size:13.5px !important;line-height:1.7;padding-top:0 !important}
+.home-v2 #har-feed [style*="font-style:italic"]{color:var(--muted) !important;font-size:12px !important;letter-spacing:.06em;padding-top:8px !important}
+.home-v2 #har-feed [style*="overflow-y:auto"]::-webkit-scrollbar{width:8px}
+.home-v2 #har-feed [style*="overflow-y:auto"]::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+.home-v2 #har-feed [style*="overflow-y:auto"]::-webkit-scrollbar-track{background:transparent}
+.home-v2 .dgrid.four{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1000px){.home-v2 .dgrid.four{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.home-v2 .dgrid.four{grid-template-columns:1fr}}
+.home-v2 .job .link-arrow{margin-top:16px}
 
 /* ---------- hero stage (still image) ---------- */
 .home-v2 .hero.stage{min-height:72svh}

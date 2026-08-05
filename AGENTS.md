@@ -1,6 +1,7 @@
 # Agent Guidance
 
 - NEVER develop on the default branch. Always make a new one.
+- When I say "clean up", that means to clean your worktrees and branches.
 
 ## Project overview
 
@@ -135,9 +136,19 @@ above rather than bare `astro build`.
   `buy.astro` and `sell.astro` (**static one-off buyer/seller pages** in the
   same "Verified Record" design world as the homepage, per `DESIGN.md` — not
   Tina-editable; both share the homepage's stylesheet `src/styles/v2.css`
-  (extracted verbatim from index.astro and imported by all three pages) and
+  (extracted verbatim from index.astro and imported by all four pages) and
   the reveal/count-up script `src/components/v2/V2Motion.astro`, each carries
   its own FAQPage JSON-LD),
+  `reviews.astro` (**static one-off reviews page**, same v2 world — not
+  Tina-editable; `reviews.mdx` stays in Tina unrendered). The live feed is
+  the HAR.com widget (`har.com/mopx_services/realtor-agent-rating`), a legacy
+  **`document.write` script**: reviews.astro loads it through an inline
+  loader that redirects `document.write`/`writeln` into the `#har-feed`
+  container (a native call would wipe the document on ClientRouter swaps)
+  and restores the originals once the script settles; `#har-feed` overrides
+  in `v2.css` re-skin the widget's inline styles to the v2 tokens. Caveat:
+  HAR sits behind PerimeterX — headless-Chromium screenshot runs must route
+  `**/mopx_services/**` to a captured copy of the widget JS,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
