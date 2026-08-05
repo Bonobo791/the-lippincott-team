@@ -13,6 +13,9 @@ function parse(url = '') {
 	if (yt) return { type: 'youtube' as const, id: yt[1] };
 	const vimeo = url.match(/vimeo\.com\/(\d+)/);
 	if (vimeo) return { type: 'embed' as const, src: `https://player.vimeo.com/video/${vimeo[1]}` };
+	// Self-hosted (or otherwise directly playable) media files render as a
+	// native <video> element instead of an iframe.
+	if (/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(url)) return { type: 'file' as const, src: url };
 	return url ? { type: 'embed' as const, src: url } : null;
 }
 const video = data.url ? parse(data.url) : null;
@@ -38,7 +41,9 @@ if (video?.type === 'embed') {
 		<div data-tina-field={tinaField(data, 'url')} class="relative mx-auto aspect-video w-full max-w-5xl overflow-hidden rounded-2xl border">
 			{video.type === 'youtube'
 				? <YouTubeFacade id={video.id} params={ytParams} />
-				: <iframe class="absolute inset-0 h-full w-full" src={embedSrc} title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
+				: video.type === 'file'
+					? <video class="absolute inset-0 h-full w-full object-cover" src={video.src} poster={data.poster || undefined} controls muted={data.autoPlay || undefined} autoplay={data.autoPlay || undefined} loop={data.loop || undefined} playsinline preload="metadata" />
+					: <iframe class="absolute inset-0 h-full w-full" src={embedSrc} title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
 		</div>
 	</Section>
 )}

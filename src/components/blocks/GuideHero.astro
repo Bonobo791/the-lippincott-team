@@ -5,21 +5,30 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import GuideActions from '../ui/GuideActions.astro';
 import type { GuideHeroBlock } from '../../lib/data';
 
-interface Props { data: Omit<GuideHeroBlock, '__typename'> }
+interface Props { data: Omit<GuideHeroBlock, '__typename'>; stackOnMobile?: boolean }
 
-const { data } = Astro.props;
+const { data, stackOnMobile = false } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
+const stacked = stackOnMobile && data.backgroundImage;
 ---
 {/* Stage hero: full-bleed photo on an ink band, bottom-left content, ghost
-    chips. Without a backgroundImage it renders as a solid dark band. */}
-<section class="relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white">
+    chips. Without a backgroundImage it renders as a solid dark band. When
+    `stacked` (page-collection heroes with a group photo, e.g. /about), mobile
+    shows the photo as a rounded card above the text instead of behind it, so
+    overlay text never lands on faces. */}
+<section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "max-md:min-h-0 max-md:flex-col max-md:items-stretch"]}>
+	{stacked && (
+		<div data-tina-field={tinaField(data, 'backgroundImage')} class="px-5 pt-6 md:hidden">
+			<Image src={(data.mobileImage ?? data.backgroundImage)!} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="eager" decoding="async" class="w-full rounded-2xl object-cover" />
+		</div>
+	)}
 	{data.backgroundImage && (
-		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
+		<div data-tina-field={stacked ? undefined : tinaField(data, 'backgroundImage')} class:list={["absolute inset-0", stacked && "max-md:hidden"]}>
 			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
-	<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>
-	<div class="relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20">
+	<div aria-hidden="true" class:list={["absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]", stacked && "max-md:hidden"]}></div>
+	<div class:list={["relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20", stacked && "max-md:pt-10"]}>
 		{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
 		{data.title && (
 			<div class="h2-mask mt-5">

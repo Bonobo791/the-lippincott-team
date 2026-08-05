@@ -65,7 +65,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'TestimonialShowcase': return <TestimonialShowcase data={block as never} />;
 			case 'Awards': return <Awards data={block as never} />;
 			case 'TeamBanner': return <TeamBanner data={block as never} />;
-			case 'GuideHero': return <GuideHero data={block as never} />;
+			case 'GuideHero': return <GuideHero data={block as never} stackOnMobile={block.__typename.startsWith('PageBlocks')} />;
 			case 'StatLedger': return <StatLedger data={block as never} />;
 			case 'PriceLadder': return <PriceLadder data={block as never} />;
 			case 'CalloutRail': return <CalloutRail data={block as never} />;

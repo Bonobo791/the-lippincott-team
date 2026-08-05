@@ -4,6 +4,7 @@ import { splitBlockSchema } from "../../src/components/blocks/split.template";
 import { featuresBlockSchema } from "../../src/components/blocks/features.template";
 import { statsBlockSchema } from "../../src/components/blocks/stats.template";
 import { contentBlockSchema } from "../../src/components/blocks/content.template";
+import { videoBlockSchema } from "../../src/components/blocks/video.template";
 import { faqBlockSchema } from "../../src/components/blocks/faq.template";
 import { ctaBlockSchema } from "../../src/components/blocks/cta.template";
 import { guideHeroBlockSchema } from "../../src/components/blocks/guideHero.template";
@@ -52,6 +53,7 @@ export const CommunityCollection: Collection = {
         featuresBlockSchema,
         statsBlockSchema,
         contentBlockSchema,
+        videoBlockSchema,
         faqBlockSchema,
         ctaBlockSchema,
         guideHeroBlockSchema,
