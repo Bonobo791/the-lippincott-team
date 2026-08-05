@@ -44,6 +44,7 @@
       "link": "/sell/"
     },
     { "title": "About", "link": "/about/" },
+    { "title": "Reviews", "link": "/reviews/" },
     { "title": "Contact", "link": "/contact-us/" },
     { "title": "Blog", "link": "/blog/" }
   ],

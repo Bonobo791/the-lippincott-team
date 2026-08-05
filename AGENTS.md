@@ -265,9 +265,10 @@ above rather than bare `astro build`.
   `rgba(23,21,26,.82)` blur `Header.astro` with an ivory hairline bottom
   border and a dark `#100e13` `Footer.astro`. The mobile menu is a dark
   dropdown panel under the header bar (not a full-screen overlay). The
-  desktop nav appears at `min-[1240px]` (the 8 config links + phone + CTA
-  measurably overflow below that; the phone link and the spec's 26px link
-  gaps join at `min-[1440px]`, where the 1440px container fits them),
+  desktop nav appears at `min-[1320px]` (the 9 config links + phone + CTA
+  measurably overflow below that; link gaps stay at 16px everywhere — the
+  spec's 26px gaps plus the phone link no longer fit the 1440px container
+  with 9 links, so only the phone joins at `min-[1440px]`),
   and the header CTA uses the design spec's translateY/shadow hover — not
   `.btn-magnetic`, whose rAF transform would override it.
 - Motion: `gsap` (npm dep, bundled via Astro `<script>` imports — never CDN)

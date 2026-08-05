@@ -41,7 +41,7 @@ const logoSrcset =
 				<small class="block text-[10.5px] font-normal uppercase tracking-[0.18em] text-[rgba(246,242,234,0.42)]">eXp Realty</small>
 			</span>
 		</a>
-		<nav aria-label="Main navigation" class="hidden items-center gap-4 min-[1240px]:flex min-[1440px]:gap-[26px]">
+		<nav aria-label="Main navigation" class="hidden items-center gap-4 min-[1320px]:flex">
 			{nav.map((item) => {
 				const children = (item.children ?? []).filter(c => c !== null);
 				const current = isCurrent(item.link);
@@ -104,7 +104,7 @@ const logoSrcset =
 			aria-label="Toggle navigation menu"
 			aria-controls="mobile-menu-panel"
 			aria-expanded="false"
-			class="relative z-30 inline-flex size-11 cursor-pointer flex-col items-center justify-center gap-[5px] min-[1240px]:hidden"
+			class="relative z-30 inline-flex size-11 cursor-pointer flex-col items-center justify-center gap-[5px] min-[1320px]:hidden"
 		>
 			<span class="menu-bar block h-[1.5px] w-[22px] bg-white transition-all duration-300"></span>
 			<span class="menu-bar block h-[1.5px] w-[22px] bg-white transition-all duration-300"></span>
@@ -115,7 +115,7 @@ const logoSrcset =
 		id="mobile-menu-panel"
 		inert
 		aria-hidden="true"
-		class="font-apple pointer-events-none absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-t border-[rgba(246,242,234,0.12)] bg-[#17151a] px-6 pb-[26px] pt-[18px] opacity-0 transition-opacity duration-300 min-[1240px]:hidden"
+		class="font-apple pointer-events-none absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-t border-[rgba(246,242,234,0.12)] bg-[#17151a] px-6 pb-[26px] pt-[18px] opacity-0 transition-opacity duration-300 min-[1320px]:hidden"
 	>
 		<nav aria-label="Mobile navigation" class="flex flex-col">
 			{nav.map((item) => {
@@ -197,6 +197,12 @@ const logoSrcset =
 		});
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') setOpen(false);
+		});
+		// Above the desktop-nav breakpoint the panel is display:none — close
+		// the menu on the way up so body overflow never stays locked with no
+		// visible way to reopen it.
+		window.matchMedia('(min-width: 1320px)').addEventListener('change', (e) => {
+			if (e.matches) setOpen(false);
 		});
 	}
 </script>
