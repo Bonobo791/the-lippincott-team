@@ -111,12 +111,14 @@ const jsonld = {
 								document.writeln = window.__harOrigWrite.writeln;
 								if (timer) { clearTimeout(timer); timer = null; }
 							}
-							// detach(): navigating away mid-load. Keep the wrapper (it now
-							// writes into a detached node, harmless) so a late-arriving
-							// widget cannot call native document.write and wipe the new page.
+							// detach(): navigating away mid-load. Swap the wrapper for a
+							// no-op: a late-arriving widget's writes are dropped instead of
+							// hitting native document.write (which would wipe the new page),
+							// and the closure stops retaining the detached feed DOM.
 							function detach() {
 								if (settled) return;
 								if (timer) { clearTimeout(timer); timer = null; }
+								document.write = document.writeln = function () {};
 							}
 							document.write = document.writeln = function (html) {
 								target.insertAdjacentHTML('beforeend', html);
