@@ -31,7 +31,7 @@ const anchorId = data.anchorId?.trim().replace(/^#/, '') || undefined;
 			{lead && (
 				<a href={`/about/${lead._sys.filename}/`} class="group grid overflow-hidden rounded-2xl border border-border bg-background no-underline transition-colors duration-300 hover:bg-section md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
 					{lead.photo && (
-						<Image src={lead.photo} alt={lead.name ?? ''} width={640} height={800} sizes="(min-width: 1200px) 442px, (min-width: 768px) calc((100vw - 96px) * 0.4), calc(100vw - 48px)" format="webp" quality={75} loading="lazy" decoding="async" class="aspect-[4/3] size-full object-cover object-top md:aspect-auto md:h-full" />
+						<Image src={lead.photo} alt={lead.name ?? ''} width={640} height={960} sizes="(min-width: 1200px) 442px, (min-width: 768px) calc((100vw - 96px) * 0.4), calc(100vw - 48px)" format="webp" quality={75} loading="lazy" decoding="async" class="aspect-[2/3] size-full object-cover object-top md:aspect-auto md:h-full" />
 					)}
 					<div class="p-7 md:p-10">
 						{lead.role && <span class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{lead.role}</span>}
