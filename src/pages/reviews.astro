@@ -1,0 +1,191 @@
+---
+import Base from '../layouts/Base.astro';
+import V2Motion from '../components/v2/V2Motion.astro';
+import { getConfig } from '../lib/data';
+import { telHref } from '../lib/url';
+import '../styles/v2.css';
+
+const phone = (await getConfig()).data?.config?.contact?.phone;
+---
+
+<Base
+	title="Client Reviews: 750+ Five-Star Ratings | The Lippincott Team"
+	description="750+ five-star reviews across Google and HAR.com: 4.9 on Google, 4.92 out of 5 across 685+ client surveys. Read them unedited, live from HAR.com."
+	image="/uploads/2026/03/header-houston.jpeg"
+>
+	<script type="application/ld+json" is:inline>
+	{
+	  "@context": "https://schema.org",
+	  "@graph": [
+	    {
+	      "@type": "RealEstateAgent",
+	      "name": "The Lippincott Team",
+	      "telephone": "+1-713-494-1818",
+	      "areaServed": ["Cypress TX", "Tomball TX", "Katy TX", "Magnolia TX", "Waller TX", "Hockley TX"],
+	      "aggregateRating": {
+	        "@type": "AggregateRating",
+	        "ratingValue": "4.9",
+	        "reviewCount": "750"
+	      }
+	    },
+	    {
+	      "@type": "FAQPage",
+	      "mainEntity": [
+	        {"@type": "Question", "name": "Where do these reviews come from?", "acceptedAnswer": {"@type": "Answer", "text": "Two places we do not control. The feed on this page loads directly from our public HAR.com profile, where clients complete surveys after closing: 685+ completed surveys averaging 4.92 out of 5."}},
+	        {"@type": "Question", "name": "Can I read every review, unedited?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The HAR.com feed shows surveys as clients complete them, and the full survey history is public on HAR.com. We do not curate, filter or edit any of it."}},
+	        {"@type": "Question", "name": "How do I leave a review?", "acceptedAnswer": {"@type": "Answer", "text": "After closing, your transaction coordinator sends both links. Google reviews post straight to our public profile, and HAR.com surveys go to clients of record. Every review counts the same, glowing or not."}}
+	      ]
+	    }
+	  ]
+	}
+	</script>
+
+	<div class="home-v2">
+		<!-- ============ PAGE HEAD ============ -->
+		<section class="band flush-bottom">
+			<div class="wrap">
+				<span class="eyebrow red reveal">Client reviews</span>
+				<h1 class="display reveal">Reviewed, <em>in public.</em></h1>
+				<p class="lede reveal">More than 750 five-star reviews across Google and HAR.com, 685+ of them completed client surveys averaging 4.92 out of 5. We did not write any of them, and we do not edit any of them.</p>
+			</div>
+		</section>
+
+		<!-- ============ THE RECORD ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">The record</span>
+				<h2 class="display sec reveal">Four numbers, <em>no adjectives.</em></h2>
+				<div class="dgrid four spaced reveal">
+					<div class="dtile">
+						<span class="num">4.9</span>
+						<span class="slabel">On Google</span>
+						<span class="ssrc">Across 750+ reviews</span>
+					</div>
+					<div class="dtile">
+						<a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener"><span class="num gold">4.92</span></a>
+						<span class="slabel">Out of 5 on HAR.com</span>
+						<span class="ssrc">685+ completed client surveys</span>
+					</div>
+					<div class="dtile">
+						<a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener"><span class="num" data-count="750">0<span>+</span></span></a>
+						<span class="slabel">Five-star reviews</span>
+						<span class="ssrc">Google and HAR.com combined</span>
+					</div>
+					<div class="dtile">
+						<span class="num" data-count="1463">0<span>+</span></span>
+						<span class="slabel">Homes sold</span>
+						<span class="ssrc">Team sales records, Northwest Houston</span>
+					</div>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="/about/">Meet the team behind the numbers →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ LIVE HAR.COM FEED ============ -->
+		<section class="band">
+			<div class="wrap">
+				<span class="eyebrow red reveal">HAR.com reviews</span>
+				<h2 class="display sec reveal">Straight from <em>HAR.com.</em></h2>
+				<p class="lede reveal">A live feed from our public HAR.com profile. New surveys appear here as clients complete them, unedited and uncurated.</p>
+				<div class="feed reveal">
+					<div id="har-feed" aria-live="polite"></div>
+					<script is:inline data-astro-rerun>
+						(function () {
+							var target = document.getElementById('har-feed');
+							if (!target) return;
+							// The HAR widget is a legacy document.write script. Redirect its
+							// output into the feed container: native document.write only works
+							// during initial parse, and on a ClientRouter swap it would wipe
+							// the whole document. Restored as soon as the script settles.
+							var origWrite = document.write;
+							var origWriteln = document.writeln;
+							var restored = false;
+							function restore() {
+								if (restored) return;
+								restored = true;
+								document.write = origWrite;
+								document.writeln = origWriteln;
+							}
+							document.write = document.writeln = function (html) {
+								target.insertAdjacentHTML('beforeend', html);
+							};
+							var s = document.createElement('script');
+							s.src = 'https://www.har.com/mopx_services/realtor-agent-rating?member_number=586048&bg=999999&showcat=y&showcomments=y';
+							s.onload = function () { setTimeout(restore, 0); };
+							s.onerror = restore;
+							document.head.appendChild(s);
+							// Never leave the patch in place if the CDN hangs.
+							setTimeout(restore, 15000);
+						})();
+					</script>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/about/">Meet the team behind the reviews →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ VERIFICATION ============ -->
+		<section class="band ivory">
+			<div class="wrap">
+				<span class="eyebrow red reveal">Verification</span>
+				<h2 class="display sec reveal">Check us <em>anywhere.</em></h2>
+				<p class="lede reveal">Do not take this page's word for it. The same numbers are posted in places we cannot touch.</p>
+				<div class="jobs three reveal" style="margin-top:48px">
+					<div class="job">
+						<span class="tag red">HAR.com</span>
+						<h3>685+ surveys, in the open</h3>
+						<p>Every completed client survey posts to our public HAR.com profile: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685+ surveys averaging 4.92 out of 5</a>, with the written comments attached.</p>
+						<a class="link-arrow" href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">Read the surveys →</a>
+					</div>
+					<div class="job">
+						<span class="tag red">Google</span>
+						<h3>750+ reviews on the profile</h3>
+						<p>The Google Business Profile carries the same record: 4.9 stars across more than 750 reviews, posted by clients in their own names.</p>
+						<a class="link-arrow" href="https://www.google.com/search?q=The+Lippincott+Team+eXp+Realty+Cypress+reviews" target="_blank" rel="noopener">See the Google profile →</a>
+					</div>
+					<div class="job">
+						<span class="tag red">Houston Business Journal</span>
+						<h3>Nine years of awards</h3>
+						<p>Nine-time HBJ Residential Real Estate Award winner, 2017 through 2025, verified against MLS production data, not nominations.</p>
+					</div>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your move →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FAQ ============ -->
+		<section class="faq">
+			<div class="wrap">
+				<h2 class="display sec reveal">Reviews, <em>answered.</em></h2>
+				<div class="faq-list">
+					<details class="reveal">
+						<summary>Where do these reviews come from? <span class="plus">+</span></summary>
+						<p>Two places we do not control. The feed above loads directly from our public HAR.com profile, where clients complete surveys after closing: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685+ completed surveys averaging 4.92 out of 5</a>. Google reviews post to our public Business Profile.</p>
+					</details>
+					<details class="reveal">
+						<summary>Can I read every review, unedited? <span class="plus">+</span></summary>
+						<p>Yes. The HAR.com feed shows surveys as clients complete them, and the full survey history is public on HAR.com. We do not curate, filter or edit any of it, which is the entire point of reading them.</p>
+					</details>
+					<details class="reveal">
+						<summary>How do I leave a review? <span class="plus">+</span></summary>
+						<p>After closing, your transaction coordinator sends both links. Google reviews post straight to our public profile, and HAR.com surveys go to clients of record. Every review counts the same, glowing or not.</p>
+					</details>
+				</div>
+				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Ask us your question →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FINAL CTA ============ -->
+		<section class="final dark">
+			<div class="reveal">
+				<h2>Experience what the <em>reviews describe.</em></h2>
+				<p>A consultation with the team behind 750+ five-star reviews. Free, and the advice is yours to keep.</p>
+				<div class="final-actions">
+					<a class="btn" href="/contact-us/">Schedule a Consultation →</a>
+					{phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<V2Motion />
+</Base>
