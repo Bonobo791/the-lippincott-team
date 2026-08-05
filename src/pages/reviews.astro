@@ -6,6 +6,30 @@ import { telHref } from '../lib/url';
 import '../styles/v2.css';
 
 const phone = (await getConfig()).data?.config?.contact?.phone;
+const jsonld = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'RealEstateAgent',
+			name: 'The Lippincott Team',
+			...(phone ? { telephone: telHref(phone)?.replace(/^tel:/, '') } : {}),
+			areaServed: ['Cypress TX', 'Tomball TX', 'Katy TX', 'Magnolia TX', 'Waller TX', 'Hockley TX'],
+			aggregateRating: {
+				'@type': 'AggregateRating',
+				ratingValue: '4.9',
+				reviewCount: '750',
+			},
+		},
+		{
+			'@type': 'FAQPage',
+			mainEntity: [
+				{ '@type': 'Question', name: 'Where do these reviews come from?', acceptedAnswer: { '@type': 'Answer', text: 'Two places we do not control. The feed on this page loads directly from our public HAR.com profile, where clients complete surveys after closing: 685+ completed surveys averaging 4.92 out of 5.' } },
+				{ '@type': 'Question', name: 'Can I read every review, unedited?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. The HAR.com feed shows surveys as clients complete them, and the full survey history is public on HAR.com. We do not curate, filter or edit any of it.' } },
+				{ '@type': 'Question', name: 'How do I leave a review?', acceptedAnswer: { '@type': 'Answer', text: 'After closing, your transaction coordinator sends both links. Google reviews post straight to our public profile, and HAR.com surveys go to clients of record. Every review counts the same, glowing or not.' } },
+			],
+		},
+	],
+};
 ---
 
 <Base
@@ -13,32 +37,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 	description="750+ five-star reviews across Google and HAR.com: 4.9 on Google, 4.92 out of 5 across 685+ client surveys. Read them unedited, live from HAR.com."
 	image="/uploads/2026/03/header-houston.jpeg"
 >
-	<script type="application/ld+json" is:inline>
-	{
-	  "@context": "https://schema.org",
-	  "@graph": [
-	    {
-	      "@type": "RealEstateAgent",
-	      "name": "The Lippincott Team",
-	      "telephone": "+1-713-494-1818",
-	      "areaServed": ["Cypress TX", "Tomball TX", "Katy TX", "Magnolia TX", "Waller TX", "Hockley TX"],
-	      "aggregateRating": {
-	        "@type": "AggregateRating",
-	        "ratingValue": "4.9",
-	        "reviewCount": "750"
-	      }
-	    },
-	    {
-	      "@type": "FAQPage",
-	      "mainEntity": [
-	        {"@type": "Question", "name": "Where do these reviews come from?", "acceptedAnswer": {"@type": "Answer", "text": "Two places we do not control. The feed on this page loads directly from our public HAR.com profile, where clients complete surveys after closing: 685+ completed surveys averaging 4.92 out of 5."}},
-	        {"@type": "Question", "name": "Can I read every review, unedited?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The HAR.com feed shows surveys as clients complete them, and the full survey history is public on HAR.com. We do not curate, filter or edit any of it."}},
-	        {"@type": "Question", "name": "How do I leave a review?", "acceptedAnswer": {"@type": "Answer", "text": "After closing, your transaction coordinator sends both links. Google reviews post straight to our public profile, and HAR.com surveys go to clients of record. Every review counts the same, glowing or not."}}
-	      ]
-	    }
-	  ]
-	}
-	</script>
+	<script type="application/ld+json" set:html={JSON.stringify(jsonld)} />
 
 	<div class="home-v2">
 		<!-- ============ PAGE HEAD ============ -->
@@ -93,29 +92,48 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 						(function () {
 							var target = document.getElementById('har-feed');
 							if (!target) return;
+							target.innerHTML = '';
 							// The HAR widget is a legacy document.write script. Redirect its
 							// output into the feed container: native document.write only works
 							// during initial parse, and on a ClientRouter swap it would wipe
-							// the whole document. Restored as soon as the script settles.
-							var origWrite = document.write;
-							var origWriteln = document.writeln;
-							var restored = false;
+							// the whole document. The true natives live on window so a rerun
+							// never captures our own wrapper as the "original".
+							if (!window.__harOrigWrite) {
+								window.__harOrigWrite = { write: document.write, writeln: document.writeln };
+							}
+							var settled = false;
+							var timer = null;
+							// restore(): the widget script has settled — put the natives back.
 							function restore() {
-								if (restored) return;
-								restored = true;
-								document.write = origWrite;
-								document.writeln = origWriteln;
+								if (settled) return;
+								settled = true;
+								document.write = window.__harOrigWrite.write;
+								document.writeln = window.__harOrigWrite.writeln;
+								if (timer) { clearTimeout(timer); timer = null; }
+							}
+							// detach(): navigating away mid-load. Keep the wrapper (it now
+							// writes into a detached node, harmless) so a late-arriving
+							// widget cannot call native document.write and wipe the new page.
+							function detach() {
+								if (settled) return;
+								if (timer) { clearTimeout(timer); timer = null; }
 							}
 							document.write = document.writeln = function (html) {
 								target.insertAdjacentHTML('beforeend', html);
 							};
+							document.addEventListener('astro:before-swap', detach, { once: true });
+							// Dedupe the injected script across reruns; the head is not pruned
+							// by ClientRouter swaps.
+							var old = document.getElementById('har-widget');
+							if (old) old.remove();
 							var s = document.createElement('script');
+							s.id = 'har-widget';
 							s.src = 'https://www.har.com/mopx_services/realtor-agent-rating?member_number=586048&bg=999999&showcat=y&showcomments=y';
 							s.onload = function () { setTimeout(restore, 0); };
 							s.onerror = restore;
 							document.head.appendChild(s);
 							// Never leave the patch in place if the CDN hangs.
-							setTimeout(restore, 15000);
+							timer = setTimeout(restore, 15000);
 						})();
 					</script>
 				</div>
