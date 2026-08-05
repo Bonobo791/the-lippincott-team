@@ -1,6 +1,7 @@
 # Agent Guidance
 
 - NEVER develop on the default branch. Always make a new one.
+- When I say "clean up", that means to clean your worktrees and branches.
 
 ## Project overview
 
