@@ -14,8 +14,10 @@ function parse(url = '') {
 	const vimeo = url.match(/vimeo\.com\/(\d+)/);
 	if (vimeo) return { type: 'embed' as const, src: `https://player.vimeo.com/video/${vimeo[1]}` };
 	// Self-hosted (or otherwise directly playable) media files render as a
-	// native <video> element instead of an iframe.
-	if (/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(url)) return { type: 'file' as const, src: url };
+	// native <video> element instead of an iframe. Test the extension on the
+	// URL path only, so a query string like ?source=clip.mp4 can't push an
+	// embed page into the <video> branch.
+	if (/\.(mp4|webm|mov|m4v)$/i.test(url.split(/[?#]/)[0])) return { type: 'file' as const, src: url };
 	return url ? { type: 'embed' as const, src: url } : null;
 }
 const video = data.url ? parse(data.url) : null;
@@ -40,10 +42,10 @@ if (video?.type === 'embed') {
 // browsers that can't decode H.264 (e.g. codec-free Firefox builds) skip the
 // MP4 by its type attribute — without a network request — and fall back to
 // the WebM.
-const FILE_MIME: Record<string, string> = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/mp4', webm: 'video/webm' };
+const FILE_MIME: Record<string, string> = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm' };
 let fileSources: { src: string; type: string }[] = [];
 if (video?.type === 'file') {
-	const ext = video.src.match(/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i)?.[1]?.toLowerCase() ?? 'mp4';
+	const ext = video.src.split(/[?#]/)[0].match(/\.(mp4|webm|mov|m4v)$/i)?.[1]?.toLowerCase() ?? 'mp4';
 	fileSources.push({ src: video.src, type: FILE_MIME[ext] });
 	if (ext === 'mp4') fileSources.push({ src: video.src.replace(/\.mp4([?#]|$)/i, '.webm$1'), type: 'video/webm' });
 }
