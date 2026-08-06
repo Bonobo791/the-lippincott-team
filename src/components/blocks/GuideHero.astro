@@ -11,33 +11,40 @@ const { data, stackOnMobile = false } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 const stacked = stackOnMobile && data.backgroundImage;
 const stackedImage = data.mobileImage ?? data.backgroundImage;
-// Tina field bindings: the mobile card edits `mobileImage` when one is set;
-// when it falls back to the background image, only one of the two elements
-// may carry the `backgroundImage` binding (duplicate data-tina-field).
-const mobileTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'backgroundImage');
-const desktopTinaField = stacked && !data.mobileImage ? undefined : tinaField(data, 'backgroundImage');
+// Tina field bindings: the stacked variants edit `mobileImage` when one is
+// set; the binding lives on the shared wrapper so the field never appears
+// twice in the DOM (duplicate data-tina-field breaks visual editing).
+const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'backgroundImage');
 ---
 {/* Stage hero: full-bleed photo on an ink band, bottom-left content, ghost
     chips. Without a backgroundImage it renders as a solid dark band. When
-    `stacked` (page-collection heroes with a group photo, e.g. /about), mobile
-    shows the photo as a rounded card above the text instead of behind it, so
-    overlay text never lands on faces. The card is loading="lazy": it sits at
-    the top of the page on mobile (loads immediately anyway), and on desktop
-    the display:none wrapper keeps a lazy image from ever being fetched —
-    eager would download both variants on every viewport. */}
-<section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "max-md:min-h-0 max-md:flex-col max-md:items-stretch"]}>
+    `stacked` (page-collection heroes with a group photo, e.g. /about), the
+    photo renders ABOVE the text at every viewport — a rounded card on
+    mobile, a full-bleed band with a bottom fade on desktop — so overlay
+    text never lands on faces. The mobile card is loading="lazy": it sits at
+    the top of the page (loads immediately anyway), and on desktop the
+    display:none wrapper keeps a lazy image from ever being fetched. */}
+<section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "min-h-0 flex-col items-stretch"]}>
 	{stacked && stackedImage && (
-		<div data-tina-field={mobileTinaField} class="px-5 pt-6 md:hidden">
-			<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
+		<div data-tina-field={stackedTinaField}>
+			<div class="px-5 pt-6 md:hidden">
+				<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
+			</div>
+			<div class="relative hidden overflow-hidden md:block md:h-[34vw] md:min-h-[300px] md:max-h-[560px]">
+				<Image src={stackedImage} alt="" width={2560} height={880} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover object-[center_25%]" />
+				<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,0)_60%,rgba(23,21,26,1)_100%)]"></div>
+			</div>
 		</div>
 	)}
-	{data.backgroundImage && (
-		<div data-tina-field={desktopTinaField} class:list={["absolute inset-0", stacked && "max-md:hidden"]}>
+	{!stacked && data.backgroundImage && (
+		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
 			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
-	<div aria-hidden="true" class:list={["absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]", stacked && "max-md:hidden"]}></div>
-	<div class:list={["relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20", stacked && "max-md:pt-10"]}>
+	{!stacked && (
+		<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>
+	)}
+	<div class:list={["relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20", stacked && "max-md:pt-10 md:pt-16"]}>
 		{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
 		{data.title && (
 			<div class="h2-mask mt-5">
