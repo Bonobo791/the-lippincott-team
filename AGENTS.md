@@ -2,6 +2,7 @@
 
 - NEVER develop on the default branch. Always make a new one.
 - When I say "clean up", that means to clean your worktrees and branches.
+- When I say "triage", review every PR comment for validity. Fix each valid issue. Post a triage comment. Reply to every bot comment, whether or not you make a code change.
 
 ## Project overview
 
