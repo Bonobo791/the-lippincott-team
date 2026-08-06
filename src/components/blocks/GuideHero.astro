@@ -23,22 +23,25 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 ---
 {/* Stage hero: full-bleed photo on an ink band, bottom-left content, ghost
     chips. Without a backgroundImage it renders as a solid dark band. When
-    `stacked` (page-collection heroes with a group photo, e.g. /about), the
-    photo renders ABOVE the text at every viewport as a framed figure with
-    a placard caption — the design system's `hero-stage--people` — so
-    overlay text never lands on faces. One <Image> node for all viewports:
-    it is the LCP at the top of the page, so it loads eager with
-    fetchpriority="high" (same as the mock and the full-bleed variant). */}
-<section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "min-h-0 flex-col items-stretch"]}>
+    `stacked` (page-collection heroes with a group photo, e.g. /about), it
+    becomes the design system's `hero-stage--people`: a split hero — text
+    left, the photo as a framed figure right (placard caption in the
+    frame's bottom matte) — stacking photo-over-text on mobile, so overlay
+    text never lands on faces. One <Image> node for all viewports: it is
+    the LCP at the top of the page, so it loads eager with
+    fetchpriority="high" (same as the mock and the full-bleed variant).
+    The md padding resolves to the 1200px container gutters. */}
+<section class:list={[
+	"relative overflow-hidden bg-tile text-white",
+	stacked
+		? "flex flex-col gap-10 px-5 pb-16 pt-6 md:grid md:grid-cols-[5fr_6fr] md:items-center md:gap-14 md:px-[max(3rem,calc((100vw-1200px)/2))] md:py-24"
+		: "flex min-h-[72svh] items-end",
+]}>
 	{stacked && stackedImage && (
-		<div class="px-5 pt-6 md:px-12 md:pt-12">
-			<figure data-tina-field={stackedTinaField} class="relative mx-auto max-w-[1200px]">
-				<div class="rounded-2xl border border-white/15 bg-white/[.04] p-2 md:p-2.5">
-					<Image src={stackedImage} alt="The Lippincott Team standing together on a lakeside path in Northwest Houston" width={1920} height={1280} sizes="(min-width: 1280px) 1152px, calc(100vw - 56px)" format="webp" quality={80} fetchpriority="high" decoding="async" class="max-h-[62svh] w-full rounded-xl object-cover object-[center_25%]" />
-				</div>
-				<figcaption class="absolute bottom-5 left-5 rounded-full border border-white/20 bg-[#100e13]/90 px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/75 backdrop-blur-sm md:bottom-7 md:left-7 md:text-[11px] md:tracking-[0.22em]">The Lippincott Team &middot; Northwest Houston</figcaption>
-			</figure>
-		</div>
+		<figure data-tina-field={stackedTinaField} class="border border-white/15 p-2.5 md:order-2 md:p-3">
+			<Image src={stackedImage} alt="The Lippincott Team standing together on a lakeside path in Northwest Houston" width={1920} height={1280} sizes="(min-width: 1280px) 660px, (min-width: 768px) 55vw, calc(100vw - 56px)" format="webp" quality={80} fetchpriority="high" decoding="async" class="w-full object-cover object-[center_25%]" />
+			<figcaption class="mt-2 text-[12px] text-white/55 md:mt-2.5">The Lippincott Team &middot; Northwest Houston</figcaption>
+		</figure>
 	)}
 	{!stacked && data.backgroundImage && (
 		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
@@ -48,7 +51,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 	{!stacked && (
 		<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>
 	)}
-	<div class:list={["relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20", stacked && "max-md:pt-10 md:pt-16"]}>
+	<div class:list={[stacked ? "relative md:order-1" : "relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20"]}>
 		{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
 		{data.title && (
 			<div class="h2-mask mt-5">
