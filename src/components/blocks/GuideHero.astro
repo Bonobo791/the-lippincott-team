@@ -5,12 +5,17 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import GuideActions from '../ui/GuideActions.astro';
 import type { GuideHeroBlock } from '../../lib/data';
 
-interface Props { data: Omit<GuideHeroBlock, '__typename'>; stackOnMobile?: boolean }
+interface Props {
+	data: Omit<GuideHeroBlock, '__typename'>;
+	/** Page-collection heroes (e.g. /about) stack the photo above the
+	    headline at EVERY viewport, so overlay text never lands on faces. */
+	stacked?: boolean;
+}
 
-const { data, stackOnMobile = false } = Astro.props;
+const { data, stacked: stackProp = false } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
-const stacked = stackOnMobile && data.backgroundImage;
 const stackedImage = data.mobileImage ?? data.backgroundImage;
+const stacked = stackProp && stackedImage;
 // Tina field bindings: the stacked variants edit `mobileImage` when one is
 // set; the binding lives on the shared wrapper so the field never appears
 // twice in the DOM (duplicate data-tina-field breaks visual editing).
@@ -21,9 +26,10 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
     `stacked` (page-collection heroes with a group photo, e.g. /about), the
     photo renders ABOVE the text at every viewport — a rounded card on
     mobile, a full-bleed band with a bottom fade on desktop — so overlay
-    text never lands on faces. The mobile card is loading="lazy": it sits at
-    the top of the page (loads immediately anyway), and on desktop the
-    display:none wrapper keeps a lazy image from ever being fetched. */}
+    text never lands on faces. Both stacked variants are loading="lazy"
+    with fetchpriority="high": the display:none variant is never fetched
+    (lazy images without a layout box stay unloaded), and the visible one
+    is the LCP at the top of the page, so the high priority still applies. */}
 <section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "min-h-0 flex-col items-stretch"]}>
 	{stacked && stackedImage && (
 		<div data-tina-field={stackedTinaField}>
@@ -31,7 +37,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 <Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
 			</div>
 			<div class="relative hidden overflow-hidden md:block md:h-[34vw] md:min-h-[300px] md:max-h-[560px]">
-				<Image src={stackedImage} alt="" width={2560} height={880} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover object-[center_25%]" />
+				<Image src={stackedImage} alt="" width={2560} height={880} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="lazy" decoding="async" class="size-full object-cover object-[center_25%]" />
 				<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,0)_60%,rgba(23,21,26,1)_100%)]"></div>
 			</div>
 		</div>
