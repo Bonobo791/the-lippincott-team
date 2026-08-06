@@ -35,6 +35,18 @@ if (video?.type === 'embed') {
 	const qs = params.toString();
 	embedSrc = qs ? `${video.src}?${qs}` : video.src;
 }
+
+// Native <video> sources. MP4s get a same-path .webm sibling listed second:
+// browsers that can't decode H.264 (e.g. codec-free Firefox builds) skip the
+// MP4 by its type attribute — without a network request — and fall back to
+// the WebM.
+const FILE_MIME: Record<string, string> = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/mp4', webm: 'video/webm' };
+let fileSources: { src: string; type: string }[] = [];
+if (video?.type === 'file') {
+	const ext = video.src.match(/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i)?.[1]?.toLowerCase() ?? 'mp4';
+	fileSources.push({ src: video.src, type: FILE_MIME[ext] });
+	if (ext === 'mp4') fileSources.push({ src: video.src.replace(/\.mp4([?#]|$)/i, '.webm$1'), type: 'video/webm' });
+}
 ---
 {video && (
 	<Section>
@@ -42,7 +54,7 @@ if (video?.type === 'embed') {
 			{video.type === 'youtube'
 				? <YouTubeFacade id={video.id} params={ytParams} />
 				: video.type === 'file'
-					? <video class="absolute inset-0 h-full w-full object-cover" src={video.src} poster={data.poster || undefined} controls muted={data.autoPlay || undefined} autoplay={data.autoPlay || undefined} loop={data.loop || undefined} playsinline preload={data.autoPlay ? 'metadata' : 'none'} />
+					? <video class="absolute inset-0 h-full w-full object-cover" poster={data.poster || undefined} controls muted={data.autoPlay || undefined} autoplay={data.autoPlay || undefined} loop={data.loop || undefined} playsinline preload={data.autoPlay ? 'metadata' : 'none'}>{fileSources.map(s => <source src={s.src} type={s.type} />)}</video>
 					: <iframe class="absolute inset-0 h-full w-full" src={embedSrc} title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
 		</div>
 	</Section>
