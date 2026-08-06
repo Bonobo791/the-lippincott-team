@@ -28,7 +28,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 	{stacked && stackedImage && (
 		<div data-tina-field={stackedTinaField}>
 			<div class="px-5 pt-6 md:hidden">
-				<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
+<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
 			</div>
 			<div class="relative hidden overflow-hidden md:block md:h-[34vw] md:min-h-[300px] md:max-h-[560px]">
 				<Image src={stackedImage} alt="" width={2560} height={880} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover object-[center_25%]" />
