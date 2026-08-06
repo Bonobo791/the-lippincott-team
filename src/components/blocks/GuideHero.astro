@@ -28,7 +28,7 @@ const desktopTinaField = stacked && !data.mobileImage ? undefined : tinaField(da
 <section class:list={["relative flex min-h-[72svh] items-end overflow-hidden bg-tile text-white", stacked && "max-md:min-h-0 max-md:flex-col max-md:items-stretch"]}>
 	{stacked && stackedImage && (
 		<div data-tina-field={mobileTinaField} class="px-5 pt-6 md:hidden">
-			<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
+			<Image src={stackedImage} alt="" width={800} height={600} sizes="100vw" format="webp" quality={75} fetchpriority="high" loading="lazy" decoding="async" class="w-full rounded-2xl object-cover" />
 		</div>
 	)}
 	{data.backgroundImage && (
