@@ -14,6 +14,10 @@ export const TeamCollection: Collection = {
     { type: "string", name: "name", label: "Name", isTitle: true, required: true },
     { type: "string", name: "role", label: "Role / Title" },
     {
+      type: "string", name: "location", label: "Based In (Location)",
+      description: "Agent's home market shown on the bio page and in structured data (e.g. \"Dallas, TX\"). Defaults to Northwest Houston, TX.",
+    },
+    {
       type: "string", name: "headline", label: "Headline",
       description: "Optional H1 override for the bio page. Wrap the italic accent phrase in **…** (e.g. Amy Lippincott, **broker and founder.**). Defaults to the agent's name.",
     },
