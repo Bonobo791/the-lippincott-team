@@ -2,6 +2,7 @@
 
 - NEVER develop on the default branch. Always make a new one.
 - When I say "clean up", that means to clean your worktrees and branches.
+- When I say "triage", review every PR comment for validity. Fix each valid issue. Post a triage comment. Reply to every bot comment, whether or not you make a code change.
 
 ## Project overview
 
@@ -14,7 +15,7 @@ exists; do not remove it casually).
 - Astro **7** (`output: 'static'`), Tailwind CSS **v4** (via `@tailwindcss/vite`),
   TypeScript strict (`tsconfig.json` extends `astro/tsconfigs/strict`).
 - Content (Markdown/MDX + JSON) is managed by **TinaCMS** and queried through
-  the generated client in `tina/__generated__/` — not through Astro's content
+  the generated client in `tina/__generated__/` — not through Astro's content 
   layer at runtime (see the comment in `src/content.config.ts`).
 - Visual editing uses `@tinacms/astro`: a vanilla-JS bridge plus one on-demand
   endpoint (`/tina-island/[name]`) that re-renders editable regions. Everything

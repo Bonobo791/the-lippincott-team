@@ -30,6 +30,9 @@ const teammates = (await listTeam())
 	.sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false))
 	.slice(0, 3);
 
+// Home market: optional `location` field, defaults to the team's home turf.
+const location = data?.location?.trim() || 'Northwest Houston, TX';
+
 // JSON-LD ProfilePage/Person (design spec). Telephone needs +1 dialing digits.
 const phoneDigits = (data?.phone ?? '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
 const jsonLd = data && {
@@ -43,7 +46,7 @@ const jsonLd = data && {
 		...(data.email ? { email: `mailto:${data.email}` } : {}),
 		...(phoneDigits ? { telephone: `+1${phoneDigits}` } : {}),
 		...(data.photo ? { image: new URL(data.photo, Astro.url).href } : {}),
-		workLocation: 'Northwest Houston, TX',
+		workLocation: location,
 	},
 };
 ---
@@ -104,7 +107,7 @@ const jsonLd = data && {
 					)}
 					<div class="relative bg-background p-8 transition-colors duration-300 before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full before:origin-left before:scale-x-[.15] before:bg-primary before:transition-transform before:duration-500 hover:bg-section hover:before:scale-x-100 motion-reduce:before:scale-x-100 motion-reduce:before:transition-none">
 						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Based in</span>
-						<span class="mt-3 block font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink">Northwest Houston, TX</span>
+						<span data-tina-field={tinaField(data, 'location')} class="mt-3 block font-serif text-[clamp(19px,1.9vw,24px)] font-light leading-snug tracking-[-0.01em] text-ink">{location}</span>
 					</div>
 				</div>
 			</div>
