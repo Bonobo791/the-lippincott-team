@@ -30,7 +30,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
     text never lands on faces. One <Image> node for all viewports: it is
     the LCP at the top of the page, so it loads eager with
     fetchpriority="high" (same as the mock and the full-bleed variant).
-    The md padding resolves to the 1200px container gutters. */}
+    The md padding resolves to the 1400px container gutters. */}
 <section class:list={[
 	"relative overflow-hidden bg-tile text-white",
 	stacked
@@ -39,7 +39,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 ]}>
 	{stacked && stackedImage && (
 		<figure data-tina-field={stackedTinaField} class="border border-white/15 p-2.5 md:order-2 md:p-3">
-			<Image src={stackedImage} alt="The Lippincott Team · Northwest Houston" width={1920} height={1280} sizes="(min-width: 1480px) 770px, (min-width: 768px) 54vw, calc(100vw - 56px)" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="w-full object-cover object-[center_25%]" />
+			<Image src={stackedImage} alt="The Lippincott Team · Northwest Houston" width={1920} height={1280} sizes="(min-width: 1496px) 753px, (min-width: 768px) calc(58.333vw - 119px), calc(100vw - 66px)" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="w-full object-cover object-[center_25%]" />
 			<figcaption class="mt-2 text-[12px] text-white/55 md:mt-2.5">The Lippincott Team &middot; Northwest Houston</figcaption>
 		</figure>
 	)}
