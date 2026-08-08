@@ -74,9 +74,16 @@ const jsonLd = data && {
 				{data.photo && (
 					<Image src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 1200px) 520px, (min-width: 768px) calc((100vw - 160px) / 2), calc(100vw - 48px)" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
 				)}
-				{data.bio && (
-					<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg max-w-none">
-						<TinaMarkdown content={data.bio} components={mdxComponents} />
+				{(data.bio || data.marketLogo) && (
+					<div>
+						{data.bio && (
+							<div data-tina-field={tinaField(data, 'bio')} class="prose prose-lg max-w-none">
+								<TinaMarkdown content={data.bio} components={mdxComponents} />
+							</div>
+						)}
+						{data.marketLogo && (
+							<img src={data.marketLogo} alt={`The Lippincott Team — ${location} logo`} width="160" height="160" loading="lazy" decoding="async" data-tina-field={tinaField(data, 'marketLogo')} class="mt-10 h-28 w-auto max-w-[220px] object-contain object-left md:h-32" />
+						)}
 					</div>
 				)}
 			</div>

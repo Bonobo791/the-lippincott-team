@@ -8,14 +8,18 @@ import type { GuideHeroBlock } from '../../lib/data';
 interface Props {
 	data: Omit<GuideHeroBlock, '__typename'>;
 	/** Page-collection heroes (e.g. /about) stack the photo above the
-	    headline at EVERY viewport, so overlay text never lands on faces. */
+	    headline at EVERY viewport, so overlay text never lands on faces.
+	    Only applies when the doc also sets `mobileImage` — backgroundImage-
+	    only heroes render full-bleed. */
 	stacked?: boolean;
 }
 
 const { data, stacked: stackProp = false } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 const stackedImage = data.mobileImage ?? data.backgroundImage;
-const stacked = stackProp && stackedImage;
+// Only an explicit `mobileImage` opts a page-collection hero into the
+// stacked photo-card treatment; a backgroundImage alone means full-bleed.
+const stacked = stackProp && data.mobileImage;
 // Tina field bindings: the stacked variants edit `mobileImage` when one is
 // set; the binding lives on the shared wrapper so the field never appears
 // twice in the DOM (duplicate data-tina-field breaks visual editing).

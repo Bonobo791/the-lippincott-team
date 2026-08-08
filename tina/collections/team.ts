@@ -25,6 +25,10 @@ export const TeamCollection: Collection = {
     { type: "string", name: "email", label: "Email" },
     { type: "image", name: "photo", label: "Photo" },
     {
+      type: "image", name: "marketLogo", label: "Market Logo",
+      description: "Optional market-specific team logo (e.g. Lippincott Team Dallas) shown under the bio on the agent page.",
+    },
+    {
       type: "string", name: "description", label: "Meta Description (SEO)",
       ui: { component: "textarea" },
     },

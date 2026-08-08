@@ -180,7 +180,11 @@ above rather than bare `astro build`.
   breadcrumb + H1, portrait/bio split, contact ledger, ink proof band,
   team chips, personalized CTA, `ProfilePage` JSON-LD. The optional team
   `headline` field overrides the H1 (with `**…**` around the italic accent);
-  it falls back to the two-tone name split. The proof band reuses the
+  it falls back to the two-tone name split. The optional `location` field
+  sets the agent's home market ("Based in" ledger cell + JSON-LD
+  `workLocation`; defaults to Northwest Houston, TX), and the optional
+  `marketLogo` image renders a market-specific team mark (e.g. Lippincott
+  Team Dallas/Abilene) under the bio. The proof band reuses the
   `ProofStage` block component with hardcoded team-wide metrics, and the
   chips row self-fetches teammates via `listTeam()` (featured first,
   current agent excluded).
