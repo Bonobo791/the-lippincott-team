@@ -104,7 +104,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 		}
 	}
 
-	@media (max-width: 820px) {
+	@media (max-width: 820.99px) {
 		.guide-hero {
 			display: flex;
 			min-height: 0;
@@ -235,6 +235,16 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 		}
 	}
 </style>
+<noscript>
+	<style>
+		.guide-hero-image {
+			opacity: 1 !important;
+			filter: none !important;
+			transform: none !important;
+		}
+	</style>
+</noscript>
+
 
 <script is:inline>
 	if (!window.__guideHeroArrivalBound) {

@@ -541,7 +541,7 @@ Replace the entire contents of `src/content/config/config.json` with:
   "nav": [
     {
       "title": "Search",
-      "link": "https://www.thelippincottteam.com/property-search/results/"
+      "link": "https://TheLippincottTeamListings.com/property-search/results/"
     },
     {
       "title": "NW Houston Communities",
