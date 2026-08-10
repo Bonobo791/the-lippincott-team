@@ -19,13 +19,12 @@
   # Netlify-injected URL. Correct after the DNS cutover to lippincottteam.com.
   SITE_URL = "https://lippincottteam.com"
 
-# The shared `dev` branch carries Tina schema changes TinaCloud hasn't
-# indexed (it indexes `main` on push), so the build's cloud schema check
-# fails/hangs there. Build branch deploys and PR previews fully local;
-# production keeps the TinaCloud check and self-heals once `dev` merges
-# to `main` and TinaCloud reindexes.
+# The shared `dev` branch can carry Tina schema changes TinaCloud has not
+# indexed yet (it indexes `main` on push), so the cloud schema check can fail.
+# Branch deploys and PR previews use local content with a production client
+# while skipping that check; this avoids the memory-heavy local GraphQL client.
 [context.branch-deploy]
-  command = "pnpm build:local"
+  command = "pnpm build:preview"
 
 [context.deploy-preview]
-  command = "pnpm build:local"
+  command = "pnpm build:preview"
