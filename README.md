@@ -16,3 +16,7 @@ its ongoing digital marketing.
 
 The site is built with Astro and TinaCMS, managed through a visual content
 editor, and deployed on Netlify. Most pages are delivered as fast static HTML.
+
+## License
+
+This website is under the PolyForm Shield 1.0.0 license.
