@@ -20,6 +20,11 @@ const stackedImage = data.mobileImage ?? data.backgroundImage;
 // Only an explicit `mobileImage` opts a page-collection hero into the
 // stacked photo-card treatment; a backgroundImage alone means full-bleed.
 const stacked = stackProp && data.mobileImage;
+const focalX = data.focalX ?? 50;
+const focalY = data.focalY ?? 38;
+const imageAlt = data.imageAlt ?? '';
+const mobileActionsOnly = data.mobileActionsOnly ?? false;
+const guideActionsClass = `guide-hero-actions mt-10${mobileActionsOnly ? ' guide-hero-actions--mobile-only' : ''}`;
 // Tina field bindings: the stacked variants edit `mobileImage` when one is
 // set; the binding lives on the shared wrapper so the field never appears
 // twice in the DOM (duplicate data-tina-field breaks visual editing).
@@ -36,42 +41,224 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
     fetchpriority="high" (same as the mock and the full-bleed variant).
     The md padding resolves to the 1400px container gutters. */}
 <section class:list={[
-	"relative overflow-hidden bg-tile text-white",
+	"guide-hero relative overflow-hidden bg-tile text-white",
 	stacked
-		? "flex flex-col gap-10 px-5 pb-16 pt-6 md:grid md:grid-cols-[5fr_7fr] md:items-center md:gap-16 md:px-[max(3rem,calc((100vw-1400px)/2))] md:py-24"
-		: "flex min-h-[72svh] items-end",
+		? "guide-hero--stacked flex flex-col gap-10 px-5 pb-16 pt-6 md:grid md:grid-cols-[5fr_7fr] md:items-center md:gap-16 md:px-[max(3rem,calc((100vw-1400px)/2))] md:py-24"
+		: "guide-hero--overlay flex min-h-[72svh] items-end",
 ]}>
 	{stacked && stackedImage && (
-		<figure data-tina-field={stackedTinaField} class="border border-white/15 p-2.5 md:order-2 md:p-3">
-			<Image src={stackedImage} alt="The Lippincott Team · Northwest Houston" width={1920} height={1280} sizes="(min-width: 1496px) 753px, (min-width: 768px) calc(58.333vw - 119px), calc(100vw - 66px)" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="w-full object-cover object-[center_25%]" />
+		<figure data-tina-field={stackedTinaField} class="guide-hero-media border border-white/15 p-2.5 md:order-2 md:p-3">
+			<Image src={stackedImage} alt={imageAlt} width={1920} height={1280} sizes="(min-width: 1496px) 753px, (min-width: 768px) calc(58.333vw - 119px), calc(100vw - 66px)" format="webp" quality={80} fetchpriority="high" loading="eager" decoding="async" class="guide-hero-image w-full object-cover object-[center_25%]" />
 			<figcaption class="mt-2 text-[12px] text-white/55 md:mt-2.5">The Lippincott Team &middot; Northwest Houston</figcaption>
 		</figure>
 	)}
 	{!stacked && data.backgroundImage && (
-		<div data-tina-field={tinaField(data, 'backgroundImage')} class="absolute inset-0">
-			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="size-full object-cover" />
+		<div data-tina-field={tinaField(data, 'backgroundImage')} class="guide-hero-media absolute inset-0">
+			<Image src={data.backgroundImage} alt={imageAlt} width={1920} height={1080} sizes="100vw" format="webp" quality={70} fetchpriority="high" loading="eager" decoding="async" class="guide-hero-image size-full object-cover" />
 		</div>
 	)}
 	{!stacked && (
-		<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>
+		<div aria-hidden="true" class="guide-hero-scrim absolute inset-0 bg-[linear-gradient(180deg,rgba(23,21,26,.45)_0%,rgba(23,21,26,.15)_45%,rgba(23,21,26,.88)_100%)]"></div>
 	)}
-	<div class:list={[stacked ? "relative md:order-1" : "relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20"]}>
-		{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
-		{data.title && (
-			<div class="h2-mask mt-5">
-				<SplitHeading as="h1" text={data.title} accentClass="font-normal italic text-gold" data-tina-field={tinaField(data, 'title')} class="max-w-[18ch] text-[clamp(2.4rem,5vw,4.2rem)] font-serif font-light leading-[1.12] tracking-[-0.02em] text-white" />
-			</div>
-		)}
+	<div class:list={["guide-hero-content", stacked ? "relative md:order-1" : "relative mx-auto w-full max-w-[1200px] px-6 pb-14 pt-40 md:px-12 md:pb-20"]}>
+		<div class="guide-hero-masthead">
+			{data.eyebrow && <p data-tina-field={tinaField(data, 'eyebrow')} class="eyebrow on-dark">{data.eyebrow}</p>}
+			{data.title && (
+				<div class="h2-mask mt-5">
+					<SplitHeading as="h1" text={data.title} accentClass="font-normal italic text-gold" data-tina-field={tinaField(data, 'title')} class="max-w-[18ch] text-[clamp(2.4rem,5vw,4.2rem)] font-serif font-light leading-[1.12] tracking-[-0.02em] text-white" />
+				</div>
+			)}
+		</div>
 		{chips.length > 0 && (
-			<div class="mt-8 flex flex-wrap gap-3">
+			<div class="guide-hero-stats mt-8 flex flex-wrap gap-3">
 				{chips.map((chip) => (
-					<span data-tina-field={tinaField(chip)} class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[13px] font-medium text-white backdrop-blur-sm">
-						{chip.bold && <b class="font-semibold text-white">{chip.bold}</b>}
-						{chip.label}
+					<span data-tina-field={tinaField(chip)} class="guide-hero-stat inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[13px] font-medium text-white backdrop-blur-sm">
+						{chip.bold && <b class="guide-hero-stat-number font-semibold text-white">{chip.bold}</b>}
+						<span class="guide-hero-stat-label">{chip.label}</span>
 					</span>
 				))}
 			</div>
 		)}
-		<GuideActions actions={data.actions} class="mt-10" />
+		<GuideActions actions={data.actions} class={guideActionsClass} />
 	</div>
 </section>
+
+<style define:vars={{ focalX: `${focalX}%`, focalY: `${focalY}%` }}>
+	@media (min-width: 821px) {
+		:global(.guide-hero-actions--mobile-only) {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.guide-hero-image {
+			opacity: 0;
+			filter: blur(14px) saturate(0.92);
+			transform: scale(1.07);
+			transition: opacity 0.5s ease, filter 1.1s ease, transform 7s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.guide-hero-image.is-in {
+			opacity: 1;
+			filter: blur(0) saturate(1);
+			transform: scale(1);
+		}
+	}
+
+	@media (max-width: 820.99px) {
+		.guide-hero {
+			display: flex;
+			min-height: 0;
+			padding: 0;
+			gap: 0;
+			flex-direction: column;
+			overflow: visible;
+			background: var(--section);
+			color: var(--ink);
+		}
+		.guide-hero.guide-hero--stacked {
+			display: flex;
+		}
+		.guide-hero-content {
+			display: contents;
+		}
+		.guide-hero-masthead {
+			order: 0;
+			width: 100%;
+			max-width: 34rem;
+			margin: 0 auto;
+			padding: 34px 22px;
+			background: var(--section);
+		}
+		.guide-hero-masthead .eyebrow {
+			color: #9e1e2c;
+		}
+		.guide-hero-masthead .eyebrow::before {
+			background: #d6323c;
+		}
+		.guide-hero-masthead :global(h1) {
+			max-width: 14ch;
+			color: var(--ink);
+			font-size: clamp(2.5rem, 10vw, 3.4rem);
+			line-height: 1.08;
+		}
+		.guide-hero-masthead :global(.h2-mask > *) {
+			transform: none;
+			transition: none;
+		}
+		.guide-hero-masthead :global(h1 em) {
+			color: var(--primary);
+		}
+		.guide-hero-media {
+			position: relative;
+			inset: auto;
+			order: 1;
+			width: 100%;
+			aspect-ratio: 5 / 4;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			border: 0;
+		}
+		.guide-hero-media :global(.guide-hero-image) {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: var(--focalX) var(--focalY);
+		}
+		.guide-hero-media figcaption,
+		.guide-hero-scrim {
+			display: none;
+		}
+		.guide-hero-stats {
+			display: grid;
+			order: 2;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			width: 100%;
+			margin: 0;
+			gap: 1px;
+			border-top: 1px solid var(--hairline);
+			border-bottom: 1px solid var(--hairline);
+			border-radius: 0;
+			background: var(--hairline);
+		}
+		.guide-hero-stat {
+			display: block;
+			min-width: 0;
+			padding: 18px 12px 20px;
+			border: 0;
+			border-radius: 0;
+			background: var(--section);
+			color: var(--ink);
+		}
+		.guide-hero-stat-number {
+			display: block;
+			overflow-wrap: anywhere;
+			font-family: var(--font-serif);
+			font-size: clamp(1.15rem, 5.2vw, 1.7rem);
+			font-weight: 300;
+			line-height: 1.05;
+			letter-spacing: -0.02em;
+			color: var(--ink);
+		}
+		.guide-hero-stat-label {
+			display: block;
+			margin-top: 8px;
+			font-size: 10.5px;
+			font-weight: 600;
+			line-height: 1.45;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: var(--stat-label);
+		}
+		:global(.guide-hero-actions) {
+			display: flex;
+			order: 3;
+			flex-direction: column;
+			align-items: stretch;
+			width: 100%;
+			margin: 0;
+			padding: 22px;
+			gap: 14px;
+			background: var(--section);
+		}
+		:global(.guide-hero-actions > .btn-magnetic) {
+			justify-content: center;
+			width: 100%;
+			min-height: 50px;
+		}
+		:global(.guide-hero-actions > a:not(.btn-magnetic)) {
+			align-self: center;
+			border-color: var(--primary);
+			color: var(--primary);
+		}
+	}
+</style>
+<noscript>
+	<style>
+		.guide-hero-image {
+			opacity: 1 !important;
+			filter: none !important;
+			transform: none !important;
+		}
+	</style>
+</noscript>
+
+
+<script is:inline>
+	if (!window.__guideHeroArrivalBound) {
+		window.__guideHeroArrivalBound = true;
+		const initGuideHeroArrival = () => {
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			document.querySelectorAll('.guide-hero-image').forEach((image) => {
+				if (image.dataset.guideHeroArrivalBound) return;
+				image.dataset.guideHeroArrivalBound = '1';
+				const reveal = () => image.classList.add('is-in');
+				if (image.complete && image.naturalWidth) requestAnimationFrame(reveal);
+				else image.addEventListener('load', reveal, { once: true });
+			});
+		};
+		document.addEventListener('astro:page-load', initGuideHeroArrival);
+	}
+</script>
