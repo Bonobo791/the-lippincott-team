@@ -18,7 +18,7 @@ assert.deepEqual(buyerLead, {
 	phone: '(713) 555-0142',
 	password: 'test-password',
 	leadStatus: 'New',
-	sendRegistrationEmail: false,
+	sendRegistrationEmail: true,
 	sourceType: 'SierraApi',
 	source: 'lippincottteam.com contact form',
 	leadType: 1,

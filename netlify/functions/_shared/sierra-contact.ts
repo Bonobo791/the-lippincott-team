@@ -8,7 +8,7 @@ export interface SierraLead {
 	phone?: string;
 	password: string;
 	leadStatus: 'New';
-	sendRegistrationEmail: false;
+	sendRegistrationEmail: true;
 	sourceType: 'SierraApi';
 	source: string;
 	leadType: 1 | 2 | 3;
@@ -59,7 +59,7 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 		...(phone ? { phone } : {}),
 		password,
 		leadStatus: 'New',
-		sendRegistrationEmail: false,
+		sendRegistrationEmail: true,
 		sourceType: 'SierraApi',
 		source: 'lippincottteam.com contact form',
 		leadType: leadTypeForInterest(interest),
