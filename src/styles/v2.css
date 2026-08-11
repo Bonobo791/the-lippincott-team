@@ -171,6 +171,20 @@
 @media(max-width:900px){.home-v2 .market-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.home-v2 .market-grid{grid-template-columns:1fr}}
 
+/* ---------- regional market comparison ---------- */
+.home-v2 .regional-market-comparison{max-width:760px;margin-top:44px}
+.home-v2 .regional-market-comparison h3{font-family:var(--serif);font-size:clamp(24px,2.7vw,32px);font-weight:300;line-height:1.2;color:var(--ink)}
+.home-v2 .regional-market-comparison h3 em{font-style:italic;font-weight:400;color:var(--red)}
+.home-v2 .regional-market-comparison table{width:100%;margin-top:22px;border-collapse:collapse}
+.home-v2 .regional-market-comparison th,.home-v2 .regional-market-comparison td{border-top:1px solid var(--line);padding:13px 16px 13px 0;text-align:left;vertical-align:baseline}
+.home-v2 .regional-market-comparison thead th{border-top:0;padding-top:0;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.home-v2 .regional-market-comparison tbody th{font-size:15px;font-weight:600;color:var(--ink)}
+.home-v2 .regional-market-comparison td{font-family:var(--serif);font-size:18px;font-weight:300;letter-spacing:-.01em;color:var(--ink)}
+.home-v2 .regional-market-comparison th:last-child,.home-v2 .regional-market-comparison td:last-child{padding-right:0}
+.home-v2 .regional-market-comparison p{margin-top:14px;font-size:12.5px;color:var(--muted)}
+.home-v2 .regional-market-comparison a{color:var(--red-deep);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:540px){.home-v2 .regional-market-comparison th,.home-v2 .regional-market-comparison td{padding:11px 8px 11px 0}.home-v2 .regional-market-comparison thead th{font-size:9px;letter-spacing:.09em}.home-v2 .regional-market-comparison tbody th{font-size:13px}.home-v2 .regional-market-comparison td{font-size:16px}}
+
 /* ---------- fsbo ---------- */
 .home-v2 .fsbo{padding:clamp(64px,8vw,96px) 0;background:var(--ivory)}
 .home-v2 .fsbo-split{margin-top:52px;display:grid;grid-template-columns:5fr 7fr;gap:clamp(32px,4vw,64px);align-items:start}

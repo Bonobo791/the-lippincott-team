@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import RegionalMarketComparison from '../components/v2/RegionalMarketComparison.astro';
 import V2Motion from '../components/v2/V2Motion.astro';
 import { getConfig } from '../lib/data';
 import { telHref } from '../lib/url';
@@ -36,7 +37,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 				<h1>In a buyer's market, <em>proof sells.</em></h1>
 				<div class="gchips">
 					<span class="gchip"><b>1,463+</b> homes sold in NW Houston</span>
-					<span class="gchip"><b>98%</b> of asking in Cypress, Jun 2026</span>
+					<span class="gchip"><b>95–98%</b> of asking, six markets, Jun 2026</span>
 					<span class="gchip"><b>4.92/5</b> across 685+ HAR.com surveys</span>
 				</div>
 				<div class="hero-actions">
@@ -74,14 +75,15 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 						<div class="src">Texas A&amp;M · 3.6% of list · 2026</div>
 					</div>
 				</div>
+				<RegionalMarketComparison />
 				<div class="jobs three reveal" style="margin-top:2px">
 					<div class="job">
 						<span class="tag red">What buyers do with leverage</span>
-						<p>They compare, negotiate and ask for concessions. Homes across the region <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">sell at 95 to 98% of asking</a>, so the list price sets the ceiling for every conversation that follows.</p>
+						<p>They compare, negotiate and ask for concessions. Homes across the region <a href="/northwest-houston-real-estate/#communities">sell at 95 to 98% of asking</a>, so the list price sets the ceiling for every conversation that follows.</p>
 					</div>
 					<div class="job">
 						<span class="tag red">What still sells fast</span>
-						<p>Well-priced homes. Cypress, Tomball and Katy sellers <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">went under contract in 40 to 42 median days</a> in June 2026, about six weeks from list to accepted offer.</p>
+						<p>Well-priced homes. Cypress, Tomball and Katy sellers <a href="/northwest-houston-real-estate/#communities">went under contract in 40 to 42 median days</a> in June 2026, about six weeks from list to accepted offer.</p>
 					</div>
 					<div class="job">
 						<span class="tag red">What gets cut</span>
@@ -242,9 +244,9 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 						<span class="ssrc">Google and HAR.com, rated 4.9 on both</span>
 					</div>
 					<div class="dtile">
-						<a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener"><span class="num" data-count="98">0<span>%</span></span></a>
-						<span class="slabel">Of asking in Cypress</span>
-						<span class="ssrc">List-to-sale ratio · Realtor.com · Jun 2026</span>
+						<a href="/northwest-houston-real-estate/#communities"><span class="num">95–98<span>%</span></span></a>
+						<span class="slabel">Of asking across six markets</span>
+						<span class="ssrc">Realtor.com · Jun 2026</span>
 					</div>
 				</div>
 				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your sale →</a></p>
@@ -266,7 +268,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 					</details>
 					<details class="reveal">
 						<summary>How long will it take to sell? <span class="plus">+</span></summary>
-						<p>Across the six communities we track, <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">median days on market ran 40 to 59 in June 2026</a>: 40 in Cypress, 42 in Tomball, 41 in Katy at the fast end, 59 in Waller at the slow end. Add two to four weeks of prep before launch and roughly 30 days from contract to close, and most sellers should plan on a three to five month timeline end to end.</p>
+						<p>Across the six communities we track, <a href="/northwest-houston-real-estate/#communities">median days on market ran 40 to 59 in June 2026</a>: 40 in Cypress, 42 in Tomball, 41 in Katy at the fast end, 59 in Waller at the slow end. Add two to four weeks of prep before launch and roughly 30 days from contract to close, and most sellers should plan on a three to five month timeline end to end.</p>
 					</details>
 					<details class="reveal">
 						<summary>Should I sell my house myself instead? <span class="plus">+</span></summary>

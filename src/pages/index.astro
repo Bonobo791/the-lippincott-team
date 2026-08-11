@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import RegionalMarketComparison from '../components/v2/RegionalMarketComparison.astro';
 // Shared "Verified Record" (.home-v2) design system — also used by buy/sell.
 import '../styles/v2.css';
 
@@ -93,7 +94,7 @@ const commCardSizes =
 		<!-- ============ TRUST BAR ============ -->
 		<div class="trust">
 			<div class="trust-inner">
-				<span class="lead">eXp Realty · Northwest Houston</span>
+				<span class="lead">Serving Cypress · Tomball · Katy · Magnolia · Waller · Hockley</span>
 				<div class="t-item">
 					<span class="stars">★★★★★</span>
 					<span><span class="name">Google</span><br /><span class="sub">4.9 rating</span></span>
@@ -346,11 +347,8 @@ const commCardSizes =
 					<div class="mkt reveal"><div class="num">5.2 mo</div><div class="lbl">Months of supply</div></div>
 					<div class="mkt dark-tile reveal"><div class="num">+12.3%</div><div class="lbl">Pending sales, year over year</div></div>
 				</div>
+				<RegionalMarketComparison />
 				<div class="market-body">
-					<p class="reveal">In Cypress, the median listing price was $435,535 in May 2026, with about 2,045
-						homes for sale and a 35-day median time on market. Homes sold at roughly 98% of asking
-						(Realtor.com Economic Research). Buyer demand has not disappeared: Houston pending sales rose
-						12.3% year over year in June. But buyers have more choices than they did two years ago.</p>
 					<p class="takeaway reveal">What that means for you: pricing precision matters more now than it did
 						in 2021. Homes priced at or just below recent comparable sales still move. Overpriced listings sit.
 						Every Lippincott Team listing starts with a data-backed pricing analysis.
