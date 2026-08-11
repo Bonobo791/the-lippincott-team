@@ -107,6 +107,34 @@ export const GlobalConfigCollection: Collection = {
               label: "Link URL",
               type: "string",
               required: true
+            },
+            {
+              name: "children",
+              label: "Nested Dropdown Links",
+              description: "Optional. Use for neighborhoods or other links grouped under this community.",
+              type: "object",
+              list: true,
+              ui: {
+                itemProps: (item) => {
+                  return {
+                    label: item.title
+                  };
+                },
+              },
+              fields: [
+                {
+                  name: "title",
+                  label: "Link Label",
+                  type: "string",
+                  required: true
+                },
+                {
+                  name: "link",
+                  label: "Link URL",
+                  type: "string",
+                  required: true
+                }
+              ]
             }
           ]
         }
