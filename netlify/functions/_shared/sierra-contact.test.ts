@@ -60,4 +60,21 @@ await assert.rejects(
 	/did not complete/,
 );
 
+const originalApiKey = process.env.SIERRA_API_KEY;
+const originalFetch = globalThis.fetch;
+let forwarded = false;
+process.env.SIERRA_API_KEY = 'api-key';
+globalThis.fetch = async () => {
+	forwarded = true;
+	return Response.json({ success: true });
+};
+try {
+	await contactSierra.formSubmitted({ data: baseForm });
+	assert.equal(forwarded, true);
+} finally {
+	globalThis.fetch = originalFetch;
+	if (originalApiKey === undefined) delete process.env.SIERRA_API_KEY;
+	else process.env.SIERRA_API_KEY = originalApiKey;
+}
+
 await contactSierra.formSubmitted({ data: { 'form-name': 'another-form' } });
