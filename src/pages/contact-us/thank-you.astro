@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import Button from '../../components/ui/Button.astro';
+---
+
+<Base title="Thank You | The Lippincott Team" description="Your consultation request has been received.">
+	<section class="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-6 text-center">
+		<div class="relative flex flex-col items-center">
+			<p class="text-sm font-medium tracking-widest text-primary uppercase">Request received</p>
+			<h1 class="mt-2 text-4xl font-semibold tracking-tight lg:text-5xl">Thank you.</h1>
+			<p class="mx-auto mt-4 max-w-md text-muted-foreground">A specialist will review your note and follow up within one business day.</p>
+			<Button href="/" class="mt-8">Back to home</Button>
+		</div>
+	</section>
+</Base>

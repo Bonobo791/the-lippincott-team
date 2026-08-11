@@ -50,7 +50,7 @@ const assurances = [
 	<section class="pb-16 md:pb-24">
 		<div class="mx-auto grid max-w-[1200px] items-start gap-12 px-6 md:px-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
 			{/* Netlify verifies the static submission, then forwards contact leads to Sierra. */}
-			<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
+			<form name="contact" method="POST" action="/contact-us/thank-you/" data-netlify="true" netlify-honeypot="bot-field" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
 				<input type="hidden" name="form-name" value="contact" />
 				<p class="hidden" aria-hidden="true">
 					<label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
