@@ -15,6 +15,15 @@ export interface SierraLead {
 	note: string;
 }
 
+interface SierraResponse {
+	success?: unknown;
+	data?: {
+		leadId?: unknown;
+		agentUserId?: unknown;
+	};
+	[key: string]: unknown;
+}
+
 function formValue(data: Record<string, string>, key: string) {
 	const value = data[key];
 	return typeof value === 'string' ? value.trim() : '';
@@ -67,6 +76,16 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 	};
 }
 
+function errorDetail(result: SierraResponse) {
+	const values = ['message', 'error', 'errors', 'detail', 'title'].flatMap((key) => {
+		const value = result[key];
+		if (typeof value === 'string') return [value];
+		if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+		return [];
+	});
+	return values.join('; ').replace(/\b\S+@\S+\.\S+\b/g, '[redacted-email]').slice(0, 500);
+}
+
 export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher: typeof fetch = fetch) {
 	let response: Response;
 	try {
@@ -84,13 +103,22 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 		throw new Error('Sierra lead request did not complete.');
 	}
 
-	if (!response.ok) throw new Error(`Sierra lead creation failed with HTTP status ${response.status}.`);
-
-	let result: { success?: unknown };
+	let result: SierraResponse;
 	try {
 		result = await response.json();
 	} catch {
-		throw new Error('Sierra returned a non-JSON response.');
+		throw new Error(response.ok
+			? 'Sierra returned a non-JSON response.'
+			: `Sierra lead creation failed with HTTP status ${response.status}.`);
 	}
-	if (result.success !== true) throw new Error('Sierra reported lead creation failure.');
+
+	const detail = errorDetail(result);
+	if (!response.ok) throw new Error(`Sierra lead creation failed with HTTP status ${response.status}${detail ? `: ${detail}` : ''}.`);
+	if (result.success !== true) throw new Error(`Sierra reported lead creation failure${detail ? `: ${detail}` : ''}.`);
+	if (typeof result.data?.leadId !== 'number') throw new Error('Sierra success response is missing a lead ID.');
+
+	return {
+		leadId: result.data.leadId,
+		...(typeof result.data.agentUserId === 'number' ? { agentUserId: result.data.agentUserId } : {}),
+	};
 }

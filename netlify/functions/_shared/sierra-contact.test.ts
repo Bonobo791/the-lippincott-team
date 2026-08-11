@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import contactSierra from '../contact-sierra.js';
-import { createSierraLead, toSierraLead } from './sierra-contact.js';
+import { createSierraLead, toSierraLead, type SierraLead } from './sierra-contact.js';
 
 const baseForm = {
 	name: 'Jordan Meyers',
@@ -33,10 +33,11 @@ assert.throws(() => toSierraLead({ ...baseForm, email: 'not-an-email' }, 'test-p
 assert.throws(() => toSierraLead({ ...baseForm, interest: 'Unknown' }, 'test-password'), /unsupported interest/);
 
 let request: Request | undefined;
-await createSierraLead(buyerLead, 'api-key', async (input, init) => {
+const created = await createSierraLead(buyerLead, 'api-key', async (input, init) => {
 	request = new Request(input, init);
-	return Response.json({ success: true });
+	return Response.json({ success: true, data: { leadId: 345678, agentUserId: 234567 } });
 });
+assert.deepEqual(created, { leadId: 345678, agentUserId: 234567 });
 assert.equal(request?.url, 'https://api.sierrainteractivedev.com/leads');
 assert.equal(request?.method, 'POST');
 assert.equal(request?.headers.get('Sierra-ApiKey'), 'api-key');
@@ -52,8 +53,8 @@ await assert.rejects(
 	/HTTP status 503/,
 );
 await assert.rejects(
-	createSierraLead(buyerLead, 'api-key', async () => new Response('Not JSON')),
-	/non-JSON response/,
+	createSierraLead(buyerLead, 'api-key', async () => new Response('Not JSON', { status: 400 })),
+	/HTTP status 400/,
 );
 await assert.rejects(
 	createSierraLead(buyerLead, 'api-key', async () => { throw new Error('Network down'); }),
@@ -63,14 +64,17 @@ await assert.rejects(
 const originalApiKey = process.env.SIERRA_API_KEY;
 const originalFetch = globalThis.fetch;
 let forwarded = false;
+let generatedPassword = '';
 process.env.SIERRA_API_KEY = 'api-key';
-globalThis.fetch = async () => {
+globalThis.fetch = async (_input, init) => {
 	forwarded = true;
-	return Response.json({ success: true });
+	generatedPassword = (JSON.parse(String(init?.body)) as SierraLead).password;
+	return Response.json({ success: true, data: { leadId: 345678 } });
 };
 try {
 	await contactSierra.formSubmitted({ data: baseForm });
 	assert.equal(forwarded, true);
+	assert.match(generatedPassword, /^[0-9a-f]{16}$/);
 } finally {
 	globalThis.fetch = originalFetch;
 	if (originalApiKey === undefined) delete process.env.SIERRA_API_KEY;
