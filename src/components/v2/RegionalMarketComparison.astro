@@ -25,20 +25,20 @@ const markets = (comparison.rows ?? [])
 		};
 	});
 
-if (markets.length !== 6 || markets.some(({ market, median, days }) => !market || !median || !days)) {
-	throw new Error('Regional market comparison requires six rows with market, median list price, and days on market.');
+if (markets.length !== 7 || markets.some(({ market, median, days }) => !market || !median || !days)) {
+	throw new Error('Regional market comparison requires six market rows plus Bridgeland with median list price and days on market.');
 }
 
 const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';
 ---
 
 <section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
-	<h3 id="regional-market-heading">Six markets, <em>one current view.</em> Bridgeland included.</h3>
+	<h3 id="regional-market-heading">Northwest Houston at a Glance</h3>
 	<table>
-		<caption class="sr-only">Northwest Houston market comparison</caption>
+		<caption class="sr-only">Northwest Houston market and community comparison</caption>
 		<thead>
 			<tr>
-				<th scope="col">Market</th>
+				<th scope="col">Area</th>
 				<th scope="col">Median list</th>
 				<th scope="col">Days on market</th>
 			</tr>
