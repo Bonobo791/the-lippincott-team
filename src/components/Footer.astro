@@ -25,8 +25,12 @@ const childrenOf = (item: CmsConfigNav | null) =>
 const communitiesNav = nav.find((item) => item.link?.startsWith('/northwest-houston-real-estate')) ?? null;
 const schoolsNav = nav.find((item) => item.link?.startsWith('/northwest-houston-schools-real-estate')) ?? null;
 const companyNav = nav.filter((item) => ['/buy/', '/sell/', '/about/', '/reviews/', '/blog/', '/contact-us/'].includes(item.link ?? ''));
+const neighborhoods = childrenOf(communitiesNav)
+	.flatMap((community) => community.children ?? [])
+	.filter((neighborhood) => neighborhood !== null);
 const columns = [
 	{ heading: 'Communities', href: communitiesNav?.link ?? null, links: childrenOf(communitiesNav) },
+	{ heading: 'Neighborhoods', href: null, links: neighborhoods },
 	{ heading: 'Schools', href: schoolsNav?.link ?? null, links: childrenOf(schoolsNav) },
 	{ heading: 'Company', href: null, links: companyNav },
 	{
@@ -41,7 +45,7 @@ const columns = [
 ---
 
 <footer class="font-apple bg-[#100e13] text-sm text-[rgba(246,242,234,0.62)]">
-	<div class="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-6 pt-[72px] lg:grid-cols-[1.6fr_repeat(4,1fr)]">
+	<div class="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-6 pt-[72px] lg:grid-cols-[1.6fr_repeat(5,1fr)]">
 		<div class="space-y-4">
 			<div class="flex items-center gap-3 text-white">
 				{logoSrc ? (
@@ -85,35 +89,17 @@ const columns = [
 					)}
 				</h2>
 				<ul class="flex flex-col gap-[11px]">
-					{column.links.map((item) => {
-						const children = 'children' in item ? (item.children ?? []).filter(child => child !== null) : [];
-						return (
-							<li>
-								<a
-									href={safeHref(item.link)}
-									class="transition-colors hover:text-white"
-									{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-								>
-									{item.title}
-								</a>
-								{children.length > 0 && (
-									<ul class="mt-[11px] flex flex-col gap-[11px] border-l border-[rgba(246,242,234,0.12)] pl-3 text-[12px]">
-										{children.map((child) => (
-											<li>
-												<a
-													href={safeHref(child.link)}
-													class="transition-colors hover:text-white"
-													{...(isExternal(child.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-												>
-													{child.title}
-												</a>
-											</li>
-										))}
-									</ul>
-								)}
-							</li>
-						);
-					})}
+					{column.links.map((item) => (
+						<li>
+							<a
+								href={safeHref(item.link)}
+								class="transition-colors hover:text-white"
+								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							>
+								{item.title}
+							</a>
+						</li>
+					))}
 				</ul>
 			</nav>
 		))}

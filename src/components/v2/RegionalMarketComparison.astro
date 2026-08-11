@@ -1,0 +1,57 @@
+---
+import { getPage } from '../../lib/data';
+import type { DataTableBlock, PageBlock } from '../../lib/data';
+
+const normalizedAnchor = (value?: string | null) => value?.trim().replace(/^#/, '');
+const page = (await getPage('northwest-houston-real-estate')).data.page;
+const blocks = (page?.blocks ?? []).filter((block): block is PageBlock => block !== null);
+const comparison = blocks.find(
+	(block): block is DataTableBlock =>
+		block.__typename === 'PageBlocksDataTable' && normalizedAnchor(block.anchorId) === 'communities',
+);
+
+if (!comparison) {
+	throw new Error('Regional market comparison requires the Northwest Houston #communities data table.');
+}
+
+const markets = (comparison.rows ?? [])
+	.filter((row) => row !== null)
+	.map((row) => {
+		const cells = (row.cells ?? []).filter((cell) => cell !== null);
+		return {
+			market: cells[0]?.text?.trim(),
+			median: cells[1]?.text?.trim(),
+			days: cells[3]?.text?.trim(),
+		};
+	});
+
+if (markets.length !== 6 || markets.some(({ market, median, days }) => !market || !median || !days)) {
+	throw new Error('Regional market comparison requires six rows with market, median list price, and days on market.');
+}
+
+const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';
+---
+
+<section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
+	<h3 id="regional-market-heading">Six markets, <em>one current view.</em></h3>
+	<table>
+		<caption class="sr-only">Northwest Houston market comparison</caption>
+		<thead>
+			<tr>
+				<th scope="col">Market</th>
+				<th scope="col">Median list</th>
+				<th scope="col">Days on market</th>
+			</tr>
+		</thead>
+		<tbody>
+			{markets.map(({ market, median, days }) => (
+				<tr>
+					<th scope="row">{market}</th>
+					<td>{median}</td>
+					<td>{days}</td>
+				</tr>
+			))}
+		</tbody>
+	</table>
+	<p>{source} · <a href="/northwest-houston-real-estate/#communities">Sources &amp; full comparison</a></p>
+</section>
