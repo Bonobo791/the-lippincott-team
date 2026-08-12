@@ -27,7 +27,7 @@ export const statLedgerBlockSchema: Template = {
 			title: 'What is the market doing **this year?**',
 			tiles: [
 				{ figure: '$445,000', label: 'Median list price', source: 'Realtor.com · Jun 2026' },
-				{ figure: '40 days', label: 'Median on market', source: 'Realtor.com · Jun 2026' },
+				{ figure: '71 days', label: 'Median on market', source: 'Realtor.com · Jun 2026' },
 				{ figure: '98%', label: 'Of asking price', source: 'Sale-to-list · Realtor.com', invert: true },
 			],
 		},

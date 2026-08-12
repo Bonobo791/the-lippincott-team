@@ -19,4 +19,8 @@ editor, and deployed on Netlify. Most pages are delivered as fast static HTML.
 
 ## License
 
-This website is under the PolyForm Shield 1.0.0 license.
+The code in this repository is licensed under the
+[PolyForm Shield 1.0.0 license](LICENSE.md). Website content and other
+non-software resources — including the copy, images, and media in
+`src/content/` and `public/` — are not covered by that license and remain
+subject to the site's terms of use.

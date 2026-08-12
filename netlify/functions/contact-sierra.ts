@@ -5,7 +5,7 @@ type FormSubmittedEvent = { data: Record<string, string> };
 
 export default {
 	async formSubmitted(event: FormSubmittedEvent) {
-		if (event.data['form-name'] && event.data['form-name'] !== 'contact') return;
+		if (event.data['form-name'] !== 'contact') return;
 
 		try {
 			const apiKey = process.env.SIERRA_API_KEY;

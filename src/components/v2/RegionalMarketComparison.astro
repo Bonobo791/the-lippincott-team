@@ -17,7 +17,9 @@ if (!comparison) {
 const markets = (comparison.rows ?? [])
 	.filter((row) => row !== null)
 	.map((row) => {
-		const cells = (row.cells ?? []).filter((cell) => cell !== null);
+		const cells = row.cells ?? [];
+		// Index the raw cells array — filtering out null cells first would
+		// reindex the columns and shift `days` (column 3) out of place.
 		return {
 			market: cells[0]?.text?.trim(),
 			median: cells[1]?.text?.trim(),
@@ -25,8 +27,15 @@ const markets = (comparison.rows ?? [])
 		};
 	});
 
-if (markets.length !== 7 || markets.some(({ market, median, days }) => !market || !median || !days)) {
-	throw new Error('Regional market comparison requires six market rows plus Bridgeland with median list price and days on market.');
+const requiredMarkets = ['Cypress', 'Bridgeland'];
+const hasMarket = (name: string) => markets.some(({ market }) => market?.toLowerCase() === name.toLowerCase());
+
+if (
+	markets.length !== 7 ||
+	!requiredMarkets.every(hasMarket) ||
+	markets.some(({ market, median, days }) => !market || !median || !days)
+) {
+	throw new Error('Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.');
 }
 
 const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';

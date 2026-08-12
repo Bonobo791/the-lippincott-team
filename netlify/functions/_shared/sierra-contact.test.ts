@@ -45,6 +45,10 @@ assert.equal(request?.headers.get('Sierra-OriginatingSystemName'), 'lippincottte
 assert.deepEqual(await request?.json(), buyerLead);
 
 await assert.rejects(
+	createSierraLead(buyerLead, 'api-key', async () => Response.json({ success: false, errorMessage: 'Lead type is invalid' })),
+	/Sierra reported lead creation failure: Lead type is invalid/,
+);
+await assert.rejects(
 	createSierraLead(buyerLead, 'api-key', async () => Response.json({ success: false })),
 	/Sierra reported lead creation failure/,
 );
@@ -72,13 +76,33 @@ globalThis.fetch = async (_input, init) => {
 	return Response.json({ success: true, data: { leadId: 345678 } });
 };
 try {
-	await contactSierra.formSubmitted({ data: baseForm });
+	await contactSierra.formSubmitted({ data: { ...baseForm, 'form-name': 'contact' } });
 	assert.equal(forwarded, true);
 	assert.match(generatedPassword, /^[0-9a-f]{16}$/);
+
+	forwarded = false;
+	await contactSierra.formSubmitted({ data: { 'form-name': 'another-form' } });
+	assert.equal(forwarded, false);
+
+	await contactSierra.formSubmitted({ data: { ...baseForm } });
+	assert.equal(forwarded, false);
 } finally {
 	globalThis.fetch = originalFetch;
 	if (originalApiKey === undefined) delete process.env.SIERRA_API_KEY;
 	else process.env.SIERRA_API_KEY = originalApiKey;
 }
 
-await contactSierra.formSubmitted({ data: { 'form-name': 'another-form' } });
+const originalLeadsUrl = process.env.SIERRA_API_URL;
+try {
+	process.env.SIERRA_API_URL = 'https://leads.example.com/api/leads';
+	let capturedUrl = '';
+	const envLead = await createSierraLead(buyerLead, 'api-key', async (input) => {
+		capturedUrl = new Request(input).url;
+		return Response.json({ success: true, data: { leadId: 345679 } });
+	});
+	assert.equal(envLead.leadId, 345679);
+	assert.equal(capturedUrl, 'https://leads.example.com/api/leads');
+} finally {
+	if (originalLeadsUrl === undefined) delete process.env.SIERRA_API_URL;
+	else process.env.SIERRA_API_URL = originalLeadsUrl;
+}

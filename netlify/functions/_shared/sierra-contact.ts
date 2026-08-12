@@ -1,5 +1,6 @@
-const SIERRA_LEADS_URL = 'https://api.sierrainteractivedev.com/leads';
+const DEFAULT_SIERRA_LEADS_URL = 'https://api.sierrainteractivedev.com/leads';
 const REQUEST_TIMEOUT_MS = 10_000;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 
 export interface SierraLead {
 	firstName: string;
@@ -16,7 +17,7 @@ export interface SierraLead {
 }
 
 interface SierraResponse {
-	success?: unknown;
+	success?: boolean;
 	data?: {
 		leadId?: unknown;
 		agentUserId?: unknown;
@@ -53,7 +54,7 @@ function leadTypeForInterest(interest: string): SierraLead['leadType'] {
 export function toSierraLead(data: Record<string, string>, password: string): SierraLead {
 	const name = requiredFormValue(data, 'name', 'name');
 	const email = requiredFormValue(data, 'email', 'email address');
-	if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Contact form submission has an invalid email address.');
+	if (!EMAIL_PATTERN.test(email)) throw new Error('Contact form submission has an invalid email address.');
 	if (!password) throw new Error('Sierra lead password is required.');
 
 	const [firstName, ...lastName] = name.split(/\s+/);
@@ -77,7 +78,7 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 }
 
 function errorDetail(result: SierraResponse) {
-	const values = ['message', 'error', 'errors', 'detail', 'title'].flatMap((key) => {
+	const values = ['message', 'error', 'errors', 'errorMessage', 'detail', 'title'].flatMap((key) => {
 		const value = result[key];
 		if (typeof value === 'string') return [value];
 		if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
@@ -87,9 +88,10 @@ function errorDetail(result: SierraResponse) {
 }
 
 export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher: typeof fetch = fetch) {
+	const leadsUrl = process.env.SIERRA_API_URL ?? DEFAULT_SIERRA_LEADS_URL;
 	let response: Response;
 	try {
-		response = await fetcher(SIERRA_LEADS_URL, {
+		response = await fetcher(leadsUrl, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -99,16 +101,20 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 			body: JSON.stringify(lead),
 			signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
 		});
-	} catch {
-		throw new Error('Sierra lead request did not complete.');
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+		console.error('[sierra-contact] Request failed:', errorMsg);
+		throw new Error(`Sierra lead request did not complete: ${errorMsg}`);
 	}
 
 	let result: SierraResponse;
 	try {
 		result = await response.json();
-	} catch {
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+		console.error('[sierra-contact] JSON parse failed:', errorMsg);
 		throw new Error(response.ok
-			? 'Sierra returned a non-JSON response.'
+			? `Sierra returned a non-JSON response: ${errorMsg}`
 			: `Sierra lead creation failed with HTTP status ${response.status}.`);
 	}
 
