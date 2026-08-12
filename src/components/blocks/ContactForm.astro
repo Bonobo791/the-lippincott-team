@@ -49,12 +49,8 @@ const assurances = [
 	</section>
 	<section class="pb-16 md:pb-24">
 		<div class="mx-auto grid max-w-[1200px] items-start gap-12 px-6 md:px-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
-			{/*
-				Submissions go to Netlify Forms (static, no JS needed). When Sierra API
-				lead forwarding lands, the endpoint swaps to a Netlify Function — this
-				block and page stay unchanged.
-			*/}
-			<form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
+			{/* Netlify verifies the static submission, then forwards contact leads to Sierra. */}
+			<form name="contact" method="POST" action="/contact-us/thank-you/" data-netlify="true" netlify-honeypot="bot-field" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
 				<input type="hidden" name="form-name" value="contact" />
 				<p class="hidden" aria-hidden="true">
 					<label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
@@ -91,7 +87,7 @@ const assurances = [
 				<button type="submit" class="btn-magnetic mt-7 inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95">
 					Request my consultation <span aria-hidden="true">→</span>
 				</button>
-				<p class="mt-4 text-xs text-muted-foreground">Free and without obligation. Your information is never sold or shared outside the team.</p>
+				<p class="mt-4 text-xs text-muted-foreground">Free and without obligation. Your details go straight to our team through a secure client-management system and are never sold.</p>
 			</form>
 			<aside>
 				{phoneDisplay && contact?.phone && (

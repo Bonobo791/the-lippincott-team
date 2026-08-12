@@ -14,15 +14,25 @@
       "title": "NW Houston Communities",
       "link": "/northwest-houston-real-estate/",
       "children": [
-        { "title": "Cypress", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/" },
+        {
+          "title": "Cypress",
+          "link": "/northwest-houston-real-estate/cypress-tx-real-estate/",
+          "children": [
+            { "title": "Bridgeland", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/" },
+            { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" }
+          ]
+        },
         { "title": "Tomball", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/" },
-        { "title": "Katy", "link": "/northwest-houston-real-estate/katy-tx-real-estate/" },
+        {
+          "title": "Katy",
+          "link": "/northwest-houston-real-estate/katy-tx-real-estate/",
+          "children": [
+            { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" }
+          ]
+        },
         { "title": "Waller", "link": "/northwest-houston-real-estate/waller-tx-real-estate/" },
         { "title": "Hockley", "link": "/northwest-houston-real-estate/hockley-tx-real-estate/" },
-        { "title": "Magnolia", "link": "/northwest-houston-real-estate/magnolia-tx-real-estate/" },
-        { "title": "Bridgeland", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/" },
-        { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" },
-        { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" }
+        { "title": "Magnolia", "link": "/northwest-houston-real-estate/magnolia-tx-real-estate/" }
       ]
     },
     {

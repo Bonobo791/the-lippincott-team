@@ -1,8 +1,9 @@
 # Agent Guidance
 
-- NEVER develop on the default branch. Always make a new one.
+- NEVER develop on the default branch. ONLY work on the dev branch unless explicitly authorized to work on another branch.
 - When I say "clean up", that means to clean your worktrees and branches.
 - When I say "triage", review every PR comment for validity. Fix each valid issue. Post a triage comment. Reply to every bot comment, whether or not you make a code change.
+- NEVER push to the branch. Only commit and add a commit message.
 
 ## Project overview
 

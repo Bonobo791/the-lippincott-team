@@ -138,6 +138,7 @@ export type StepsSplitBlock = Extract<PageBlock, { __typename: 'PageBlocksStepsS
 
 export type CmsConfigNav = NonNullable<NonNullable<CmsConfig['nav']>[number]>;
 export type CmsConfigNavChild = NonNullable<NonNullable<CmsConfigNav['children']>[number]>;
+export type CmsConfigNavGrandchild = NonNullable<NonNullable<CmsConfigNavChild['children']>[number]>;
 export type CmsConfigContactLink = NonNullable<NonNullable<CmsConfig['contactLinks']>[number]>;
 export type CmsConfigSeo = NonNullable<CmsConfig['seo']>;
 

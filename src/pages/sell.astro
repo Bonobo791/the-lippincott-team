@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import RegionalMarketComparison from '../components/v2/RegionalMarketComparison.astro';
 import V2Motion from '../components/v2/V2Motion.astro';
 import { getConfig } from '../lib/data';
 import { telHref } from '../lib/url';
@@ -20,7 +21,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 	  "mainEntity": [
 	    {"@type": "Question", "name": "How much is my home worth?", "acceptedAnswer": {"@type": "Answer", "text": "Your home's value comes from recent sold comps in your community, adjusted for size, condition and location. We prepare that analysis in writing, free, and you keep it whether or not you list with us."}},
 	    {"@type": "Question", "name": "Is now a good time to sell in Northwest Houston?", "acceptedAnswer": {"@type": "Answer", "text": "It depends more on your next move than on the headlines. June 2026 is a buyer's market with 5.2 months of supply and a 52-day median sale timeline across the metro, but well-priced homes in Cypress, Tomball and Katy still went under contract in about six weeks. The right question is what waiting costs against your next purchase."}},
-	    {"@type": "Question", "name": "How long will it take to sell?", "acceptedAnswer": {"@type": "Answer", "text": "Median days on market ran 40 to 59 across Cypress, Tomball, Katy, Magnolia, Waller and Hockley in June 2026. Add two to four weeks of prep and roughly 30 days from contract to close: most sellers should plan on three to five months end to end."}},
+	    {"@type": "Question", "name": "How long will it take to sell?", "acceptedAnswer": {"@type": "Answer", "text": "Median days on market ran 41 to 71 across Cypress, Tomball, Katy, Magnolia, Waller and Hockley in June 2026. Add two to four weeks of prep and roughly 30 days from contract to close: most sellers should plan on three to five months end to end."}},
 	    {"@type": "Question", "name": "Should I sell my house myself instead?", "acceptedAnswer": {"@type": "Answer", "text": "If you already know your buyer, possibly: 30% of by-owner sellers sold to a friend, relative or neighbor. On the open market, agent-assisted sales closed at a median $425,000 against $360,000 for solo sales in NAR's 2025 Profile, and only 5% of sellers chose the solo path, an all-time low."}},
 	    {"@type": "Question", "name": "What does it cost to sell a house?", "acceptedAnswer": {"@type": "Answer", "text": "Every fee is explained in writing before you sign anything: compensation, title and closing costs, and any prep spending we recommend, each with the expected return attached. The consultation and the written valuation cost nothing."}}
 	  ]
@@ -36,7 +37,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 				<h1>In a buyer's market, <em>proof sells.</em></h1>
 				<div class="gchips">
 					<span class="gchip"><b>1,463+</b> homes sold in NW Houston</span>
-					<span class="gchip"><b>98%</b> of asking in Cypress, Jun 2026</span>
+					<span class="gchip"><b>95–98%</b> of asking, six markets, Jun 2026</span>
 					<span class="gchip"><b>4.92/5</b> across 685+ HAR.com surveys</span>
 				</div>
 				<div class="hero-actions">
@@ -74,14 +75,15 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 						<div class="src">Texas A&amp;M · 3.6% of list · 2026</div>
 					</div>
 				</div>
+				<RegionalMarketComparison />
 				<div class="jobs three reveal" style="margin-top:2px">
 					<div class="job">
 						<span class="tag red">What buyers do with leverage</span>
-						<p>They compare, negotiate and ask for concessions. Homes across the region <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">sell at 95 to 98% of asking</a>, so the list price sets the ceiling for every conversation that follows.</p>
+						<p>They compare, negotiate and ask for concessions. Homes across the region <a href="/northwest-houston-real-estate/#communities">sell at 95 to 98% of asking</a>, so the list price sets the ceiling for every conversation that follows.</p>
 					</div>
 					<div class="job">
 						<span class="tag red">What still sells fast</span>
-						<p>Well-priced homes. Cypress, Tomball and Katy sellers <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">went under contract in 40 to 42 median days</a> in June 2026, about six weeks from list to accepted offer.</p>
+						<p>Well-priced homes. Tomball and Katy sellers <a href="/northwest-houston-real-estate/#communities">went under contract in 41 to 42 median days</a> in June 2026, about six weeks from list to accepted offer, while Cypress ran a slower 71-day market.</p>
 					</div>
 					<div class="job">
 						<span class="tag red">What gets cut</span>
@@ -242,9 +244,9 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 						<span class="ssrc">Google and HAR.com, rated 4.9 on both</span>
 					</div>
 					<div class="dtile">
-						<a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener"><span class="num" data-count="98">0<span>%</span></span></a>
-						<span class="slabel">Of asking in Cypress</span>
-						<span class="ssrc">List-to-sale ratio · Realtor.com · Jun 2026</span>
+						<a href="/northwest-houston-real-estate/#communities"><span class="num">95–98<span>%</span></span></a>
+						<span class="slabel">Of asking across six markets</span>
+						<span class="ssrc">Realtor.com · Jun 2026</span>
 					</div>
 				</div>
 				<p class="sec-cta gold reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your sale →</a></p>
@@ -266,7 +268,7 @@ const phone = (await getConfig()).data?.config?.contact?.phone;
 					</details>
 					<details class="reveal">
 						<summary>How long will it take to sell? <span class="plus">+</span></summary>
-						<p>Across the six communities we track, <a href="https://www.realtor.com/local/market/texas/harris-county/cypress" target="_blank" rel="noopener">median days on market ran 40 to 59 in June 2026</a>: 40 in Cypress, 42 in Tomball, 41 in Katy at the fast end, 59 in Waller at the slow end. Add two to four weeks of prep before launch and roughly 30 days from contract to close, and most sellers should plan on a three to five month timeline end to end.</p>
+						<p>Across the six communities we track, <a href="/northwest-houston-real-estate/#communities">median days on market ran 41 to 71 in June 2026</a>: 71 in Cypress at the slow end, 41 in Katy at the fast end, with Tomball at 42 and Waller at 59 in between. Add two to four weeks of prep before launch and roughly 30 days from contract to close, and most sellers should plan on a three to five month timeline end to end.</p>
 					</details>
 					<details class="reveal">
 						<summary>Should I sell my house myself instead? <span class="plus">+</span></summary>

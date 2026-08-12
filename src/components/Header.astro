@@ -60,17 +60,44 @@ const logoSrcset =
 							{item.title}
 							<Icon name="tabler:chevron-down" class="size-3.5" />
 						</a>
-						<div class="invisible absolute left-0 top-full z-30 min-w-56 pt-1 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+						<div class="invisible absolute left-0 top-full z-30 min-w-56 pt-1 opacity-0 transition-opacity motion-reduce:transition-none group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
 							<div class="rounded-xl border border-[rgba(246,242,234,0.12)] bg-[rgba(23,21,26,0.97)] py-2 shadow-lg backdrop-blur-xl">
-								{children.map((child) => (
-									<a
-										href={safeHref(child.link)}
-										class="block px-4 py-2 text-sm text-[rgba(246,242,234,0.62)] transition-colors hover:bg-white/5 hover:text-white"
-										{...externalAttrs(child.link)}
-									>
-										{child.title}
-									</a>
-								))}
+								{children.map((child) => {
+									const grandchildren = (child.children ?? []).filter(c => c !== null);
+									return grandchildren.length > 0 ? (
+										<div class="group/sub relative">
+											<a
+												href={safeHref(child.link)}
+												class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-[rgba(246,242,234,0.62)] transition-colors hover:bg-white/5 hover:text-white"
+												{...externalAttrs(child.link)}
+											>
+												{child.title}
+												<Icon name="tabler:chevron-right" class="size-3.5" />
+											</a>
+											<div class="invisible absolute left-full top-0 z-30 min-w-56 pl-1 opacity-0 transition-opacity motion-reduce:transition-none group-hover/sub:visible group-hover/sub:opacity-100 group-focus-within/sub:visible group-focus-within/sub:opacity-100">
+												<div class="rounded-xl border border-[rgba(246,242,234,0.12)] bg-[rgba(23,21,26,0.97)] py-2 shadow-lg backdrop-blur-xl">
+													{grandchildren.map((grandchild) => (
+														<a
+															href={safeHref(grandchild.link)}
+															class="block px-4 py-2 text-sm text-[rgba(246,242,234,0.62)] transition-colors hover:bg-white/5 hover:text-white"
+															{...externalAttrs(grandchild.link)}
+														>
+															{grandchild.title}
+														</a>
+													))}
+												</div>
+											</div>
+										</div>
+									) : (
+										<a
+											href={safeHref(child.link)}
+											class="block px-4 py-2 text-sm text-[rgba(246,242,234,0.62)] transition-colors hover:bg-white/5 hover:text-white"
+											{...externalAttrs(child.link)}
+										>
+											{child.title}
+										</a>
+									);
+								})}
 							</div>
 						</div>
 					</div>
@@ -130,15 +157,29 @@ const logoSrcset =
 						>
 							{item.title}
 						</a>
-						{children.map((child) => (
-							<a
-								href={safeHref(child.link)}
-								class="border-b border-[rgba(246,242,234,0.12)] py-[13px] pl-4 text-sm text-[rgba(246,242,234,0.62)]"
-								{...externalAttrs(child.link)}
-							>
-								{child.title}
-							</a>
-						))}
+						{children.map((child) => {
+							const grandchildren = (child.children ?? []).filter(c => c !== null);
+							return (
+								<>
+									<a
+										href={safeHref(child.link)}
+										class="border-b border-[rgba(246,242,234,0.12)] py-[13px] pl-4 text-sm text-[rgba(246,242,234,0.62)]"
+										{...externalAttrs(child.link)}
+									>
+										{child.title}
+									</a>
+									{grandchildren.map((grandchild) => (
+										<a
+											href={safeHref(grandchild.link)}
+											class="border-b border-[rgba(246,242,234,0.12)] py-[11px] pl-8 text-sm text-[rgba(246,242,234,0.48)]"
+											{...externalAttrs(grandchild.link)}
+										>
+											{grandchild.title}
+										</a>
+									))}
+								</>
+							);
+						})}
 					</>
 				);
 			})}

@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import RegionalMarketComparison from '../components/v2/RegionalMarketComparison.astro';
 // Shared "Verified Record" (.home-v2) design system — also used by buy/sell.
 import '../styles/v2.css';
 
@@ -93,7 +94,7 @@ const commCardSizes =
 		<!-- ============ TRUST BAR ============ -->
 		<div class="trust">
 			<div class="trust-inner">
-				<span class="lead">eXp Realty · Northwest Houston</span>
+				<span class="lead">Serving All of Northwest Houston</span>
 				<div class="t-item">
 					<span class="stars">★★★★★</span>
 					<span><span class="name">Google</span><br /><span class="sub">4.9 rating</span></span>
@@ -249,7 +250,7 @@ const commCardSizes =
 						<Image src="/uploads/2026/03/cypress-1536x863.jpg" alt="Cypress, TX" width={1536} height={863} sizes={commLeadSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Cypress</span><span class="char">Master-planned lakes, Cy-Fair ISD, the 290 corridor</span><span class="go">View Listings →</span></span>
 					</a>
 					<a class="comm-card reveal" href="/northwest-houston-real-estate/tomball-tx-real-estate/">
-						<Image src="/uploads/2026/08/tomball-old-town.jpg" alt="Tomball, TX" width={800} height={533} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" style="object-position:41% 50%" /><span class="meta"><span class="city">Tomball</span><span class="char">Small-town main street, acreage lots, Tomball ISD</span><span class="go">View Listings →</span></span>
+						<Image src="/uploads/2026/08/tomball-sign-card.jpg" alt="Tomball, TX" width={1200} height={900} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Tomball</span><span class="char">Small-town main street, acreage lots, Tomball ISD</span><span class="go">View Listings →</span></span>
 					</a>
 					<a class="comm-card reveal" href="/northwest-houston-real-estate/katy-tx-real-estate/">
 						<Image src="/uploads/2026/03/Picture_for_Katy.jpg" alt="Katy, TX" width={517} height={259} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Katy</span><span class="char">West-side growth, Katy ISD, Energy Corridor access</span><span class="go">View Listings →</span></span>
@@ -267,7 +268,7 @@ const commCardSizes =
 						<Image src="/uploads/2026/04/waller-tx.jpg" alt="Waller, TX" width={474} height={315} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Waller</span><span class="char">Acreage and new-construction value</span><span class="go">View Listings →</span></span>
 					</a>
 					<a class="comm-card reveal" href="/northwest-houston-real-estate/hockley-tx-real-estate/">
-						<Image src="/uploads/2026/03/hockley-scaled.jpg" alt="Hockley, TX" width={2560} height={1705} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Hockley</span><span class="char">Rural-fringe lots and custom-build land</span><span class="go">View Listings →</span></span>
+						<Image src="/uploads/2026/08/hockley-new.jpg" alt="Hockley, TX" width={960} height={540} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Hockley</span><span class="char">Rural-fringe lots and custom-build land</span><span class="go">View Listings →</span></span>
 					</a>
 				</div>
 				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
@@ -346,11 +347,8 @@ const commCardSizes =
 					<div class="mkt reveal"><div class="num">5.2 mo</div><div class="lbl">Months of supply</div></div>
 					<div class="mkt dark-tile reveal"><div class="num">+12.3%</div><div class="lbl">Pending sales, year over year</div></div>
 				</div>
+				<RegionalMarketComparison />
 				<div class="market-body">
-					<p class="reveal">In Cypress, the median listing price was $435,535 in May 2026, with about 2,045
-						homes for sale and a 35-day median time on market. Homes sold at roughly 98% of asking
-						(Realtor.com Economic Research). Buyer demand has not disappeared: Houston pending sales rose
-						12.3% year over year in June. But buyers have more choices than they did two years ago.</p>
 					<p class="takeaway reveal">What that means for you: pricing precision matters more now than it did
 						in 2021. Homes priced at or just below recent comparable sales still move. Overpriced listings sit.
 						Every Lippincott Team listing starts with a data-backed pricing analysis.
@@ -529,7 +527,7 @@ const commCardSizes =
 						<span class="go">See what your home is worth →</span>
 					</a>
 					<a class="next-row" href="/blog/">
-						<h3>Read the Northwest Houston blog</h3>
+						<h3>Read Our Blog</h3>
 						<p>Market updates, neighborhood guides and buying and selling advice from the team that works here daily.</p>
 						<span class="go">Read the blog →</span>
 					</a>
