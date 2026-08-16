@@ -69,6 +69,19 @@ export default defineConfig({
 	site: getSiteUrl(),
 	output: 'static',
 	adapter: await getAdapter(),
+	// The site is fronted by Bunny CDN, whose pull zone rewrites the Host
+	// header sent to the origin (Origin Host Header = the app's own domain,
+	// so Coolify's Traefik routes correctly) and does not forward the visitor
+	// host via x-forwarded-host. Astro's same-origin guard for non-GET
+	// requests would therefore reject every browser POST to /api/contact
+	// (Origin: <cdn hostname> vs Host: <app domain>) and to /tina-island. The
+	// endpoints carry no cookies/sessions (nothing for CSRF to exploit):
+	// the contact form keeps its honeypot, size cap, and per-IP rate limit,
+	// and the island endpoint only re-renders publicly visible content. So
+	// the form-submission origin check is disabled.
+	security: {
+		checkOrigin: false,
+	},
 	redirects: {
 		'/home': '/',
 		// Legacy WordPress URL (exact path). The `/opt-out-preferences/*`,
