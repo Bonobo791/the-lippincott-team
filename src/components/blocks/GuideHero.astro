@@ -128,7 +128,10 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 				// the hero blank (failed loads included) or stuck hidden if
 				// the user's motion preference changes after load.
 				const show = () => img.classList.add('is-in');
-				if (img.complete && img.naturalWidth) show();
+				// `complete` is true both for images that finished loading and
+				// for images that already failed before this script ran — only
+				// attach listeners while the request is still pending.
+				if (img.complete) show();
 				else {
 					img.addEventListener('load', show, { once: true });
 					img.addEventListener('error', show, { once: true });

@@ -37,17 +37,19 @@ function jsonError(status: number, error: string) {
 
 // Origins allowed to POST the contact form from a browser. SITE_URL is the
 // canonical origin on every host; the platform URL envs cover deploy previews
-// (Netlify injects URL on previews, Coolify/Cloudflare set theirs), and the
-// localhost ports cover dev. Requests with no Origin header (curl and other
-// non-browser clients) are allowed through — the honeypot, size cap, and
-// rate limit remain the controls for them. This endpoint-level check exists
-// because astro.config.mjs keeps `security.checkOrigin` disabled: Bunny CDN
-// rewrites the Host header sent to the origin and does not forward the
-// visitor host, so Astro's host-based guard would reject every browser POST.
+// (Netlify's per-deploy origins come from DEPLOY_PRIME_URL/DEPLOY_URL — its
+// URL var stays the production address on previews — Coolify/Cloudflare set
+// theirs), and the localhost ports cover dev. Requests with no Origin header
+// (curl and other non-browser clients) are allowed through — the honeypot,
+// size cap, and rate limit remain the controls for them. This endpoint-level
+// check exists because astro.config.mjs keeps `security.checkOrigin` disabled:
+// Bunny CDN rewrites the Host header sent to the origin and does not forward
+// the visitor host, so Astro's host-based guard would reject every browser
+// POST.
 function originAllowed(request: Request) {
 	const origin = request.headers.get('origin');
 	if (!origin) return true;
-	for (const value of [process.env.SITE_URL, process.env.URL, process.env.COOLIFY_URL, process.env.CF_PAGES_URL]) {
+	for (const value of [process.env.SITE_URL, process.env.URL, process.env.DEPLOY_PRIME_URL, process.env.DEPLOY_URL, process.env.COOLIFY_URL, process.env.CF_PAGES_URL]) {
 		if (!value) continue;
 		try {
 			if (new URL(value).origin === origin) return true;
@@ -108,6 +110,9 @@ async function readBody(request: Request): Promise<BodyResult> {
 	const chunks: Uint8Array[] = [];
 	let total = 0;
 	try {
+		// The await-in-loop here is inherent to streaming: each chunk only
+		// exists after the previous read resolves, so the reads must be
+		// sequential (there is nothing to parallelize).
 		for (;;) {
 			const { done, value } = await reader.read();
 			if (done) break;
@@ -144,11 +149,19 @@ export const POST: APIRoute = async ({ request }) => {
 	const body = await readBody(request);
 	if (body.kind === 'error') return body.response;
 	const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
-	const formData = await new Request(request.url, {
-		method: 'POST',
-		headers: { 'content-type': contentType },
-		body: body.buffer,
-	}).formData();
+	// formData() rejects malformed multipart bodies and unsupported content
+	// types — treat those as a client error (400) rather than letting the
+	// rejection surface as a 500.
+	let formData: FormData;
+	try {
+		formData = await new Request(request.url, {
+			method: 'POST',
+			headers: { 'content-type': contentType },
+			body: body.buffer,
+		}).formData();
+	} catch {
+		return jsonError(400, 'Invalid form submission.');
+	}
 
 	const data: Record<string, string> = {};
 	let totalChars = 0;

@@ -391,9 +391,10 @@ change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
 → storage origin + 30 d; `*/_astro/*` → 1 y; HTML `*/` → 10 min. Deploys purge
 the pull zone automatically: the Docker entrypoint
 (`scripts/deploy/docker-entrypoint.sh`) runs
-`scripts/deploy/purge-bunny-cache.mjs` on container start when
-`BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set (runtime-only secret; no-op
-without them). The pull zone sends the app's own domain to the origin
+`scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
+readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
+(runtime-only secret; skipped without them, and when readiness times out the
+purge is skipped so a broken container can't clear a healthy cache). The pull zone sends the app's own domain to the origin
 (*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
 Traefik routes without CDN hostnames being Coolify domains; Bunny does not
 forward the visitor host, so `security.checkOrigin` is `false` in
@@ -448,7 +449,7 @@ Environment variables (see `.env.example`):
   `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
 - `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
   Docker entrypoint purges the pull zone on container start (every Coolify
-  deploy). `BUNNY_API_KEY` is a secret — never commit it or prefix it with
+  deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
   `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
   when unset).
 - `DEPLOY_ADAPTER` — optional adapter override.
