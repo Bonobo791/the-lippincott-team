@@ -10,7 +10,10 @@
 # Runtime: adapter-node standalone server on $PORT (default 4321).
 
 FROM node:22-alpine AS base
-RUN npm install -g pnpm@10.34.5
+# --ignore-scripts is a no-op here (pnpm@10.34.5 ships no install lifecycle
+# scripts — its platform binaries come via optionalDependencies), kept to
+# make the "no lifecycle scripts" guarantee explicit.
+RUN npm install -g pnpm@10.34.5 --ignore-scripts
 
 # ---------- deps: install the full dependency tree ----------
 FROM base AS deps
