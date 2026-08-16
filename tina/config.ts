@@ -22,6 +22,7 @@ const branch =
   process.env.WORKERS_CI_BRANCH || // Cloudflare Workers Builds
   process.env.CF_PAGES_BRANCH || // Cloudflare Pages
   process.env.HEAD || // Netlify
+  process.env.COOLIFY_BRANCH || // Coolify (injected into builds/containers)
   "main";
 
 export default defineConfig({

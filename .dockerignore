@@ -1,0 +1,17 @@
+# Docker build context (Coolify build pack and local docker builds).
+.DS_Store
+.git
+.github
+node_modules
+dist
+.astro
+.launch
+.agent-bin
+.venv
+.env
+.env.*
+!.env.example
+netlify.toml
+wrangler.jsonc
+data
+*.log

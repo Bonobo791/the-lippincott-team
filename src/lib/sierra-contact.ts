@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 const DEFAULT_SIERRA_LEADS_URL = 'https://api.sierrainteractivedev.com/leads';
 const REQUEST_TIMEOUT_MS = 10_000;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
@@ -127,4 +129,32 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 		leadId: result.data.leadId,
 		...(typeof result.data.agentUserId === 'number' ? { agentUserId: result.data.agentUserId } : {}),
 	};
+}
+
+/** Client errors (bad form payloads) vs. server/Sierra failures, for HTTP status mapping. */
+export class ContactValidationError extends Error {}
+
+export type ContactForwardResult = { forwarded: true; leadId: number } | { forwarded: false };
+
+/**
+ * Host-neutral lead forwarding for the "contact" form: validates the payload,
+ * mints the Sierra password, and creates the lead. Ignores submissions whose
+ * `form-name` is not "contact" (like the old Netlify formSubmitted handler).
+ */
+export async function forwardContactLead(data: Record<string, string>, apiKey: string, fetcher: typeof fetch = fetch): Promise<ContactForwardResult> {
+	if (data['form-name'] !== 'contact') return { forwarded: false };
+
+	if (!apiKey) throw new Error('SIERRA_API_KEY is not configured.');
+
+	const password = randomBytes(8).toString('hex');
+	let lead: SierraLead;
+	try {
+		lead = toSierraLead(data, password);
+	} catch (error) {
+		throw new ContactValidationError(error instanceof Error ? error.message : 'Invalid contact form submission.');
+	}
+
+	const result = await createSierraLead(lead, apiKey, fetcher);
+	console.info(`[sierra-contact] Lead created. leadId=${result.leadId}`);
+	return { forwarded: true, leadId: result.leadId };
 }

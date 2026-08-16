@@ -7,11 +7,13 @@
 
 ## Project overview
 
-This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify: content
-is edited visually in the TinaCMS admin and shipped as static HTML. The site
-itself ships **zero React** — React appears only as a pinned devDependency for
-building the Tina admin UI (see `README.md` "A note on React" for why the pin
-exists; do not remove it casually).
+This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify (and deployable
+on Coolify/Docker): content is edited visually in the TinaCMS admin and shipped
+as static HTML. The site itself ships **zero React** to browsers — React stays
+a pinned devDependency for building the Tina admin UI (see `README.md` "A note
+on React" for why the pin exists; do not remove it casually), while `tinacms`
+is a runtime dependency because the `/tina-island` endpoint's generated client
+imports `tinacms/dist/client` in the standalone server bundle.
 
 - Astro **7** (`output: 'static'`), Tailwind CSS **v4** (via `@tailwindcss/vite`),
   TypeScript strict (`tsconfig.json` extends `astro/tsconfigs/strict`).
@@ -200,8 +202,11 @@ above rather than bare `astro build`.
   override, whose slug algorithm must stay in sync with `extractToc`), an
   inline CTA panel, author box, and category-first related reads. The
   `contactForm` block renders the entire contact page (SplitHeading H1 from
-  `heading`, Netlify form, config-driven contact rail, reassurance strip) —
-  `contact-us.mdx` is that single block.
+  `heading`, the `/api/contact` form — a host-neutral endpoint that forwards
+  leads to Sierra directly on every platform, replacing the old Netlify Forms
+  + `netlify/functions/contact-sierra.ts` flow — config-driven contact rail,
+  reassurance strip) — `contact-us.mdx` is that single block. See
+  `src/pages/api/contact.ts` + `src/lib/sierra-contact.ts`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - The generated client reads content from a **seeded cache**
@@ -358,8 +363,25 @@ Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
 field in `package.json` are what make Netlify install with pnpm instead of
 npm — do not re-ignore the lockfile.
 
-Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
-`public/` verbatim into the publish dir): `/opt-out-preferences/*`,
+**Coolify / Docker**: the multi-stage `Dockerfile` + `.dockerignore` at the
+repo root build with `pnpm build` (TinaCloud credentials required) and run the
+adapter-node standalone server (`node ./dist/server/entry.mjs`). Coolify apps
+use the **Dockerfile** build pack (location `/Dockerfile`, the default). Env
+vars set on the app are passed as build args by default (Build Variable flag)
+and the proxy injects `PORT`/`HOST` — keep **Ports Exposes** on `4321` to
+match `EXPOSE`. Required env: `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`,
+`SITE_URL`; the `SIERRA_API_KEY` runtime secret (contact form → Sierra) should
+have its Build Variable flag **off**. The Dockerfile `HEALTHCHECK` (node fetch
+on `/`) is parsed by Coolify, takes precedence over UI checks, and gates
+Traefik routing + rolling updates. The container needs egress to TinaCloud
+(`content.tina.io` / `app.tina.io`) for content and visual editing; no volumes
+are needed (stateless). `CONTEXT` is unset there, so production builds include
+GA4.
+
+Legacy WordPress URLs are handled host-neutrally by the `redirects` map in
+`astro.config.mjs` (served by every adapter, including the standalone Node
+server on Coolify/Docker) and additionally by `public/_redirects`, which
+Netlify's CDN reads directly from the publish dir: `/opt-out-preferences/*`,
 `/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
 All other migrated WP URLs map 1:1 onto existing routes.
 
@@ -384,9 +406,13 @@ loader from double-binding on reruns.
 Environment variables (see `.env.example`):
 
 - `SITE_URL` — production URL for sitemap/RSS/OpenGraph. Most platforms inject
-  a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**.
+  a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**; set
+  it on Coolify too (`COOLIFY_URL` is only a fallback).
 - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials, required for
-  `pnpm build`.
+  `pnpm build` (including the Coolify Docker build).
 - `PUBLIC_GA_ID` — optional GA4 measurement ID override (default
   `G-ZREVRSHYJB`).
+- `SIERRA_API_KEY` — Sierra lead-forwarding key for the `/api/contact`
+  endpoint (all platforms). Never commit its value or prefix it with
+  `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
 - `DEPLOY_ADAPTER` — optional adapter override.

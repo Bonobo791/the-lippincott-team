@@ -85,6 +85,9 @@ importers:
       tailwindcss:
         specifier: ^4.3.0
         version: 4.3.3
+      tinacms:
+        specifier: ^3.10.0
+        version: 3.11.0(@types/node@25.9.5)(abstract-level@1.0.4)(immer@10.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)(slate-dom@0.114.0(slate@0.114.0))(slate@0.114.0)(typescript@6.0.3)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
@@ -113,9 +116,6 @@ importers:
       react-dom:
         specifier: ^19.2.7
         version: 19.2.8(react@19.2.8)
-      tinacms:
-        specifier: ^3.10.0
-        version: 3.11.0(@types/node@25.9.5)(abstract-level@1.0.4)(immer@10.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)(slate-dom@0.114.0(slate@0.114.0))(slate@0.114.0)(typescript@6.0.3)(use-sync-external-store@1.6.0(react@19.2.8))
       turndown:
         specifier: ^7.2.4
         version: 7.2.4

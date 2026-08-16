@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import contactSierra from '../contact-sierra.js';
-import { createSierraLead, toSierraLead, type SierraLead } from './sierra-contact.js';
+import { ContactValidationError, createSierraLead, forwardContactLead, toSierraLead, type SierraLead } from './sierra-contact.js';
 
 const baseForm = {
 	name: 'Jordan Meyers',
@@ -76,16 +75,27 @@ globalThis.fetch = async (_input, init) => {
 	return Response.json({ success: true, data: { leadId: 345678 } });
 };
 try {
-	await contactSierra.formSubmitted({ data: { ...baseForm, 'form-name': 'contact' } });
+	const result = await forwardContactLead({ ...baseForm, 'form-name': 'contact' }, 'api-key');
+	assert.deepEqual(result, { forwarded: true, leadId: 345678 });
 	assert.equal(forwarded, true);
 	assert.match(generatedPassword, /^[0-9a-f]{16}$/);
 
 	forwarded = false;
-	await contactSierra.formSubmitted({ data: { 'form-name': 'another-form' } });
+	assert.deepEqual(await forwardContactLead({ 'form-name': 'another-form' }, 'api-key'), { forwarded: false });
 	assert.equal(forwarded, false);
 
-	await contactSierra.formSubmitted({ data: { ...baseForm } });
+	assert.deepEqual(await forwardContactLead({ ...baseForm }, 'api-key'), { forwarded: false });
 	assert.equal(forwarded, false);
+
+	await assert.rejects(forwardContactLead({ ...baseForm, 'form-name': 'contact' }, ''), /SIERRA_API_KEY is not configured/);
+	await assert.rejects(
+		forwardContactLead({ ...baseForm, email: 'not-an-email', 'form-name': 'contact' }, 'api-key'),
+		ContactValidationError,
+	);
+	await assert.rejects(
+		forwardContactLead({ ...baseForm, interest: 'Unknown', 'form-name': 'contact' }, 'api-key'),
+		/unsupported interest/,
+	);
 } finally {
 	globalThis.fetch = originalFetch;
 	if (originalApiKey === undefined) delete process.env.SIERRA_API_KEY;

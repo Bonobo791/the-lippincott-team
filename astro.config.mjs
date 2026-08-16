@@ -50,13 +50,16 @@ async function getAdapter() {
 // Prefer an explicit SITE_URL; otherwise use the URL the platform injects so
 // zero-config deploys still emit absolute URLs (sitemap, RSS, OpenGraph).
 // Cloudflare Workers exposes no such var — set SITE_URL there for correct
-// canonicals. Local builds fall back to localhost.
+// canonicals. Coolify injects COOLIFY_URL for the app's first domain, but
+// production Coolify deployments should still set SITE_URL explicitly (it
+// wins here). Local builds fall back to localhost.
 function getSiteUrl() {
 	if (process.env.SITE_URL) return process.env.SITE_URL;
 	if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
 	if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
 	if (process.env.CF_PAGES_URL) return process.env.CF_PAGES_URL;
 	if (process.env.NETLIFY && process.env.URL) return process.env.URL;
+	if (process.env.COOLIFY_URL) return process.env.COOLIFY_URL;
 
 	return 'http://localhost:4321';
 }
@@ -66,7 +69,14 @@ export default defineConfig({
 	site: getSiteUrl(),
 	output: 'static',
 	adapter: await getAdapter(),
-	redirects: { '/home': '/' },
+	redirects: {
+		'/home': '/',
+		// Legacy WordPress URL (exact path). The `/opt-out-preferences/*`,
+		// `/author/*`, `/buyers/*`, and `/sellers/*` families are handled by
+		// host-neutral redirect endpoints under src/pages/<prefix>/[...slug].ts
+		// (mirrored in public/_redirects, which Netlify's CDN reads directly).
+		'/team-member-page-design/': { status: 301, destination: '/about/' },
+	},
 	// Astro 7 changed the default from `true` (HTML-aware: keep a single space
 	// between inline elements) to `'jsx'` (strip whitespace per JSX rules,
 	// which can glue adjacent inline elements together). Pin the v6 behavior.

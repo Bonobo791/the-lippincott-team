@@ -24,7 +24,7 @@
     "build:search": "tinacms search-index",
     "preview": "astro preview",
     "test:rich-text": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/rich-text-test src/lib/rich-text.test.ts && node .launch/rich-text-test/rich-text.test.js",
-    "test:sierra": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/sierra-test netlify/functions/_shared/sierra-contact.test.ts && node .launch/sierra-test/_shared/sierra-contact.test.js",
+    "test:sierra": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/sierra-test src/lib/sierra-contact.test.ts && node .launch/sierra-test/sierra-contact.test.js",
     "astro": "astro"
   },
   "dependencies": {
@@ -50,7 +50,8 @@
     "sharp": "^0.35.0",
     "tailwind-merge": "^3.6.0",
     "tailwind-variants": "^3.2.2",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "tinacms": "^3.10.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
@@ -62,7 +63,6 @@
     "playwright-cli": "^0.262.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "tinacms": "^3.10.0",
     "turndown": "^7.2.4",
     "typescript": "^6.0.3",
     "vite": "^7.3.2"
