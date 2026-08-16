@@ -58,6 +58,9 @@ COPY --from=build /app/dist ./dist
 # The generated Tina client + seeded content cache (tina/__generated__) are
 # referenced by the /tina-island re-render endpoint at runtime.
 COPY --from=build /app/tina ./tina
+# Deploy tooling: the entrypoint purges the Bunny pull-zone cache on container
+# start (Coolify starts a new container per deploy), then runs the server.
+COPY scripts/deploy ./scripts/deploy
 USER node
 EXPOSE 4321
 # Health check via node's built-in fetch — no curl/wget needed in the image.
@@ -65,4 +68,5 @@ EXPOSE 4321
 # gates Traefik routing / rolling updates on it.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4321)+'/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+ENTRYPOINT ["/app/scripts/deploy/docker-entrypoint.sh"]
 CMD ["node", "./dist/server/entry.mjs"]

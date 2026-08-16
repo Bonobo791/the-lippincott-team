@@ -171,6 +171,10 @@ above rather than bare `astro build`.
   `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
   gitignored `.launch/qa/`. For interactive browsing use
   `npx playwright cli --browser=chromium` (no system Chrome installed).
+- `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
+  cache purge; run automatically by the Docker entrypoint on Coolify container
+  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set) and
+  `docker-entrypoint.sh` (purge-then-serve container entrypoint).
 
 ## Key conventions
 
@@ -378,6 +382,19 @@ Traefik routing + rolling updates. The container needs egress to TinaCloud
 are needed (stateless). `CONTEXT` is unset there, so production builds include
 GA4.
 
+**CDN (Bunny)**: traffic is fronted by a Bunny pull zone whose origin is the
+Coolify server (set **Origin Host Header** to the app's domain — Traefik
+routes by `Host`), plus a storage zone serving `/uploads/*` media via an edge
+rule with the **Origin URL per request** action pointing at the storage
+zone's `*.b-cdn.net` hostname — media stays in the repo, content paths never
+change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
+→ storage origin + 30 d; `*/_astro/*` → 1 y; HTML `*/` → 10 min. Deploys purge
+the pull zone automatically: the Docker entrypoint
+(`scripts/deploy/docker-entrypoint.sh`) runs
+`scripts/deploy/purge-bunny-cache.mjs` on container start when
+`BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set (runtime-only secret; no-op
+without them). See README "Bunny CDN" for the dashboard steps.
+
 Legacy WordPress URLs are handled host-neutrally by the `redirects` map in
 `astro.config.mjs` (served by every adapter, including the standalone Node
 server on Coolify/Docker) and additionally by `public/_redirects`, which
@@ -415,4 +432,9 @@ Environment variables (see `.env.example`):
 - `SIERRA_API_KEY` — Sierra lead-forwarding key for the `/api/contact`
   endpoint (all platforms). Never commit its value or prefix it with
   `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
+- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
+  Docker entrypoint purges the pull zone on container start (every Coolify
+  deploy). `BUNNY_API_KEY` is a secret — never commit it or prefix it with
+  `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
+  when unset).
 - `DEPLOY_ADAPTER` — optional adapter override.

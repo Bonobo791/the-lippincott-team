@@ -62,6 +62,50 @@ The contact form posts to `/api/contact`, which forwards leads to Sierra
 directly on every platform (Netlify, Coolify, Docker) — there is no Netlify
 Forms dependency anymore.
 
+### Bunny CDN
+
+Traffic is served through Bunny CDN: a **pull zone** in front of the Coolify
+origin (HTML/JS/CSS) plus a **storage zone** that serves `/uploads/*` media
+(images and videos). The media files stay in this repo as the source of
+truth — the pull zone routes `/uploads/*` requests to the storage zone via an
+edge rule, so content URLs never change.
+
+Setup (Bunny dashboard):
+
+1. **Storage zone** → *Add Storage Zone* (e.g. `lippincott-media`). Note the
+   linked pull-zone hostname (e.g. `lippincott-media.b-cdn.net`), then upload
+   the contents of `public/uploads/` (drag-and-drop the folder). Re-upload
+   when media changes.
+2. **Pull zone** → *Add Pull Zone*:
+   - **Origin URL**: your Coolify domain — the production domain in prod;
+     for dev, `http://www.lrmrpayrrcyadik6utzhit1l.169.58.185.96.sslip.io/`
+     until the real domain is live.
+   - **Origin Host Header**: set to the same domain — Coolify's Traefik
+     routes by `Host` header, so this must match the app's configured domain.
+3. **Edge Rules** on the pull zone, in order:
+   1. `*/api/*` and `*/tina-island/*` → **Bypass cache** (contact endpoint
+      and the visual-editing route are never cached).
+   2. `*/uploads/*` → action **Origin URL** = `https://<storage-zone>.b-cdn.net`,
+      with extra action cache time **30 days**.
+   3. `*/_astro/*` → cache time **1 year** (content-hashed build assets).
+   4. Request URL `*/` → cache time **10 minutes** (HTML pages — the site
+      uses trailing slashes everywhere).
+4. **Hostnames**: dev can use the pull zone's `*.b-cdn.net` system hostname.
+   For production add the real domain(s) (e.g. `lippincottteam.com` and
+   `www.lippincottteam.com`), enable **Force SSL** (automatic Let's Encrypt
+   certificates), and create the DNS records Bunny shows. `SITE_URL` should
+   already be the same domain.
+
+Cache purging on deploy:
+
+- **Coolify: automatic** — the image entrypoint purges the pull zone whenever
+  a new container starts (every deployment). Set `BUNNY_API_KEY` (runtime
+  only) and `BUNNY_PULL_ZONE_ID` on the app.
+- **Manual**: `BUNNY_API_KEY=… BUNNY_PULL_ZONE_ID=<id> node
+  scripts/deploy/purge-bunny-cache.mjs` — the key is created under
+  *Account → API*; the zone ID is the number in the pull zone's URL.
+- Without the env vars the script is a no-op, so local builds are unaffected.
+
 ## License
 
 The code in this repository is licensed under the
