@@ -75,10 +75,12 @@ export default defineConfig({
 	// host via x-forwarded-host. Astro's same-origin guard for non-GET
 	// requests would therefore reject every browser POST to /api/contact
 	// (Origin: <cdn hostname> vs Host: <app domain>) and to /tina-island. The
-	// endpoints carry no cookies/sessions (nothing for CSRF to exploit):
-	// the contact form keeps its honeypot, size cap, and per-IP rate limit,
-	// and the island endpoint only re-renders publicly visible content. So
-	// the form-submission origin check is disabled.
+	// endpoints carry no cookies/sessions (nothing for CSRF to exploit), but
+	// /api/contact enforces its own browser CSRF guard at the endpoint level
+	// (an Origin allowlist against SITE_URL / platform URL envs — see
+	// src/pages/api/contact.ts) alongside the honeypot, streaming size cap,
+	// and per-IP rate limit, and the island endpoint only re-renders publicly
+	// visible content. So the host-based origin check stays disabled.
 	security: {
 		checkOrigin: false,
 	},

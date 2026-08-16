@@ -15,22 +15,32 @@ RUN npm install -g pnpm@10.34.5
 # ---------- deps: install the full dependency tree ----------
 FROM base AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml carries the allowBuilds allowlist (better-sqlite3,
+# sharp, ...) — without it pnpm 10 blocks those native builds and the
+# resulting node_modules is unusable in the build stage.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---------- build ----------
 FROM base AS build
 WORKDIR /app
 # Declare defaults so plain `docker build` also works; Coolify passes these as
-# --build-arg automatically (Build Variable flag, on by default).
+# --build-arg automatically (Build Variable flag, on by default). TINA_TOKEN
+# is deliberately ARG-only: ARG values are visible to the RUN that consumes
+# them but are not baked into image config or layer metadata the way ENV
+# values are, so the credential cannot be recovered from the image.
 ARG PUBLIC_TINA_CLIENT_ID=""
 ARG TINA_TOKEN=""
 ARG SITE_URL="https://lippincottteam.com"
 ARG PUBLIC_GA_ID=""
+# Coolify sets COOLIFY_BRANCH (Build Variable) — promote it to ENV so
+# tina/config.ts branch detection sees it and staging builds don't fall
+# back to `main`.
+ARG COOLIFY_BRANCH=""
 ENV PUBLIC_TINA_CLIENT_ID=$PUBLIC_TINA_CLIENT_ID \
-    TINA_TOKEN=$TINA_TOKEN \
     SITE_URL=$SITE_URL \
     PUBLIC_GA_ID=$PUBLIC_GA_ID \
+    COOLIFY_BRANCH=$COOLIFY_BRANCH \
     NODE_ENV=production \
     NODE_OPTIONS=--max-old-space-size=4096
 COPY --from=deps /app/node_modules ./node_modules
@@ -39,8 +49,14 @@ COPY . .
 # BUILD_SCRIPT override mirrors netlify.toml's per-context commands: use
 # `build:preview` for staging apps when the branch's Tina schema is not
 # indexed by TinaCloud yet (skips the cloud schema check; production client).
+# Allowlisted rather than freely interpolated so a mis-set build arg cannot
+# inject shell commands.
 ARG BUILD_SCRIPT="build"
-RUN pnpm $BUILD_SCRIPT
+RUN case "$BUILD_SCRIPT" in \
+      build|build:preview|build:local) ;; \
+      *) echo "Invalid BUILD_SCRIPT: $BUILD_SCRIPT" >&2; exit 1 ;; \
+    esac \
+ && pnpm "$BUILD_SCRIPT"
 
 # ---------- runtime ----------
 FROM base AS runtime

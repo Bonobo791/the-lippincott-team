@@ -41,9 +41,15 @@ server.
    injected `PORT`, but keep it consistent with `EXPOSE 4321`).
 3. Add environment variables:
    - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials; the build
-     fails fast with `ERR_MISSING_CLOUD_CREDS` without them.
+     fails fast with `ERR_MISSING_CLOUD_CREDS` without them. `TINA_TOKEN` is
+     consumed during the image build only: it is passed as a build arg and
+     is never baked into the image (keep its Build Variable flag on so the
+     build receives it).
    - `SITE_URL` — canonical origin, e.g. `https://lippincottteam.com`
      (drives sitemap/RSS/OpenGraph canonicals).
+   - `COOLIFY_BRANCH` — Coolify sets this automatically (Build Variable); the
+     Dockerfile promotes it into the build so the Tina admin/client targets
+     the right branch. Staging apps must keep its Build Variable flag on.
    - `SIERRA_API_KEY` — Sierra lead-forwarding key for the contact form;
      set it **runtime-only** (uncheck "Build Variable").
    - `PUBLIC_GA_ID` (optional) — GA4 measurement ID override. Production
@@ -51,6 +57,7 @@ server.
    - `BUILD_SCRIPT` (optional) — defaults to `build`; set `build:preview` for
      staging apps when the branch's Tina schema isn't indexed by TinaCloud
      yet (skips the cloud schema check, mirrors `netlify.toml` contexts).
+     Only `build`, `build:preview`, and `build:local` are accepted.
 4. Add your domain under **Domains** — Coolify provisions and renews
    Let's Encrypt TLS automatically.
 5. Health checks: the Dockerfile `HEALTHCHECK` is picked up automatically and

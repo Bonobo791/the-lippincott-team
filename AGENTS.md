@@ -397,8 +397,12 @@ without them). The pull zone sends the app's own domain to the origin
 (*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
 Traefik routes without CDN hostnames being Coolify domains; Bunny does not
 forward the visitor host, so `security.checkOrigin` is `false` in
-`astro.config.mjs` (see the inline comment — the POST endpoints are
-stateless, and the honeypot/size-cap/rate-limit stay the abuse controls).
+`astro.config.mjs` (see the inline comment). `/api/contact` compensates with
+its own endpoint-level browser CSRF guard — an `Origin` allowlist against
+`SITE_URL` / platform URL envs — plus the honeypot, streaming size cap, and
+per-IP rate limit (keyed by the proxy-set `X-Real-IP`/`Client-IP` header or
+the proxy-appended tail of `X-Forwarded-For` — never the client-controlled
+first value).
 Keep `Block Root Path Access`, `Block None Referrer`, and `Block POST
 Requests` **off** on the zone (Bunny's defaults for some zone types flip
 them on, which 403s first-time visitors and form submissions; the pull
