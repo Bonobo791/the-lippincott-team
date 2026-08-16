@@ -19,34 +19,23 @@
           "link": "/northwest-houston-real-estate/cypress-tx-real-estate/",
           "children": [
             { "title": "Bridgeland", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/" },
-            { "title": "Canyon Lakes West at Stone Gate", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/canyon-lakes-west-at-stone-gate-real-estate/" },
             { "title": "Coles Crossing", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/coles-crossing-real-estate/" },
-            { "title": "Cypress Creek Lakes", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/cypress-creek-lakes-real-estate/" },
-            { "title": "Cypress Mill", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/cypress-mill-real-estate/" },
-            { "title": "Fairfield Village", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/fairfield-village-real-estate/" },
-            { "title": "Longwood Village", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/longwood-village-real-estate/" },
-            { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" },
-            { "title": "Villages of Cypress Lakes", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/villages-of-cypress-lakes-real-estate/" }
+            { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" }
           ]
         },
         {
           "title": "Tomball",
           "link": "/northwest-houston-real-estate/tomball-tx-real-estate/",
           "children": [
-            { "title": "Raleigh Creek", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/raleigh-creek-real-estate/" },
-            { "title": "Villages of Northpointe", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/villages-of-northpointe-real-estate/" },
-            { "title": "Willow Forest", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/willow-forest-real-estate/" }
+            { "title": "Villages of Northpointe", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/villages-of-northpointe-real-estate/" }
           ]
         },
         {
           "title": "Katy",
           "link": "/northwest-houston-real-estate/katy-tx-real-estate/",
           "children": [
-            { "title": "Autumn Run", "link": "/northwest-houston-real-estate/katy-tx-real-estate/autumn-run-real-estate/" },
-            { "title": "Brenwood", "link": "/northwest-houston-real-estate/katy-tx-real-estate/brenwood-real-estate/" },
             { "title": "Cane Island", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cane-island-real-estate/" },
             { "title": "Cimarron", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cimarron-real-estate/" },
-            { "title": "Cinco Ranch West", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cinco-ranch-west-real-estate/" },
             { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" },
             { "title": "Grand Lakes", "link": "/northwest-houston-real-estate/katy-tx-real-estate/grand-lakes-real-estate/" },
             { "title": "Seven Meadows", "link": "/northwest-houston-real-estate/katy-tx-real-estate/seven-meadows-real-estate/" }
