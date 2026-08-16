@@ -106,6 +106,15 @@ Cache purging on deploy:
   *Account → API*; the zone ID is the number in the pull zone's URL.
 - Without the env vars the script is a no-op, so local builds are unaffected.
 
+Note: the pull zone forwards the visitor's `Host` header to the origin
+(*Add Host Header* on, no *Origin Host Header* override), so **every hostname
+served by the pull zone must be added to the Coolify app's Domains** (staging:
+`coolify-lippincott-staging.b-cdn.net`; production: the real domain) —
+otherwise Coolify's Traefik answers `404 page not found`. Keep *Block Root
+Path Access*, *Block None Referrer*, and *Block POST Requests* **off** on the
+zone (they 403 first-time visitors and form submissions, and the zone's
+cache-error setting then amplifies that by caching the 403s).
+
 ## License
 
 The code in this repository is licensed under the

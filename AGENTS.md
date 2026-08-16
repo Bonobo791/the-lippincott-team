@@ -393,7 +393,15 @@ the pull zone automatically: the Docker entrypoint
 (`scripts/deploy/docker-entrypoint.sh`) runs
 `scripts/deploy/purge-bunny-cache.mjs` on container start when
 `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set (runtime-only secret; no-op
-without them). See README "Bunny CDN" for the dashboard steps.
+without them). The pull zone forwards the visitor's `Host` header to the
+origin (*Add Host Header* on, no *Origin Host Header* override), so **every
+hostname served by the pull zone must also be a Coolify app Domain** (Traefik
+routes by `Host`; unknown hosts get `404 page not found`). Keep
+`Block Root Path Access`, `Block None Referrer`, and `Block POST Requests`
+**off** on the zone (Bunny's defaults for some zone types flip them on,
+which 403s first-time visitors and form submissions; the pull zone's
+cache-error setting will then amplify it by caching those 403s).
+See README "Bunny CDN" for the dashboard steps.
 
 Legacy WordPress URLs are handled host-neutrally by the `redirects` map in
 `astro.config.mjs` (served by every adapter, including the standalone Node
