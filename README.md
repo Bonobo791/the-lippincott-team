@@ -1,5 +1,7 @@
 # The Lippincott Team
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/94a34416036d490b9011e3b2866f86a1)](https://app.codacy.com/gh/Bonobo791/the-lippincott-team?utm_source=github.com&utm_medium=referral&utm_content=Bonobo791/the-lippincott-team&utm_campaign=Badge_Grade)
+
 TheLippincottTeam.com
 
 The Lippincott Team is a Houston-area real estate team founded by Amy
