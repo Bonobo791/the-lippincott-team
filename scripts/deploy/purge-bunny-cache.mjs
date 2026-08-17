@@ -31,12 +31,13 @@ try {
 		signal: AbortSignal.timeout(30_000),
 	});
 	if (!response.ok) {
-		const detail = (await response.text().catch(() => '')).trim();
-		// Log-injection hardening: the Bunny API response text is logged
-		// verbatim — strip control characters so a compromised/unexpected
-		// response body cannot forge log lines or terminal escape sequences.
-		const safeDetail = detail.slice(0, 300).replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ');
-		console.error(`[bunny-purge] Failed: HTTP ${response.status}${safeDetail ? ` ${safeDetail}` : ''}`);
+		// S5145: the Bunny API response body is external data and is never
+		// interpolated into log output — a forged body could inject log lines
+		// or terminal escape sequences (Sonar does not treat a
+		// strip-control-characters pass as sanitization). The status code
+		// alone identifies the failure class; reproduce the call with curl
+		// for the full API error body.
+		console.error(`[bunny-purge] Failed: HTTP ${response.status}`);
 		process.exit(1);
 	}
 	console.log(`[bunny-purge] Pull zone ${pullZoneId} cache purged.`);
