@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#17151a"/>
+  <rect x="40" y="40" width="1520" height="820" fill="none" stroke="#e7e2d6" stroke-opacity="0.22" stroke-width="2"/>
+  <rect x="56" y="56" width="1488" height="788" fill="none" stroke="#e7e2d6" stroke-opacity="0.1" stroke-width="1"/>
+  <circle cx="800" cy="368" r="86" fill="none" stroke="#c9a15a" stroke-opacity="0.85" stroke-width="3"/>
+  <path d="M716 368 h168 M800 282 v172" stroke="#c9a15a" stroke-opacity="0.85" stroke-width="3"/>
+  <text x="800" y="548" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="56" fill="#f6f2ea" letter-spacing="1">Community photo</text>
+  <text x="800" y="614" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="36" fill="#c9a15a" letter-spacing="2">coming soon</text>
+  <text x="800" y="700" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#7a7780" letter-spacing="4">THE LIPPINCOTT TEAM · NORTHWEST HOUSTON</text>
+</svg>

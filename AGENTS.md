@@ -7,11 +7,13 @@
 
 ## Project overview
 
-This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify: content
-is edited visually in the TinaCMS admin and shipped as static HTML. The site
-itself ships **zero React** — React appears only as a pinned devDependency for
-building the Tina admin UI (see `README.md` "A note on React" for why the pin
-exists; do not remove it casually).
+This is a **TinaCMS + Astro starter site** (`lippincott-team-astro-tina`) hosted on Netlify (and deployable
+on Coolify/Docker): content is edited visually in the TinaCMS admin and shipped
+as static HTML. The site itself ships **zero React** to browsers — React stays
+a pinned devDependency for building the Tina admin UI (see `README.md` "A note
+on React" for why the pin exists; do not remove it casually), while `tinacms`
+is a runtime dependency because the `/tina-island` endpoint's generated client
+imports `tinacms/dist/client` in the standalone server bundle.
 
 - Astro **7** (`output: 'static'`), Tailwind CSS **v4** (via `@tailwindcss/vite`),
   TypeScript strict (`tsconfig.json` extends `astro/tsconfigs/strict`).
@@ -149,8 +151,17 @@ above rather than bare `astro build`.
   container (a native call would wipe the document on ClientRouter swaps)
   and restores the originals once the script settles; `#har-feed` overrides
   in `v2.css` re-skin the widget's inline styles to the v2 tokens. Caveat:
-  HAR sits behind PerimeterX — headless-Chromium screenshot runs must route
-  `**/mopx_services/**` to a captured copy of the widget JS,
+  HAR sits behind PerimeterX — a browser with no PX session gets the captcha
+  page (403, `text/html`) instead of the widget. A script element can't
+  execute HTML, but it does store the response's `Set-Cookie: _pxhd`, so the
+  loader retries the script after the first failure (up to 3 attempts, also
+  on a silent empty load): the retry carries the cookie and HAR serves the
+  real widget JS. The loader depends on the widget payload being a single
+  self-contained synchronous `document.writeln` (observed: no nested
+  scripts/XHRs) — one successful load renders the whole feed; re-check that
+  if HAR ever changes the payload. Headless-Chromium screenshot runs can
+  route `**/mopx_services/**` to a captured copy of the widget JS (e.g.
+  Playwright `context.route`) if PX ever blocks them,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
@@ -169,6 +180,10 @@ above rather than bare `astro build`.
   `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
   gitignored `.launch/qa/`. For interactive browsing use
   `npx playwright cli --browser=chromium` (no system Chrome installed).
+- `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
+  cache purge; run automatically by the Docker entrypoint on Coolify container
+  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set) and
+  `docker-entrypoint.sh` (purge-then-serve container entrypoint).
 
 ## Key conventions
 
@@ -200,8 +215,11 @@ above rather than bare `astro build`.
   override, whose slug algorithm must stay in sync with `extractToc`), an
   inline CTA panel, author box, and category-first related reads. The
   `contactForm` block renders the entire contact page (SplitHeading H1 from
-  `heading`, Netlify form, config-driven contact rail, reassurance strip) —
-  `contact-us.mdx` is that single block.
+  `heading`, the `/api/contact` form — a host-neutral endpoint that forwards
+  leads to Sierra directly on every platform, replacing the old Netlify Forms
+  + `netlify/functions/contact-sierra.ts` flow — config-driven contact rail,
+  reassurance strip) — `contact-us.mdx` is that single block. See
+  `src/pages/api/contact.ts` + `src/lib/sierra-contact.ts`.
 - After changing the Tina schema, regenerate the client (`tina/__generated__/`)
   via `pnpm dev` / `pnpm build`.
 - The generated client reads content from a **seeded cache**
@@ -358,8 +376,53 @@ Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
 field in `package.json` are what make Netlify install with pnpm instead of
 npm — do not re-ignore the lockfile.
 
-Legacy WordPress URLs are handled by `public/_redirects` (Astro copies
-`public/` verbatim into the publish dir): `/opt-out-preferences/*`,
+**Coolify / Docker**: the multi-stage `Dockerfile` + `.dockerignore` at the
+repo root build with `pnpm build` (TinaCloud credentials required) and run the
+adapter-node standalone server (`node ./dist/server/entry.mjs`). Coolify apps
+use the **Dockerfile** build pack (location `/Dockerfile`, the default). Env
+vars set on the app are passed as build args by default (Build Variable flag)
+and the proxy injects `PORT`/`HOST` — keep **Ports Exposes** on `4321` to
+match `EXPOSE`. Required env: `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`,
+`SITE_URL`; the `SIERRA_API_KEY` runtime secret (contact form → Sierra) should
+have its Build Variable flag **off**. The Dockerfile `HEALTHCHECK` (node fetch
+on `/`) is parsed by Coolify, takes precedence over UI checks, and gates
+Traefik routing + rolling updates. The container needs egress to TinaCloud
+(`content.tina.io` / `app.tina.io`) for content and visual editing; no volumes
+are needed (stateless). `CONTEXT` is unset there, so production builds include
+GA4.
+
+**CDN (Bunny)**: traffic is fronted by a Bunny pull zone whose origin is the
+Coolify server (set **Origin Host Header** to the app's domain — Traefik
+routes by `Host`), plus a storage zone serving `/uploads/*` media via an edge
+rule with the **Origin URL per request** action pointing at the storage
+zone's `*.b-cdn.net` hostname — media stays in the repo, content paths never
+change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
+→ storage origin + 30 d; `*/_astro/*` → 1 y; HTML `*/` → 10 min. Deploys purge
+the pull zone automatically: the Docker entrypoint
+(`scripts/deploy/docker-entrypoint.sh`) runs
+`scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
+readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
+(runtime-only secret; skipped without them, and when readiness times out the
+purge is skipped so a broken container can't clear a healthy cache). The pull zone sends the app's own domain to the origin
+(*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
+Traefik routes without CDN hostnames being Coolify domains; Bunny does not
+forward the visitor host, so `security.checkOrigin` is `false` in
+`astro.config.mjs` (see the inline comment). `/api/contact` compensates with
+its own endpoint-level browser CSRF guard — an `Origin` allowlist against
+`SITE_URL` / platform URL envs — plus the honeypot, streaming size cap, and
+per-IP rate limit (keyed by the proxy-set `X-Real-IP`/`Client-IP` header or
+the proxy-appended tail of `X-Forwarded-For` — never the client-controlled
+first value).
+Keep `Block Root Path Access`, `Block None Referrer`, and `Block POST
+Requests` **off** on the zone (Bunny's defaults for some zone types flip
+them on, which 403s first-time visitors and form submissions; the pull
+zone's cache-error setting will then amplify it by caching those 403s).
+See README "Bunny CDN" for the dashboard steps.
+
+Legacy WordPress URLs are handled host-neutrally by the `redirects` map in
+`astro.config.mjs` (served by every adapter, including the standalone Node
+server on Coolify/Docker) and additionally by `public/_redirects`, which
+Netlify's CDN reads directly from the publish dir: `/opt-out-preferences/*`,
 `/team-member-page-design/`, and `/author/*` 301 to their closest equivalents.
 All other migrated WP URLs map 1:1 onto existing routes.
 
@@ -384,9 +447,18 @@ loader from double-binding on reruns.
 Environment variables (see `.env.example`):
 
 - `SITE_URL` — production URL for sitemap/RSS/OpenGraph. Most platforms inject
-  a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**.
+  a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**; set
+  it on Coolify too (`COOLIFY_URL` is only a fallback).
 - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials, required for
-  `pnpm build`.
+  `pnpm build` (including the Coolify Docker build).
 - `PUBLIC_GA_ID` — optional GA4 measurement ID override (default
   `G-ZREVRSHYJB`).
+- `SIERRA_API_KEY` — Sierra lead-forwarding key for the `/api/contact`
+  endpoint (all platforms). Never commit its value or prefix it with
+  `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
+- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
+  Docker entrypoint purges the pull zone on container start (every Coolify
+  deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
+  `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
+  when unset).
 - `DEPLOY_ADAPTER` — optional adapter override.

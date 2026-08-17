@@ -128,3 +128,37 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 		...(typeof result.data.agentUserId === 'number' ? { agentUserId: result.data.agentUserId } : {}),
 	};
 }
+
+/** Client errors (bad form payloads) vs. server/Sierra failures, for HTTP status mapping. */
+export class ContactValidationError extends Error {}
+
+export type ContactForwardResult = { forwarded: true; leadId: number } | { forwarded: false };
+
+/**
+ * Host-neutral lead forwarding for the "contact" form: validates the payload,
+ * mints the Sierra password, and creates the lead. Ignores submissions whose
+ * `form-name` is not "contact" (like the old Netlify formSubmitted handler).
+ */
+export async function forwardContactLead(data: Record<string, string>, apiKey: string, fetcher: typeof fetch = fetch): Promise<ContactForwardResult> {
+	if (data['form-name'] !== 'contact') return { forwarded: false };
+
+	if (!apiKey) throw new Error('SIERRA_API_KEY is not configured.');
+
+	// Web Crypto (available on every host runtime) — 16 hex chars, same shape
+	// as node:crypto's randomBytes(8).toString('hex') but without the
+	// node:crypto dependency (Cloudflare Workers only shims it under
+	// nodejs_compat).
+	const password = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) =>
+		b.toString(16).padStart(2, '0'),
+	).join('');
+	let lead: SierraLead;
+	try {
+		lead = toSierraLead(data, password);
+	} catch (error) {
+		throw new ContactValidationError(error instanceof Error ? error.message : 'Invalid contact form submission.');
+	}
+
+	const result = await createSierraLead(lead, apiKey, fetcher);
+	console.info(`[sierra-contact] Lead created. leadId=${result.leadId}`);
+	return { forwarded: true, leadId: result.leadId };
+}

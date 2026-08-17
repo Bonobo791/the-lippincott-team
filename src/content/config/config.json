@@ -19,15 +19,26 @@
           "link": "/northwest-houston-real-estate/cypress-tx-real-estate/",
           "children": [
             { "title": "Bridgeland", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/" },
+            { "title": "Coles Crossing", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/coles-crossing-real-estate/" },
             { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" }
           ]
         },
-        { "title": "Tomball", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/" },
+        {
+          "title": "Tomball",
+          "link": "/northwest-houston-real-estate/tomball-tx-real-estate/",
+          "children": [
+            { "title": "Villages of Northpointe", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/villages-of-northpointe-real-estate/" }
+          ]
+        },
         {
           "title": "Katy",
           "link": "/northwest-houston-real-estate/katy-tx-real-estate/",
           "children": [
-            { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" }
+            { "title": "Cane Island", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cane-island-real-estate/" },
+            { "title": "Cimarron", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cimarron-real-estate/" },
+            { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" },
+            { "title": "Grand Lakes", "link": "/northwest-houston-real-estate/katy-tx-real-estate/grand-lakes-real-estate/" },
+            { "title": "Seven Meadows", "link": "/northwest-houston-real-estate/katy-tx-real-estate/seven-meadows-real-estate/" }
           ]
         },
         { "title": "Waller", "link": "/northwest-houston-real-estate/waller-tx-real-estate/" },
