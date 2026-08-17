@@ -19,6 +19,20 @@ export function isExternal(link: string | undefined | null): boolean {
 	return !!link && /^https?:\/\//i.test(link.trim());
 }
 
+/**
+ * Anchor attrs for links that should open in a new tab: absolute http(s)
+ * URLs (external) and downloadable files (`.pdf`/`.docx`/`.zip`/office
+ * docs). Download links are relative (`/uploads/…`), so they need their own
+ * rule — `isExternal` alone would leave them navigating in-place. Everything
+ * else gets `{}`.
+ */
+export function linkTargetAttrs(link: string | undefined | null): Record<string, string> {
+	if (!link) return {};
+	const value = link.trim();
+	const opensInNewTab = /^https?:\/\//i.test(value) || /\.(pdf|docx?|xlsx?|pptx?|zip)$/i.test(value);
+	return opensInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+}
+
 /** Build a `tel:` href from a display phone number (US 10-digit numbers get the leading 1). */
 export function telHref(phone?: string | null): string | undefined {
 	if (!phone) return undefined;

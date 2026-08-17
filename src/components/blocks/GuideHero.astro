@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import GuideActions from '../ui/GuideActions.astro';
-import { safeHref, isExternal } from '../../lib/url';
+import { safeHref, linkTargetAttrs } from '../../lib/url';
 import type { GuideHeroBlock } from '../../lib/data';
 
 interface Props {
@@ -25,14 +25,14 @@ const stacked = stackProp && data.mobileImage;
 // Per-page focal point for the mobile 5:4 photo frame (Editorial Masthead).
 const focalStyle = `--focal-x:${data.focalX ?? 50}%;--focal-y:${data.focalY ?? 42}%`;
 // The mobile CTA row duplicates the actions below the stat strip (the
-// desktop copy stays inside the panel). Same safeHref/isExternal filtering
-// as GuideActions, but NO tina bindings on the duplicate — duplicate
+// desktop copy stays inside the panel). Same safeHref/linkTargetAttrs
+// filtering as GuideActions, but NO tina bindings on the duplicate — duplicate
 // data-tina-field attributes break visual editing.
 const mobileActions = (data.actions ?? []).flatMap((action) => {
 	if (!action) return [];
 	const href = safeHref(action.link);
 	if (!href) return [];
-	return [{ action, href, externalAttrs: isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {} }];
+	return [{ action, href, linkAttrs: linkTargetAttrs(action.link) }];
 });
 // Tina field bindings: the stacked variants edit `mobileImage` when one is
 // set; the binding lives on the shared wrapper so the field never appears
@@ -105,11 +105,11 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 	    50px) under the strip for heroes that carry actions. */}
 	{mobileActions.length > 0 && (
 		<div class="hidden max-[820px]:order-3 max-[820px]:flex max-[820px]:flex-col max-[820px]:gap-3 max-[820px]:px-[22px] max-[820px]:py-6">
-			{mobileActions.map(({ action, href, externalAttrs }) => (
+			{mobileActions.map(({ action, href, linkAttrs }) => (
 				action.type === 'link' ? (
-					<a href={href} {...externalAttrs} class="inline-flex min-h-[50px] items-center justify-center text-sm font-semibold text-ink"><span class="border-b border-[#17151a]/35 pb-0.5">{action.label}</span></a>
+					<a href={href} {...linkAttrs} class="inline-flex min-h-[50px] items-center justify-center text-sm font-semibold text-ink"><span class="border-b border-[#17151a]/35 pb-0.5">{action.label}</span></a>
 				) : (
-					<a href={href} {...externalAttrs} class="inline-flex min-h-[50px] items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95">{action.label} <span aria-hidden="true">→</span></a>
+					<a href={href} {...linkAttrs} class="inline-flex min-h-[50px] items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95">{action.label} <span aria-hidden="true">→</span></a>
 				)
 			))}
 		</div>
