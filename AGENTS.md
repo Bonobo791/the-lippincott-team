@@ -145,23 +145,22 @@ above rather than bare `astro build`.
   its own FAQPage JSON-LD),
   `reviews.astro` (**static one-off reviews page**, same v2 world — not
   Tina-editable; `reviews.mdx` stays in Tina unrendered). The live feed is
-  the HAR.com widget (`har.com/mopx_services/realtor-agent-rating`), a legacy
-  **`document.write` script**: reviews.astro loads it through an inline
-  loader that redirects `document.write`/`writeln` into the `#har-feed`
-  container (a native call would wipe the document on ClientRouter swaps)
-  and restores the originals once the script settles; `#har-feed` overrides
-  in `v2.css` re-skin the widget's inline styles to the v2 tokens. Caveat:
-  HAR sits behind PerimeterX — a browser with no PX session gets the captcha
-  page (403, `text/html`) instead of the widget. A script element can't
-  execute HTML, but it does store the response's `Set-Cookie: _pxhd`, so the
-  loader retries the script after the first failure (up to 3 attempts, also
-  on a silent empty load): the retry carries the cookie and HAR serves the
-  real widget JS. The loader depends on the widget payload being a single
-  self-contained synchronous `document.writeln` (observed: no nested
-  scripts/XHRs) — one successful load renders the whole feed; re-check that
-  if HAR ever changes the payload. Headless-Chromium screenshot runs can
-  route `**/mopx_services/**` to a captured copy of the widget JS (e.g.
-  Playwright `context.route`) if PX ever blocks them,
+  the HAR.com widget (`har.com/mopx_services/realtor-agent-rating`), which
+  HAR serves behind PerimeterX: a raw request gets the bot-check page
+  (403, `text/html`) and a `<script src>` embed can never execute the
+  challenge (a cookie-only retry does not clear the gate). The page
+  therefore embeds the widget URL in an `<iframe>` inside `#har-feed` —
+  HAR's challenge runs in-frame and self-heals once a visitor solves it.
+  Cross-origin iframe content cannot be styled from `v2.css`, so the card
+  chrome lives on the `#har-feed` container and the widget keeps its own
+  presentation; a muted `.feed-note` under the frame links to the full
+  survey history on HAR.com. If HAR ever blocks framing
+  (`X-Frame-Options`/`frame-ancestors`), fall back to the static-snapshot
+  approach (see `.launch/qa/reviews/har-iframe-checklist.md`). QA: run
+  `scripts/audit/capture-har-widget.mjs` in a headed browser to save the
+  rendered widget page to `.launch/qa/reviews/har-widget-capture.html`;
+  `shoot.mjs`/`probe-styles.mjs` route `**/mopx_services/**` to that
+  capture when present so headless runs never hit PerimeterX,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school

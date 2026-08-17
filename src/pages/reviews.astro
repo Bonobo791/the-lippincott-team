@@ -87,90 +87,14 @@ const jsonld = {
 				<h2 class="display sec reveal">Straight from <em>HAR.com.</em></h2>
 				<p class="lede reveal">A live feed from our public HAR.com profile. New surveys appear here as clients complete them, unedited and uncurated.</p>
 				<div class="feed reveal">
-					<div id="har-feed" aria-live="polite"></div>
-					<script is:inline data-astro-rerun>
-						(function () {
-							var target = document.getElementById('har-feed');
-							if (!target) return;
-							target.innerHTML = '';
-							// The HAR widget is a legacy document.write script. Redirect its
-							// output into the feed container: native document.write only works
-							// during initial parse, and on a ClientRouter swap it would wipe
-							// the whole document. The true natives live on window so a rerun
-							// never captures our own wrapper as the "original".
-							if (!window.__harOrigWrite) {
-								window.__harOrigWrite = { write: document.write, writeln: document.writeln };
-							}
-							var settled = false;
-							var timer = null;
-							// restore(): the widget script has settled — put the natives back.
-							// Drop the pending element too: a script that finishes loading
-							// after restore (the 15s watchdog firing mid-flight) must never
-							// execute — a late widget write would hit the real native
-							// document.write and wipe the page.
-							function restore() {
-								if (settled) return;
-								settled = true;
-								var pending = document.getElementById('har-widget');
-								if (pending) pending.remove();
-								document.write = window.__harOrigWrite.write;
-								document.writeln = window.__harOrigWrite.writeln;
-								if (timer) { clearTimeout(timer); timer = null; }
-							}
-							// detach(): navigating away mid-load. Swap the wrapper for a
-							// no-op: a late-arriving widget's writes are dropped instead of
-							// hitting native document.write (which would wipe the new page),
-							// and the closure stops retaining the detached feed DOM.
-							function detach() {
-								if (settled) return;
-								if (timer) { clearTimeout(timer); timer = null; }
-								var pending = document.getElementById('har-widget');
-								if (pending) pending.remove();
-								document.write = document.writeln = function () {};
-							}
-							document.write = document.writeln = function (html) {
-								target.insertAdjacentHTML('beforeend', html);
-							};
-							document.addEventListener('astro:before-swap', detach, { once: true });
-							// HAR's widget endpoint sits behind PerimeterX: a browser with
-							// no PX session gets the captcha page (403, text/html) instead
-							// of the widget. A script element can't execute HTML, but it
-							// DOES store the response's Set-Cookie (_pxhd). So retry the
-							// load: the first attempt earns the cookie, the second request
-							// carries it and HAR serves the real widget JS. Retry also on
-							// a silent empty load (PX may serve a JS challenge instead of
-							// erroring), bounded by attempts so we never loop.
-							// Dedupe the injected script across reruns; the head is not
-							// pruned by ClientRouter swaps.
-							var attempts = 0;
-							function load() {
-								if (settled || target.isConnected === false) return;
-								attempts += 1;
-								var old = document.getElementById('har-widget');
-								if (old) old.remove();
-								var s = document.createElement('script');
-								s.id = 'har-widget';
-								s.src = 'https://www.har.com/mopx_services/realtor-agent-rating?member_number=586048&bg=999999&showcat=y&showcomments=y';
-								s.onload = function () {
-									setTimeout(function () {
-										// The widget writes its whole payload synchronously
-										// on load; an empty feed means PX served a challenge
-										// instead of the widget — retry with the new cookie.
-										if (settled || target.isConnected === false) return;
-										if (!target.children.length && attempts < 3) { load(); } else { restore(); }
-									}, 0);
-								};
-								s.onerror = function () {
-									if (settled || target.isConnected === false) return;
-									if (attempts < 3) { load(); } else { restore(); }
-								};
-								document.head.appendChild(s);
-							}
-							load();
-							// Never leave the patch in place if the CDN hangs.
-							timer = setTimeout(restore, 15000);
-						})();
-					</script>
+					<div id="har-feed">
+						<iframe
+							src="https://www.har.com/mopx_services/realtor-agent-rating?member_number=586048&bg=999999&showcat=y&showcomments=y"
+							title="HAR.com client reviews"
+							loading="lazy"
+						></iframe>
+					</div>
+					<p class="feed-note">HAR.com runs a quick automated check on this feed. If it asks you to verify, the reviews appear the moment the check clears. <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">Read every survey on HAR.com →</a></p>
 				</div>
 				<p class="sec-cta reveal"><a class="link-arrow" href="/about/">Meet the team behind the reviews →</a></p>
 			</div>
