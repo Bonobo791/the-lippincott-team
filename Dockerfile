@@ -19,10 +19,14 @@ RUN npm install -g pnpm@10.34.5 --ignore-scripts
 FROM base AS deps
 WORKDIR /app
 # pnpm-workspace.yaml carries the allowBuilds allowlist (better-sqlite3,
-# sharp, ...) — without it pnpm 10 blocks those native builds and the
-# resulting node_modules is unusable in the build stage.
+# sharp, ...). Install with --ignore-scripts so no dependency can run
+# arbitrary lifecycle code during installation (S6505), then rebuild only
+# the allowlisted native modules explicitly — keep the rebuild list in sync
+# with allowBuilds in pnpm-workspace.yaml (protobufjs is allowlisted there
+# but not present in the installed tree, so it is intentionally omitted).
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts \
+ && pnpm rebuild better-sqlite3 core-js esbuild sharp workerd
 
 # ---------- build ----------
 FROM base AS build
@@ -70,9 +74,11 @@ ENV NODE_ENV=production \
 COPY package.json pnpm-lock.yaml ./
 # Production dependencies only: the standalone server bundle plus native
 # modules (sharp) — drops the heavy devDependencies (playwright, tsc, React).
-# pnpm-workspace.yaml carries the allowBuilds list so native builds still run.
+# S6505: --ignore-scripts keeps arbitrary lifecycle code from running at
+# install time — safe here because sharp 0.35 ships its platform binaries
+# via @img/sharp-* optionalDependencies and has no install script.
 COPY pnpm-workspace.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 COPY --from=build /app/dist ./dist
 # The generated Tina client + seeded content cache (tina/__generated__) are
 # referenced by the /tina-island re-render endpoint at runtime.
