@@ -113,6 +113,40 @@ Cache purging on deploy:
   *Account → API*; the zone ID is the number in the pull zone's URL.
 - Without the env vars the script is a no-op, so local builds are unaffected.
 
+Purging a single page (CMS edits between deploys):
+
+- **Webhook endpoint**: the protected `/api/bunny-purge` route purges one or
+  more URLs immediately. Set `BUNNY_PURGE_SECRET` on the host (any strong
+  random string, e.g. `openssl rand -hex 32`; on Coolify keep its Build
+  Variable off — it must never be public or committed), then call:
+
+  ```sh
+  curl -X POST "https://lippincottteam.com/api/bunny-purge" \
+    -H "Authorization: Bearer $BUNNY_PURGE_SECRET" \
+    -d "url=/pricing/" -d "url=/about/team/"
+  ```
+
+  The secret also works as an `x-bunny-purge-token` header or a `?token=`
+  query parameter (prefer a header — query strings can show up in CDN access
+  logs). GET reads `url`/`path`/`urls` from the query string; POST accepts
+  the same fields in a form-encoded or JSON body. Only paths and URLs on
+  `SITE_URL`'s host are accepted, up to 10 per request. The endpoint answers
+  204 on success, 401 on a bad secret, 429 when Bunny's purge rate limit is
+  hit, and 502 on upstream failures.
+- **Callers**: anything server-side that knows the secret — a TinaCloud
+  custom webhook (configure one in app.tina.io if the project offers it),
+  a GitHub Action on content pushes, or manual curl. Note that Coolify
+  redeploys already full-purge via the entrypoint, so this is only for
+  edits that must go live faster than the 10-minute HTML cache TTL.
+- **Manual page purge**: `BUNNY_API_KEY=… SITE_URL=…
+  node scripts/deploy/purge-bunny-cache.mjs /pricing/` — pass site paths or
+  URLs as arguments; with no arguments it does the full-zone purge.
+- **Bunny rate limits URL purges per account**: a URL ending in `/` counts
+  as a *prefix* (wildcard) purge — 20-token burst, ~30/min — while exact
+  URLs (no trailing slash) get 120-token burst, ~300/min. The site uses
+  trailing slashes everywhere, so keep page-level purges modest and let the
+  deploy-time full purge carry bulk changes.
+
 Note: the pull zone sends the app's own domain to the origin (*Origin Host
 Header* = the Coolify app domain, *Add Host Header* off) so Traefik routes
 without registering CDN hostnames in Coolify. Because Bunny does not forward

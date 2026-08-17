@@ -181,7 +181,8 @@ above rather than bare `astro build`.
   `npx playwright cli --browser=chromium` (no system Chrome installed).
 - `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
   cache purge; run automatically by the Docker entrypoint on Coolify container
-  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set) and
+  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set; with URL/path
+  arguments it purges only those pages via the URL-purge API) and
   `docker-entrypoint.sh` (purge-then-serve container entrypoint).
 
 ## Key conventions
@@ -402,7 +403,12 @@ the pull zone automatically: the Docker entrypoint
 `scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
 readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
 (runtime-only secret; skipped without them, and when readiness times out the
-purge is skipped so a broken container can't clear a healthy cache). The pull zone sends the app's own domain to the origin
+purge is skipped so a broken container can't clear a healthy cache).
+Single-page purges between deploys go through the protected
+`/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
+`x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
+`src/lib/bunny-purge.ts`; Bunny URL purges are rate-limited per account —
+trailing-slash URLs count as prefix purges, ~30/min). The pull zone sends the app's own domain to the origin
 (*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
 Traefik routes without CDN hostnames being Coolify domains; Bunny does not
 forward the visitor host, so `security.checkOrigin` is `false` in
@@ -460,4 +466,9 @@ Environment variables (see `.env.example`):
   deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
   `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
   when unset).
+- `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
+  webhook (per-page Bunny cache purges between deploys). Generate with
+  `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on
+  Coolify keep its Build Variable flag off. Optional (the endpoint answers
+  503 without it).
 - `DEPLOY_ADAPTER` — optional adapter override.
