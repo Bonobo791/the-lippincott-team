@@ -1,5 +1,3 @@
-import { randomBytes } from 'node:crypto';
-
 const DEFAULT_SIERRA_LEADS_URL = 'https://api.sierrainteractivedev.com/leads';
 const REQUEST_TIMEOUT_MS = 10_000;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
@@ -146,7 +144,13 @@ export async function forwardContactLead(data: Record<string, string>, apiKey: s
 
 	if (!apiKey) throw new Error('SIERRA_API_KEY is not configured.');
 
-	const password = randomBytes(8).toString('hex');
+	// Web Crypto (available on every host runtime) — 16 hex chars, same shape
+	// as node:crypto's randomBytes(8).toString('hex') but without the
+	// node:crypto dependency (Cloudflare Workers only shims it under
+	// nodejs_compat).
+	const password = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) =>
+		b.toString(16).padStart(2, '0'),
+	).join('');
 	let lead: SierraLead;
 	try {
 		lead = toSierraLead(data, password);
