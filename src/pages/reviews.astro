@@ -86,15 +86,42 @@ const jsonld = {
 				<span class="eyebrow red reveal">HAR.com reviews</span>
 				<h2 class="display sec reveal">Straight from <em>HAR.com.</em></h2>
 				<p class="lede reveal">A live feed from our public HAR.com profile. New surveys appear here as clients complete them, unedited and uncurated.</p>
-				<div class="feed reveal">
-					<div id="har-feed">
-						<iframe
-							src="https://www.har.com/mopx_services/realtor-agent-rating?member_number=586048&bg=999999&showcat=y&showcomments=y"
-							title="HAR.com client reviews"
-							loading="lazy"
-						></iframe>
+					<div class="feed reveal">
+						<div id="har-feed" class="har-widget" aria-live="polite">
+							<script is:inline>
+								(() => {
+									const normalizeMarkup = (markup) => String(markup).replace(
+										/((?:src|href)=["']|url\(["']?)\/Realtor-Agent-Rating\//gi,
+										'$1https://members.har.com/Realtor-Agent-Rating/',
+									);
+									window.__harWidgetOriginalWrite = document.write;
+									window.__harWidgetOriginalWriteln = document.writeln;
+									document.write = (markup) => window.__harWidgetOriginalWrite.call(document, normalizeMarkup(markup));
+									document.writeln = (markup) => window.__harWidgetOriginalWriteln.call(document, normalizeMarkup(markup));
+								})();
+							</script>
+							<script
+								is:inline
+								src="https://members.har.com/realtor-agent-rating/api/default.cfm?member_number=586048&bg=e8e3d9&showcat=y&showcomments=y"
+						></script>
 					</div>
-					<p class="feed-note">HAR.com runs a quick automated check on this feed. If it asks you to verify, the reviews appear the moment the check clears. <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">Read every survey on HAR.com →</a></p>
+						<script is:inline>
+							(() => {
+								const profileUrl = 'https://www.har.com/amy-lippincott/ratings_586048';
+								if (window.__harWidgetOriginalWrite) {
+									document.write = window.__harWidgetOriginalWrite;
+									document.writeln = window.__harWidgetOriginalWriteln;
+									delete window.__harWidgetOriginalWrite;
+									delete window.__harWidgetOriginalWriteln;
+								}
+								document.querySelectorAll('#har-feed a[href*="/Realtor-Agent-Rating/"]').forEach((link) => {
+									link.setAttribute('href', profileUrl);
+									link.setAttribute('target', '_blank');
+									link.setAttribute('rel', 'noopener');
+								});
+							})();
+					</script>
+					<p class="feed-note">Read every survey on <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">HAR.com →</a></p>
 				</div>
 				<p class="sec-cta reveal"><a class="link-arrow" href="/about/">Meet the team behind the reviews →</a></p>
 			</div>

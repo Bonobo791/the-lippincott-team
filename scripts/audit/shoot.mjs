@@ -12,17 +12,7 @@
  */
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Captured copy of the rendered HAR widget page (see
-// scripts/audit/capture-har-widget.mjs). HAR's widget endpoint is
-// PerimeterX-gated, so headless Chromium always gets the bot-check page —
-// when a capture exists, the audit serves it for the iframe so reviews
-// screenshots show the feed.
-const HAR_CAPTURE = path.join(__dirname, '..', '..', '.launch', 'qa', 'reviews', 'har-widget-capture.html');
 
 const TEMPLATES = [
 	{ name: 'home', path: '/' },
@@ -73,11 +63,6 @@ async function main() {
 		});
 		for (const tpl of TEMPLATES) {
 			const page = await context.newPage();
-			if (existsSync(HAR_CAPTURE)) {
-				await page.route('**/mopx_services/**', (route) =>
-					route.fulfill({ path: HAR_CAPTURE, contentType: 'text/html' }),
-				);
-			}
 			const errors = [];
 			page.on('console', (msg) => {
 				if (msg.type() === 'error') errors.push(`console: ${msg.text()}`);

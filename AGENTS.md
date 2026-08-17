@@ -145,22 +145,14 @@ above rather than bare `astro build`.
   its own FAQPage JSON-LD),
   `reviews.astro` (**static one-off reviews page**, same v2 world — not
   Tina-editable; `reviews.mdx` stays in Tina unrendered). The live feed is
-  the HAR.com widget (`har.com/mopx_services/realtor-agent-rating`), which
-  HAR serves behind PerimeterX: a raw request gets the bot-check page
-  (403, `text/html`) and a `<script src>` embed can never execute the
-  challenge (a cookie-only retry does not clear the gate). The page
-  therefore embeds the widget URL in an `<iframe>` inside `#har-feed` —
-  HAR's challenge runs in-frame and self-heals once a visitor solves it.
-  Cross-origin iframe content cannot be styled from `v2.css`, so the card
-  chrome lives on the `#har-feed` container and the widget keeps its own
-  presentation; a muted `.feed-note` under the frame links to the full
-  survey history on HAR.com. If HAR ever blocks framing
-  (`X-Frame-Options`/`frame-ancestors`), fall back to the static-snapshot
-  approach (see `.launch/qa/reviews/har-iframe-checklist.md`). QA: run
-  `scripts/audit/capture-har-widget.mjs` in a headed browser to save the
-  rendered widget page to `.launch/qa/reviews/har-widget-capture.html`;
-  `shoot.mjs`/`probe-styles.mjs` route `**/mopx_services/**` to that
-  capture when present so headless runs never hit PerimeterX,
+  the HAR.com native script widget (`https://members.har.com/realtor-agent-rating/api/default.cfm`).
+  The endpoint returns the rendered ratings and comments directly for a
+  `<script src>` embed. The widget uses legacy `document.writeln`, so
+  links to `/reviews/` carry `data-astro-reload` and open the page with
+  a full document load instead of ClientRouter navigation; card chrome
+  lives on `.har-widget` in `v2.css`, and `.feed-note` links to the full
+  survey history on HAR.com. `shoot.mjs` and `probe-styles.mjs` hit the
+  native endpoint directly,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school

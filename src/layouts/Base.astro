@@ -62,9 +62,16 @@ const includeAnalytics =
 					<Icon name="tabler:phone" class="size-5" />
 					{config.contact.phone}
 				</a>
-			</>
-		)}
-		{/* Shared Apple-style motion: masked h2 reveals + magnetic primary CTAs.
+				</>
+			)}
+			<script is:inline>
+				const markHarReviewLinks = () => {
+					document.querySelectorAll('a[href="/reviews/"]').forEach((link) => link.setAttribute('data-astro-reload', ''));
+				};
+				markHarReviewLinks();
+				document.addEventListener('astro:page-load', markHarReviewLinks);
+			</script>
+			{/* Shared Apple-style motion: masked h2 reveals + magnetic primary CTAs.
 		    Everything is a no-op under prefers-reduced-motion. */}
 		<script is:inline>
 			if (!window.__appleMotionBound) {

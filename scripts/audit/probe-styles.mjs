@@ -13,15 +13,7 @@
  */
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Captured copy of the rendered HAR widget page (see
-// scripts/audit/capture-har-widget.mjs); served for **/mopx_services/**
-// requests so headless runs never hit HAR's PerimeterX bot-check page.
-const HAR_CAPTURE = path.join(__dirname, '..', '..', '.launch', 'qa', 'reviews', 'har-widget-capture.html');
 
 const TEMPLATES = [
 	{ name: 'home', path: '/' },
@@ -422,9 +414,6 @@ async function main() {
 			const page = await context.newPage();
 			await page.route('**/*', (route) => {
 				const u = route.request().url();
-				if (u.includes('mopx_services') && existsSync(HAR_CAPTURE)) {
-					return route.fulfill({ path: HAR_CAPTURE, contentType: 'text/html' });
-				}
 				if (BLOCKED_HOSTS.some((h) => u.includes(h))) return route.abort();
 				return route.continue();
 			});
