@@ -1,3 +1,5 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/94a34416036d490b9011e3b2866f86a1)](https://app.codacy.com/gh/Bonobo791/the-lippincott-team/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 # The Lippincott Team
 
 TheLippincottTeam.com
