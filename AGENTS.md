@@ -151,8 +151,17 @@ above rather than bare `astro build`.
   container (a native call would wipe the document on ClientRouter swaps)
   and restores the originals once the script settles; `#har-feed` overrides
   in `v2.css` re-skin the widget's inline styles to the v2 tokens. Caveat:
-  HAR sits behind PerimeterX — headless-Chromium screenshot runs must route
-  `**/mopx_services/**` to a captured copy of the widget JS,
+  HAR sits behind PerimeterX — a browser with no PX session gets the captcha
+  page (403, `text/html`) instead of the widget. A script element can't
+  execute HTML, but it does store the response's `Set-Cookie: _pxhd`, so the
+  loader retries the script after the first failure (up to 3 attempts, also
+  on a silent empty load): the retry carries the cookie and HAR serves the
+  real widget JS. The loader depends on the widget payload being a single
+  self-contained synchronous `document.writeln` (observed: no nested
+  scripts/XHRs) — one successful load renders the whole feed; re-check that
+  if HAR ever changes the payload. Headless-Chromium screenshot runs can
+  route `**/mopx_services/**` to a captured copy of the widget JS (e.g.
+  Playwright `context.route`) if PX ever blocks them,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
