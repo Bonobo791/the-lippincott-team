@@ -77,12 +77,17 @@ if (targets.length > 0) {
 		urls.push(url);
 	}
 	// Sequential is deliberate: Bunny's URL-purge API is rate-limited per
-	// account, and a failing URL should abort the batch rather than fan out
-	// more calls.
+	// account, and a network failure on one URL should not skip the rest of
+	// the validated batch (the failed URL is recorded via the exit code).
 	let ok = true;
 	for (const url of urls) {
 		console.log(`[bunny-purge] Purging ${url}`);
-		if (!(await purgeUrl(url))) ok = false;
+		try {
+			if (!(await purgeUrl(url))) ok = false;
+		} catch (error) {
+			ok = false;
+			console.error('[bunny-purge] URL purge failed:', error instanceof Error ? error.message : 'Unknown error');
+		}
 	}
 	process.exit(ok ? 0 : 1);
 }

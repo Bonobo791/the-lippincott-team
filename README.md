@@ -139,8 +139,9 @@ Purging a single page (CMS edits between deploys):
   The secret also works as an `x-bunny-purge-token` header or a `?token=`
   query parameter (prefer a header — query strings can show up in CDN access
   logs). GET reads `url`/`path`/`urls` from the query string; POST accepts
-  the same fields in a form-encoded or JSON body. Only paths and URLs on
-  `SITE_URL`'s host are accepted, up to 10 per request. The endpoint answers
+  the same fields in a form-encoded or JSON body. Only paths and absolute URLs
+  that match the `SITE_URL` origin exactly (protocol, hostname, and port) are
+  accepted, up to 10 per request. The endpoint answers
   204 on success, 401 on a bad secret, 429 when Bunny's purge rate limit is
   hit, and 502 on upstream failures.
 - **Callers**: anything server-side that knows the secret — a TinaCloud

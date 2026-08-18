@@ -20,6 +20,7 @@ const TEMPLATES = [
 	{ name: 'about', path: '/about/' },
 	{ name: 'team-bio', path: '/about/amy-lippincott-2/' },
 	{ name: 'contact', path: '/contact-us/' },
+	{ name: 'reviews', path: '/reviews/' },
 	{ name: 'hub-communities', path: '/northwest-houston-real-estate/' },
 	{ name: 'hub-schools', path: '/northwest-houston-schools-real-estate/' },
 	{ name: 'community', path: '/northwest-houston-real-estate/cypress-tx-real-estate/' },

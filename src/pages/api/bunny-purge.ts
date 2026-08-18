@@ -14,7 +14,9 @@ import { BunnyPurgeError, normalizeSiteUrl, purgeUrl } from '../../lib/bunny-pur
 //
 // Input: GET query params `url`/`path`/`urls` (repeatable, `urls` also
 // comma-separated) or a POST body (JSON or form-encoded) with the same
-// fields. Each value must be a site path or a URL on SITE_URL's host.
+// fields. Each value must be a site path or an absolute URL that matches the
+// SITE_URL origin exactly — protocol, hostname, and port (see
+// normalizeSiteUrl in scripts/deploy/bunny-url.mjs).
 //
 // The `*/api/*` edge rule already bypasses the CDN cache for this route.
 export const prerender = false;

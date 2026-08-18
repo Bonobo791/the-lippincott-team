@@ -2,7 +2,7 @@
 // off-site while looking like same-site relative paths.
 const SAFE_URL = /^(\/(?!\/)[^\\]*|#[^\\]*|(https?|mailto|tel):[^\s]*)$/i;
 const HTTP_URL_RE = /^https?:\/\//i;
-const DOWNLOAD_FILE_RE = /\.(pdf|docx?|xlsx?|pptx?|zip)$/i;
+const DOWNLOAD_FILE_RE = /\.(pdf|docx?|xlsx?|pptx?|zip)(?:[?#].*)?$/i;
 const NON_DIGIT_RE = /\D/g;
 
 /**
