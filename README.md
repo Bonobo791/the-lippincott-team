@@ -173,8 +173,10 @@ the visitor host, Astro's same-origin guard for POSTs is disabled
 and `/tina-island` endpoints are stateless (no cookies/sessions), and the
 contact form keeps its honeypot, size cap, and per-IP rate limit as abuse
 controls — and an endpoint-level `Origin` allowlist (`SITE_URL` + platform
-URL envs, plus the optional comma-separated `CONTACT_ALLOWED_ORIGINS` for
-extra hosts like this staging edge hostname). Keep *Block Root Path Access*,
+URL envs, the hardcoded brand origins `https://thelippincottteam.com` /
+`https://www.thelippincottteam.com` and the localhost ports, plus the
+optional comma-separated `CONTACT_ALLOWED_ORIGINS` for extra hosts like this
+staging edge hostname). Keep *Block Root Path Access*,
 *Block None Referrer*, and
 *Block POST Requests* **off** on the zone (they 403 first-time visitors and
 form submissions, and the zone's cache-error setting then amplifies that by

@@ -454,10 +454,12 @@ Environment variables (see `.env.example`):
   endpoint (all platforms). Never commit its value or prefix it with
   `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
 - `CONTACT_ALLOWED_ORIGINS` — optional comma-separated list of extra origins
-  allowed to submit the contact form, besides `SITE_URL` and the platform URL
-  envs (staging Bunny edge hostnames, a www alias without a redirect, …). The
-  `/api/contact` endpoint's browser CSRF guard rejects POSTs whose `Origin`
-  is not allowlisted ("Cross-origin form submissions are not allowed.").
+  allowed to submit the contact form, besides `SITE_URL`, the platform URL
+  envs, and the hardcoded brand/localhost origins (`https://thelippincottteam.com`,
+  `https://www.thelippincottteam.com`, `localhost:4321/4322`) — e.g. staging
+  Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
+  rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
+  submissions are not allowed.").
 - `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
   Docker entrypoint purges the pull zone on container start (every Coolify
   deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with

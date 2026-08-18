@@ -33,13 +33,14 @@ function thankYou() {
 // theirs); CONTACT_ALLOWED_ORIGINS is a comma-separated list of extra origins
 // for hosts no platform var expresses — a Bunny edge hostname
 // (https://<zone>.b-cdn.net) or a second custom domain in front of the same
-// app, for example. The localhost ports cover dev. Requests with no Origin
-// header (curl and other non-browser clients) are allowed through — the
-// honeypot, size cap, and rate limit remain the controls for them. This
-// endpoint-level check exists because astro.config.mjs keeps
-// `security.checkOrigin` disabled: Bunny CDN rewrites the Host header sent to
-// the origin and does not forward the visitor host, so Astro's host-based
-// guard would reject every browser POST.
+// app, for example. The brand's legacy thelippincottteam.com origins and the
+// localhost ports are hardcoded below. Requests with no Origin header (curl
+// and other non-browser clients) are allowed through — the honeypot, size
+// cap, and rate limit remain the controls for them. This endpoint-level check
+// exists because astro.config.mjs keeps `security.checkOrigin` disabled:
+// Bunny CDN rewrites the Host header sent to the origin and does not forward
+// the visitor host, so Astro's host-based guard would reject every browser
+// POST.
 function originAllowed(request: Request) {
 	const origin = request.headers.get('origin');
 	if (!origin) return true;
@@ -62,7 +63,15 @@ function originAllowed(request: Request) {
 			// Ignore malformed env values and keep checking the rest.
 		}
 	}
-	return origin === 'http://localhost:4321' || origin === 'http://localhost:4322';
+	// Brand domains (hardcoded, like the localhost ports): the legacy
+	// thelippincottteam.com domain and its www alias may serve the site or
+	// carry a visitor's Origin during the lippincottteam.com transition.
+	return (
+		origin === 'https://thelippincottteam.com' ||
+		origin === 'https://www.thelippincottteam.com' ||
+		origin === 'http://localhost:4321' ||
+		origin === 'http://localhost:4322'
+	);
 }
 
 export const POST: APIRoute = async ({ request }) => {
