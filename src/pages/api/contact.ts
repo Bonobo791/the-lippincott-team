@@ -30,20 +30,34 @@ function thankYou() {
 // canonical origin on every host; the platform URL envs cover deploy previews
 // (Netlify's per-deploy origins come from DEPLOY_PRIME_URL/DEPLOY_URL — its
 // URL var stays the production address on previews — Coolify/Cloudflare set
-// theirs), and the localhost ports cover dev. Requests with no Origin header
-// (curl and other non-browser clients) are allowed through — the honeypot,
-// size cap, and rate limit remain the controls for them. This endpoint-level
-// check exists because astro.config.mjs keeps `security.checkOrigin` disabled:
-// Bunny CDN rewrites the Host header sent to the origin and does not forward
-// the visitor host, so Astro's host-based guard would reject every browser
-// POST.
+// theirs); CONTACT_ALLOWED_ORIGINS is a comma-separated list of extra origins
+// for hosts no platform var expresses — a Bunny edge hostname
+// (https://<zone>.b-cdn.net) or a second custom domain in front of the same
+// app, for example. The localhost ports cover dev. Requests with no Origin
+// header (curl and other non-browser clients) are allowed through — the
+// honeypot, size cap, and rate limit remain the controls for them. This
+// endpoint-level check exists because astro.config.mjs keeps
+// `security.checkOrigin` disabled: Bunny CDN rewrites the Host header sent to
+// the origin and does not forward the visitor host, so Astro's host-based
+// guard would reject every browser POST.
 function originAllowed(request: Request) {
 	const origin = request.headers.get('origin');
 	if (!origin) return true;
-	for (const value of [process.env.SITE_URL, process.env.URL, process.env.DEPLOY_PRIME_URL, process.env.DEPLOY_URL, process.env.COOLIFY_URL, process.env.CF_PAGES_URL]) {
+	const allowed = [
+		process.env.SITE_URL,
+		process.env.URL,
+		process.env.DEPLOY_PRIME_URL,
+		process.env.DEPLOY_URL,
+		process.env.COOLIFY_URL,
+		process.env.CF_PAGES_URL,
+		// Extra origins (comma-separated) that host the same app — staging
+		// Bunny/CDN hostnames, a www alias served without a redirect, etc.
+		...(process.env.CONTACT_ALLOWED_ORIGINS ?? '').split(','),
+	];
+	for (const value of allowed) {
 		if (!value) continue;
 		try {
-			if (new URL(value).origin === origin) return true;
+			if (new URL(value.trim()).origin === origin) return true;
 		} catch {
 			// Ignore malformed env values and keep checking the rest.
 		}

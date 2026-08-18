@@ -56,7 +56,14 @@ server.
      is never baked into the image (keep its Build Variable flag on so the
      build receives it).
    - `SITE_URL` — canonical origin, e.g. `https://lippincottteam.com`
-     (drives sitemap/RSS/OpenGraph canonicals).
+     (drives sitemap/RSS/OpenGraph canonicals). Must be set at **runtime**
+     too: `/api/contact` rejects browser form posts whose `Origin` isn't in
+     its allowlist (see below), and the Dockerfile's default only applies
+     when the env var is absent from the app.
+   - `CONTACT_ALLOWED_ORIGINS` (optional) — comma-separated extra origins
+     allowed to submit the contact form when the app is also served from a
+     host no platform var expresses, e.g. a staging Bunny edge hostname
+     (`https://<zone>.b-cdn.net`).
    - `COOLIFY_BRANCH` — Coolify sets this automatically (Build Variable); the
      Dockerfile promotes it into the build so the Tina admin/client targets
      the right branch. Staging apps must keep its Build Variable flag on.
@@ -165,7 +172,10 @@ the visitor host, Astro's same-origin guard for POSTs is disabled
 (`security.checkOrigin: false` in `astro.config.mjs`) — the `/api/contact`
 and `/tina-island` endpoints are stateless (no cookies/sessions), and the
 contact form keeps its honeypot, size cap, and per-IP rate limit as abuse
-controls. Keep *Block Root Path Access*, *Block None Referrer*, and
+controls — and an endpoint-level `Origin` allowlist (`SITE_URL` + platform
+URL envs, plus the optional comma-separated `CONTACT_ALLOWED_ORIGINS` for
+extra hosts like this staging edge hostname). Keep *Block Root Path Access*,
+*Block None Referrer*, and
 *Block POST Requests* **off** on the zone (they 403 first-time visitors and
 form submissions, and the zone's cache-error setting then amplifies that by
 caching the 403s).
