@@ -1,11 +1,30 @@
 ---
 import Base from '../layouts/Base.astro';
 import V2Motion from '../components/v2/V2Motion.astro';
+import { Icon } from 'astro-icon/components';
 import { getConfig } from '../lib/data';
 import { telHref } from '../lib/url';
 import '../styles/v2.css';
 
 const phone = (await getConfig()).data?.config?.contact?.phone;
+
+// Curated from the live HAR.com survey feed (member 586048) — the same
+// comments the widget above renders. Kept static so the carousel works with
+// or without the third-party widget, and each quote cites its survey.
+const featuredReviews = [
+	{ quote: 'Ashley Walters was absolutely wonderful to work with throughout the sale of my home. She was professional, knowledgeable, responsive, and made the entire process feel smooth and stress-free. Ashley was always available to answer questions, kept me informed every step of the way, and truly had my best interests in mind.', src: 'Verified HAR.com survey · Talley Valley Dr, July 2026' },
+	{ quote: 'They stage it well and then our home sold in one weekend. We have now bought and sold 3 homes with the Lippincott Team, they are truly the best in the business.', src: 'Verified HAR.com survey' },
+	{ quote: 'I highly recommend The Lippincott Team, especially J-R Satchel, for anyone looking to rent, buy, or sell a home in the Cypress and Bridgeland area. J-R did an excellent job helping us rent our home in Bridgeland very quickly — within just two weeks.', src: 'Verified HAR.com survey · Blooming Shrubs Ct, July 2026' },
+	{ quote: "Amy's team was wonderful in every way. All our expectations were exceeded.", src: 'Verified client review · Lismore Lake Dr, Cypress' },
+	{ quote: 'Brooke was fantastic. She found the perfect home for me and my family, she was there for me every step of the way and it was such a seamless process. I have already referred friends to her.', src: 'Verified HAR.com survey · Blue Catfish Ln, June 2026' },
+	{ quote: 'Amiee was very helpful as well as knowledgeable. We are so thankful that she was our realtor!', src: 'Verified client review · Maple Meadows Dr' },
+	{ quote: 'Brenner has always been awesome. Best customer service and knowledge.', src: 'Verified HAR.com survey · Meadow Blossom Ln, June 2026' },
+	{ quote: 'Amy and her team are the best. We will be recommending her to all our friends needing a smooth and professional real estate experience.', src: 'Verified HAR.com survey · First Landing Dr, June 2026' },
+	{ quote: 'Jennipher is very professional and knowledgeable. She went above and beyond to make the sale of this house as stress free as possible.', src: 'Verified HAR.com survey · Red Sage Ct, May 2026' },
+	{ quote: 'Stacy Hooper is a stellar person to work with. I would use her again in a heartbeat.', src: 'Verified HAR.com survey · Skyline Arbor Ter, May 2026' },
+	{ quote: 'Had a fantastic experience with Amy and her team. Jennipher helped find us the perfect house that met all of our needs.', src: 'Verified HAR.com survey · Ocean Onyx Dr, March 2026' },
+	{ quote: 'I have been using this agency for around 10 years and would not trust anyone else with my properties.', src: 'Verified HAR.com survey · Pine Falls Dr, July 2026' },
+];
 const jsonld = {
 	'@context': 'https://schema.org',
 	'@graph': [
@@ -23,7 +42,7 @@ const jsonld = {
 		{
 			'@type': 'FAQPage',
 			mainEntity: [
-				{ '@type': 'Question', name: 'Where do these reviews come from?', acceptedAnswer: { '@type': 'Answer', text: 'Two places we do not control. The feed on this page loads directly from our public HAR.com profile, where clients complete surveys after closing: 685+ completed surveys averaging 4.92 out of 5.' } },
+				{ '@type': 'Question', name: 'Where do these reviews come from?', acceptedAnswer: { '@type': 'Answer', text: 'Two places we do not control. The feed on this page loads directly from our public HAR.com profile, where clients complete surveys after closing: 687+ completed surveys averaging 4.92 out of 5.' } },
 				{ '@type': 'Question', name: 'Can I read every review, unedited?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. The HAR.com feed shows surveys as clients complete them, and the full survey history is public on HAR.com.' } },
 				{ '@type': 'Question', name: 'How do I leave a review?', acceptedAnswer: { '@type': 'Answer', text: 'After closing, your transaction coordinator sends both links. Google reviews post straight to our public profile, and HAR.com surveys go to clients of record. Every review counts the same, glowing or not.' } },
 			],
@@ -34,7 +53,7 @@ const jsonld = {
 
 <Base
 	title="Client Reviews: 750+ Five-Star Ratings | The Lippincott Team"
-	description="750+ five-star reviews across Google and HAR.com: 4.9 on Google, 4.92 out of 5 across 685+ client surveys. Read them unedited, live from HAR.com."
+	description="750+ five-star reviews across Google and HAR.com: 4.9 on Google, 4.92 out of 5 across 687+ client surveys. Read them unedited, live from HAR.com."
 	image="/uploads/2026/03/header-houston.jpeg"
 >
 	<script type="application/ld+json" set:html={JSON.stringify(jsonld)} />
@@ -45,7 +64,7 @@ const jsonld = {
 			<div class="wrap">
 				<span class="eyebrow red reveal">Client reviews</span>
 				<h1 class="display reveal">Reviewed, <em>in public.</em></h1>
-				<p class="lede reveal">More than 750 five-star reviews across Google and HAR.com, 685+ of them completed client surveys averaging 4.92 out of 5.</p>
+				<p class="lede reveal">More than 750 five-star reviews across Google and HAR.com, 687+ of them completed client surveys averaging 4.92 out of 5.</p>
 			</div>
 		</section>
 
@@ -63,7 +82,7 @@ const jsonld = {
 					<div class="dtile">
 						<a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener"><span class="num gold">4.92</span></a>
 						<span class="slabel">Out of 5 on HAR.com</span>
-						<span class="ssrc">685+ completed client surveys</span>
+						<span class="ssrc">687+ completed client surveys</span>
 					</div>
 					<div class="dtile">
 						<a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener"><span class="num" data-count="750">0<span>+</span></span></a>
@@ -77,6 +96,34 @@ const jsonld = {
 					</div>
 				</div>
 				<p class="sec-cta gold reveal"><a class="link-arrow" href="/about/">Meet the team behind the numbers →</a></p>
+			</div>
+		</section>
+
+		<!-- ============ FEATURED REVIEWS CAROUSEL ============ -->
+		<section class="band ink dark">
+			<div class="wrap">
+				<span class="eyebrow gold reveal">Featured reviews</span>
+				<h2 class="display sec reveal">Fresh from the <em>survey line.</em></h2>
+				<p class="lede reveal">Clients say it best — here is what the last few months of completed surveys look like, rotating automatically. Pause on hover, or click through.</p>
+				<div class="carousel reveal" data-reviews-carousel aria-roledescription="carousel" aria-label="Featured client reviews">
+					<div class="car-viewport">
+						<div class="car-track" data-car-track>
+							{featuredReviews.map((review, i) => (
+								<figure class="car-slide" data-car-slide aria-hidden={i !== 0}>
+									<blockquote>&ldquo;{review.quote}&rdquo;</blockquote>
+									<figcaption>
+										<span class="stars" aria-hidden="true">★★★★★</span>
+										{review.src}
+									</figcaption>
+								</figure>
+							))}
+						</div>
+					</div>
+					<button type="button" class="car-arrow prev" data-car-prev aria-label="Previous review">&#8592;</button>
+					<button type="button" class="car-arrow next" data-car-next aria-label="Next review">&#8594;</button>
+					<div class="car-dots" data-car-dots role="tablist" aria-label="Choose review"></div>
+				</div>
+				<p class="sec-cta gold reveal"><a class="link-arrow" href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">Read all 687 surveys on HAR.com →</a></p>
 			</div>
 		</section>
 
@@ -136,8 +183,8 @@ const jsonld = {
 				<div class="jobs three reveal" style="margin-top:48px">
 					<div class="job">
 						<span class="tag red">HAR.com</span>
-						<h3>685+ surveys, in the open</h3>
-						<p>Every completed client survey posts to our public HAR.com profile: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685+ surveys averaging 4.92 out of 5</a>, with the written comments attached.</p>
+						<h3>687+ surveys, in the open</h3>
+						<p>Every completed client survey posts to our public HAR.com profile: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">687+ surveys averaging 4.92 out of 5</a>, with the written comments attached.</p>
 						<a class="link-arrow" href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">Read the surveys →</a>
 					</div>
 					<div class="job">
@@ -152,6 +199,16 @@ const jsonld = {
 						<p>Nine-time HBJ Residential Real Estate Award winner, 2017 through 2025, verified against MLS production data, not nominations.</p>
 					</div>
 				</div>
+				<div class="social-row reveal">
+					<span class="social-label">Follow the team</span>
+					<div class="social-btns">
+						<a class="social-btn" href="https://www.facebook.com/realestatewithamy" target="_blank" rel="noopener"><Icon name="tabler:brand-facebook" size={18} /><span>Facebook</span></a>
+						<a class="social-btn" href="https://www.instagram.com/the_lippincott-team_cypress" target="_blank" rel="noopener"><Icon name="tabler:brand-instagram" size={18} /><span>Instagram</span></a>
+						<a class="social-btn" href="https://www.youtube.com/@realestatewithamy" target="_blank" rel="noopener"><Icon name="tabler:brand-youtube" size={18} /><span>YouTube</span></a>
+						<a class="social-btn" href="https://www.twitter.com/amylippincott" target="_blank" rel="noopener"><Icon name="tabler:brand-x" size={18} /><span>X / Twitter</span></a>
+						<a class="social-btn" href="https://www.linkedin.com/company/4802854" target="_blank" rel="noopener"><Icon name="tabler:brand-linkedin" size={18} /><span>LinkedIn</span></a>
+					</div>
+				</div>
 				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Put the record behind your move →</a></p>
 			</div>
 		</section>
@@ -163,7 +220,7 @@ const jsonld = {
 				<div class="faq-list">
 					<details class="reveal">
 						<summary>Where do these reviews come from? <span class="plus">+</span></summary>
-						<p>Two places we do not control. The feed above loads directly from our public HAR.com profile, where clients complete surveys after closing: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">685+ completed surveys averaging 4.92 out of 5</a>. Google reviews post to our public Business Profile.</p>
+						<p>Two places we do not control. The feed above loads directly from our public HAR.com profile, where clients complete surveys after closing: <a href="https://www.har.com/amy-lippincott/ratings_586048" target="_blank" rel="noopener">687+ completed surveys averaging 4.92 out of 5</a>. Google reviews post to our public Business Profile.</p>
 					</details>
 					<details class="reveal">
 						<summary>Can I read every review, unedited? <span class="plus">+</span></summary>
@@ -190,6 +247,75 @@ const jsonld = {
 			</div>
 		</section>
 	</div>
+
+	<script>
+		// Auto-rotating featured-reviews carousel. Static slides in the DOM;
+		// this only manages which slide is visible. Auto-advance pauses on
+		// hover/focus and never runs under prefers-reduced-motion.
+		(() => {
+			const root = document.querySelector('[data-reviews-carousel]');
+			if (!root) return;
+			const slides = Array.from(root.querySelectorAll('[data-car-slide]'));
+			if (slides.length < 2) return;
+			const track = root.querySelector('[data-car-track]');
+			const dotsWrap = root.querySelector('[data-car-dots]');
+			const prev = root.querySelector('[data-car-prev]');
+			const next = root.querySelector('[data-car-next]');
+			let current = 0;
+			let timer = 0;
+			const INTERVAL = 6000;
+
+			const dots = slides.map((_, i) => {
+				const dot = document.createElement('button');
+				dot.type = 'button';
+				dot.className = 'car-dot';
+				dot.setAttribute('role', 'tab');
+				dot.setAttribute('aria-label', `Review ${i + 1} of ${slides.length}`);
+				dot.addEventListener('click', () => { go(i); restart(); });
+				dotsWrap.appendChild(dot);
+				return dot;
+			});
+
+			const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			function go(i) {
+				current = (i + slides.length) % slides.length;
+				slides.forEach((slide, idx) => {
+					slide.classList.toggle('is-active', idx === current);
+					slide.setAttribute('aria-hidden', String(idx !== current));
+				});
+				dots.forEach((dot, idx) => {
+					dot.classList.toggle('is-active', idx === current);
+					dot.setAttribute('aria-selected', String(idx === current));
+				});
+				track.style.transform = `translateX(-${current * 100}%)`;
+			}
+
+			function restart() {
+				if (reduced()) return;
+				window.clearInterval(timer);
+				timer = window.setInterval(() => go(current + 1), INTERVAL);
+			}
+			function stop() {
+				window.clearInterval(timer);
+			}
+
+			prev.addEventListener('click', () => { go(current - 1); restart(); });
+			next.addEventListener('click', () => { go(current + 1); restart(); });
+			root.addEventListener('mouseenter', stop);
+			root.addEventListener('mouseleave', restart);
+			root.addEventListener('focusin', stop);
+			root.addEventListener('focusout', restart);
+			// Keyboard: left/right to move between reviews when focused.
+			root.addEventListener('keydown', (e) => {
+				if (e.key === 'ArrowLeft') { go(current - 1); restart(); }
+				if (e.key === 'ArrowRight') { go(current + 1); restart(); }
+			});
+
+			go(0);
+			restart();
+		})();
+	</script>
 
 	<V2Motion />
 </Base>
