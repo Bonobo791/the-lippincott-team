@@ -292,8 +292,10 @@ const jsonld = {
 			}
 
 			function restart() {
-				if (reduced()) return;
+				// Clear first: if reduced motion was enabled after the interval
+				// started, the early return below must not leave it running.
 				window.clearInterval(timer);
+				if (reduced()) return;
 				timer = window.setInterval(() => go(current + 1), INTERVAL);
 			}
 			function stop() {
@@ -310,6 +312,15 @@ const jsonld = {
 			root.addEventListener('keydown', (e) => {
 				if (e.key === 'ArrowLeft') { go(current - 1); restart(); }
 				if (e.key === 'ArrowRight') { go(current + 1); restart(); }
+			});
+
+			// Track the OS preference live: if reduced motion turns on mid-visit
+			// the running interval must stop (restart()'s early return alone
+			// would leave the old timer alive), and turning it off resumes
+			// autoplay from a clean timer.
+			window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+				if (e.matches) stop();
+				else restart();
 			});
 
 			// ClientRouter swaps away from this page keep the autoplay timer

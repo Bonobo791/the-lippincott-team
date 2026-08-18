@@ -97,7 +97,11 @@ async function collectRawFields(request: Request, url: URL): Promise<FieldsResul
 		if (body.kind === 'error') return { kind: 'error', response: body.response };
 
 		const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
-		if (contentType.includes('application/json')) {
+		// Media types are case-insensitive (RFC 6839) and may carry parameters
+		// after a ';' — compare the normalized type, not a case-sensitive
+		// substring (which would also misroute application/json-patch+json).
+		const mediaType = contentType.split(';', 1)[0].trim().toLowerCase();
+		if (mediaType === 'application/json') {
 			let parsed: unknown;
 			try {
 				parsed = JSON.parse(new TextDecoder().decode(body.buffer));
