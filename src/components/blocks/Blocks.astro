@@ -40,8 +40,16 @@ interface Props {
 
 const { data } = Astro.props;
 const blocks = (data?.blocks ?? []).filter(b => b !== null);
+// Community guide docs always carry a `relatedChips` block ("Compare nearby
+// communities…") that only renders at the bottom of the page. Surface a
+// binding-free duplicate of it right under the hero so the cross-guide links
+// are prominent; the bottom copy keeps the tina bindings (duplicate
+// data-tina-field attributes break visual editing — same pattern as
+// GuideHero's mobile CTA row).
+const isCommunityGuide = blocks.some((b) => b.__typename.startsWith('CommunityBlocks'));
+const relatedChipsBlock = blocks.find((b) => b.__typename.replace(/^(Page|Community)Blocks/, '') === 'RelatedChips');
 ---
-{blocks.map((block) => {
+{blocks.map((block, i) => {
 	const rendered = (() => {
 		// Tina namespaces block typenames per collection+field (PageBlocksHero
 		// vs CommunityBlocksHero); the shared templates render identically, so
@@ -82,5 +90,12 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'StepsSplit': return <StepsSplit data={block as never} />;
 		}
 	})();
-	return <div data-tina-field={tinaField(block)}>{rendered}</div>;
+	return (
+		<Fragment>
+			{i === 1 && isCommunityGuide && relatedChipsBlock && (
+				<RelatedChips data={relatedChipsBlock as never} prominent />
+			)}
+			<div data-tina-field={tinaField(block)}>{rendered}</div>
+		</Fragment>
+	);
 })}
