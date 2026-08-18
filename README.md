@@ -17,6 +17,16 @@ its ongoing digital marketing.
 The site is built with Astro and TinaCMS, managed through a visual content
 editor, and deployed on Netlify. Most pages are delivered as fast static HTML.
 
+## A note on the Astro pin
+
+`astro` is pinned to the exact version `7.2.0` (no `^`). Astro 7.2.3 removed
+the `App#pipeline` property that `@astrojs/node` 11's standalone entry
+(`node ./dist/server/entry.mjs`, the Coolify/Docker runtime) still requires —
+running 7.2.3 makes the container crash on startup with
+`Cannot read properties of undefined (reading 'getLogger')`. Keep the pin
+exact when bumping Astro, and re-test with `node ./dist/server/entry.mjs`
+(not just `astro build`) before upgrading past 7.2.2.
+
 ## Deployment
 
 The site builds with TinaCMS (`pnpm build`, requires `PUBLIC_TINA_CLIENT_ID` +
