@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { clientIp, createRateLimiter, jsonError, readBody } from '../../lib/api-guards';
 import { ContactValidationError, forwardContactLead } from '../../lib/sierra-contact';
 
 // Host-neutral contact endpoint: the contact form POSTs here and the lead is
@@ -14,25 +15,15 @@ const THANK_YOU_URL = '/contact-us/thank-you/';
 const MAX_BODY_BYTES = 32 * 1024;
 // Best-effort, single-instance abuse guard (Netlify's Akismet spam filtering
 // no longer applies to this path). 5 submissions per IP per 10 minutes is
-// plenty for humans; callers are keyed by the proxy-set X-Real-IP / Client-IP
-// header or the proxy-appended tail of X-Forwarded-For (see clientIp).
+// plenty for humans; the limiter keys on the proxy-set client IP (see
+// clientIp in src/lib/api-guards.ts).
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-// Hard cap on tracked windows: beyond this, evict the oldest entries (Map
-// insertion order), so rotated/spoofed identities cannot grow the map
-// without bound between expiry cycles.
 const RATE_WINDOW_CAP = 5000;
-const rateWindows = new Map<string, { count: number; reset: number }>();
+const isRateLimited = createRateLimiter(RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS, RATE_WINDOW_CAP);
 
 function thankYou() {
 	return new Response(null, { status: 303, headers: { Location: THANK_YOU_URL } });
-}
-
-function jsonError(status: number, error: string) {
-	return new Response(JSON.stringify({ error }), {
-		status,
-		headers: { 'Content-Type': 'application/json' },
-	});
 }
 
 // Origins allowed to POST the contact form from a browser. SITE_URL is the
@@ -60,81 +51,6 @@ function originAllowed(request: Request) {
 	return origin === 'http://localhost:4321' || origin === 'http://localhost:4322';
 }
 
-// Bunny sets X-Real-IP to the true client address, Netlify sets Client-IP,
-// and Coolify's Traefik overwrites both — so neither can be spoofed by the
-// client when a proxy is in front. Fall back to the LAST X-Forwarded-For
-// value (the proxy-appended tail); the first value is client-controlled and
-// must never be trusted, or a rotating forged header would bypass the rate
-// limit entirely.
-function clientIp(request: Request) {
-	return (
-		request.headers.get('x-real-ip')?.trim() ||
-		request.headers.get('client-ip')?.trim() ||
-		request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() ||
-		'unknown'
-	);
-}
-
-function isRateLimited(ip: string, now: number) {
-	// Prune expired windows on every call (cheap at real-world sizes) so dead
-	// entries never linger, then evict the oldest window when the hard cap is
-	// hit — the map can never grow past RATE_WINDOW_CAP + 1.
-	for (const [key, value] of rateWindows) {
-		if (value.reset <= now) rateWindows.delete(key);
-	}
-	const entry = rateWindows.get(ip);
-	if (!entry) {
-		rateWindows.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW_MS });
-		if (rateWindows.size > RATE_WINDOW_CAP) {
-			const oldest = rateWindows.keys().next().value;
-			if (oldest !== undefined) rateWindows.delete(oldest);
-		}
-		return false;
-	}
-	entry.count += 1;
-	return entry.count > RATE_LIMIT_MAX;
-}
-
-type BodyResult = { kind: 'body'; buffer: ArrayBuffer } | { kind: 'error'; response: Response };
-
-// Enforce MAX_BODY_BYTES while reading the stream, before formData() parses
-// anything: a crafted multipart request with no trustworthy Content-Length
-// must never get buffered and parsed in full first.
-async function readBody(request: Request): Promise<BodyResult> {
-	const declaredLength = Number(request.headers.get('content-length') ?? 0);
-	if (declaredLength > MAX_BODY_BYTES) {
-		return { kind: 'error', response: jsonError(413, 'Your message is too long. Please shorten it and try again.') };
-	}
-	if (!request.body) return { kind: 'body', buffer: new ArrayBuffer(0) };
-	const reader = request.body.getReader();
-	const chunks: Uint8Array[] = [];
-	let total = 0;
-	try {
-		// The await-in-loop here is inherent to streaming: each chunk only
-		// exists after the previous read resolves, so the reads must be
-		// sequential (there is nothing to parallelize).
-		for (;;) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			total += value.byteLength;
-			if (total > MAX_BODY_BYTES) {
-				await reader.cancel().catch(() => undefined);
-				return { kind: 'error', response: jsonError(413, 'Your message is too long. Please shorten it and try again.') };
-			}
-			chunks.push(value);
-		}
-	} catch {
-		return { kind: 'error', response: jsonError(400, 'Invalid request body.') };
-	}
-	const buffer = new Uint8Array(total);
-	let offset = 0;
-	for (const chunk of chunks) {
-		buffer.set(chunk, offset);
-		offset += chunk.byteLength;
-	}
-	return { kind: 'body', buffer: buffer.buffer };
-}
-
 export const POST: APIRoute = async ({ request }) => {
 	// Browser CSRF guard first: reject cross-origin form posts before they
 	// consume rate-limit budget or touch Sierra.
@@ -146,7 +62,7 @@ export const POST: APIRoute = async ({ request }) => {
 		return jsonError(429, 'Too many requests. Please wait a few minutes, or call or text us directly.');
 	}
 
-	const body = await readBody(request);
+	const body = await readBody(request, MAX_BODY_BYTES, 'Your message is too long. Please shorten it and try again.');
 	if (body.kind === 'error') return body.response;
 	const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
 	// formData() rejects malformed multipart bodies and unsupported content

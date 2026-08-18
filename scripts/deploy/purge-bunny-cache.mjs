@@ -25,6 +25,8 @@
 //   Full purge: POST https://api.bunny.net/pullzone/{id}/purgeCache  -> 204
 //   URL purge:  POST https://api.bunny.net/purge?url=<url>            -> 204
 
+import { normalizeSiteUrl } from './bunny-url.mjs';
+
 const apiKey = process.env.BUNNY_API_KEY;
 const pullZoneId = Number(process.env.BUNNY_PULL_ZONE_ID ?? '');
 const siteUrl = process.env.SITE_URL ?? '';
@@ -34,66 +36,16 @@ if (!apiKey) {
 	process.exit(0);
 }
 
-// Same normalization as normalizeSiteUrl in src/lib/bunny-purge.ts — keep in
-// sync (the runtime image ships scripts/deploy without src/, so the two
-// cannot share a module).
-function normalizeSiteUrl(input, baseUrl) {
-	const value = String(input ?? '').trim();
-	if (!value || value.length > 1024) return null;
-	// eslint-disable-next-line no-control-regex
-	if (/[\u0000-\u001f\u007f]/.test(value)) return null;
-	// Backslashes are treated as '/' by WHATWG URL parsing in http(s) paths,
-	// which would let '/foo\..\' slip past the dot-segment check below and
-	// normalize to the zone root (a prefix purge of everything). No site URL
-	// contains one — reject outright.
-	if (value.includes('\\')) return null;
-
-	// RFC 3986 dot segments (raw or percent-encoded) in the path mean
-	// malformed input — reject them before the URL parser can silently
-	// normalize them away.
-	const rawPath = value.split(/[?#]/, 1)[0].replace(/^https?:\/\/[^/]*/i, '');
-	if (/(^|\/)(\.|\.\.|%2e|\.%2e|%2e\.|%2e%2e)(\/|$)/i.test(rawPath)) return null;
-
-	let site;
-	try {
-		site = new URL(baseUrl);
-	} catch {
-		return null;
+// Strips control characters (U+0000–U+001F and DEL) from a value before it is
+// echoed to the terminal, so a crafted input cannot inject log lines or
+// terminal escape sequences (S5145).
+function printable(value) {
+	let out = '';
+	for (let i = 0; i < value.length; i += 1) {
+		const code = value.charCodeAt(i);
+		if (code >= 0x20 && code !== 0x7f) out += value[i];
 	}
-
-	let candidate;
-	if (/^https?:\/\//i.test(value)) {
-		try {
-			candidate = new URL(value);
-		} catch {
-			return null;
-		}
-		if (candidate.protocol !== site.protocol || candidate.hostname.toLowerCase() !== site.hostname.toLowerCase() || candidate.port !== site.port) return null;
-	} else {
-		if (!value.startsWith('/') || value.startsWith('//')) return null;
-		try {
-			candidate = new URL(value, site.origin);
-		} catch {
-			return null;
-		}
-	}
-
-	candidate.hash = '';
-	let decoded;
-	try {
-		decoded = decodeURIComponent(candidate.pathname);
-	} catch {
-		return null;
-	}
-	// Encoded slashes keep dot segments out of reach of the raw check above
-	// (e.g. '/foo%2f..%2fbar'), so re-test the decoded path for them too.
-	if (decoded.includes('*') || candidate.pathname.includes('*')) {
-		return null;
-	}
-	if (/(^|\/)(\.|\.\.)(\/|$)/.test(decoded)) {
-		return null;
-	}
-	return candidate.toString();
+	return out;
 }
 
 async function purgeUrl(url) {
@@ -119,14 +71,14 @@ if (targets.length > 0) {
 	for (const target of targets) {
 		const url = normalizeSiteUrl(target, siteUrl);
 		if (!url) {
-			// Strip control characters before echoing the rejected argument
-			// so a crafted value cannot inject terminal escapes.
-			const printable = target.replace(/[\u0000-\u001f\u007f]/g, '');
-			console.error(`[bunny-purge] Invalid target (must be a ${siteUrl} URL/path): ${printable}`);
+			console.error(`[bunny-purge] Invalid target (must be a ${siteUrl} URL/path): ${printable(target)}`);
 			process.exit(1);
 		}
 		urls.push(url);
 	}
+	// Sequential is deliberate: Bunny's URL-purge API is rate-limited per
+	// account, and a failing URL should abort the batch rather than fan out
+	// more calls.
 	let ok = true;
 	for (const url of urls) {
 		console.log(`[bunny-purge] Purging ${url}`);

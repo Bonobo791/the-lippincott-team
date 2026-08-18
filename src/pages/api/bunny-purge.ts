@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { clientIp, createRateLimiter, jsonError, readBody } from '../../lib/api-guards';
 import { BunnyPurgeError, normalizeSiteUrl, purgeUrl } from '../../lib/bunny-purge';
 
 // Protected per-URL Bunny cache purge endpoint. Lets a server-side caller
@@ -25,60 +26,30 @@ const MAX_URLS = 10;
 // Best-effort, single-instance abuse guard, same shape as /api/contact:
 // 10 purges per IP per minute is plenty for webhook bursts; keyed by the
 // proxy-set X-Real-IP / Client-IP header or the proxy-appended tail of
-// X-Forwarded-For (see clientIp). The token check runs after the limiter so
-// secret-guessing attempts consume the attacker's own budget.
+// X-Forwarded-For (see clientIp in src/lib/api-guards.ts). The token check
+// runs after the limiter so secret-guessing attempts consume the attacker's
+// own budget.
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_WINDOW_CAP = 1000;
-const rateWindows = new Map<string, { count: number; reset: number }>();
+const isRateLimited = createRateLimiter(RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS, RATE_WINDOW_CAP);
 
-function json(status: number, error: string) {
-	return new Response(JSON.stringify({ error }), {
-		status,
-		headers: { 'Content-Type': 'application/json' },
-	});
-}
-
-// Bunny sets X-Real-IP to the true client address and Coolify's Traefik
-// overwrites it — the first X-Forwarded-For value is client-controlled and
-// must never be trusted, or a rotating forged header would bypass the rate
-// limit entirely.
-function clientIp(request: Request) {
-	return (
-		request.headers.get('x-real-ip')?.trim() ||
-		request.headers.get('client-ip')?.trim() ||
-		request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() ||
-		'unknown'
-	);
-}
-
-function isRateLimited(ip: string, now: number) {
-	for (const [key, value] of rateWindows) {
-		if (value.reset <= now) rateWindows.delete(key);
-	}
-	const entry = rateWindows.get(ip);
-	if (!entry) {
-		rateWindows.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW_MS });
-		if (rateWindows.size > RATE_WINDOW_CAP) {
-			const oldest = rateWindows.keys().next().value;
-			if (oldest !== undefined) rateWindows.delete(oldest);
-		}
-		return false;
-	}
-	entry.count += 1;
-	return entry.count > RATE_LIMIT_MAX;
-}
+// Auth schemes are case-insensitive per RFC 7235.
+const BEARER_RE = /^Bearer\s/i;
 
 function headerToken(request: Request): string | null {
 	const auth = request.headers.get('authorization');
-	// Auth schemes are case-insensitive per RFC 7235.
-	if (auth && /^Bearer\s/i.test(auth)) return auth.slice('Bearer '.length).trim() || null;
+	if (auth && BEARER_RE.test(auth)) return auth.slice('Bearer '.length).trim() || null;
 	return request.headers.get('x-bunny-purge-token');
 }
 
-// Constant-time comparison on equal-length digests: length never leaks and
-// no early exit gives a timing oracle. Web Crypto only — node:crypto needs a
-// shim on Cloudflare Workers (the same reason sierra-contact.ts avoids it).
+// Constant-time comparison over the fixed-length SHA-256 digests: the digests
+// are always 32 bytes, so the XOR loop runs the same number of iterations and
+// never exits early, and the length difference of the plaintexts is folded
+// into the accumulator rather than short-circuited — no timing oracle exists
+// for either the content or the length of the secret. Web Crypto only —
+// node:crypto needs a shim on Cloudflare Workers (the same reason
+// sierra-contact.ts avoids it).
 async function secretMatches(provided: string, expected: string): Promise<boolean> {
 	const [a, b] = await Promise.all([
 		crypto.subtle.digest('SHA-256', new TextEncoder().encode(provided)),
@@ -86,49 +57,11 @@ async function secretMatches(provided: string, expected: string): Promise<boolea
 	]);
 	const av = new Uint8Array(a);
 	const bv = new Uint8Array(b);
-	let diff = 0;
+	let diff = (provided.length ^ expected.length) >>> 0;
 	for (let i = 0; i < av.length; i += 1) {
 		diff |= av[i] ^ bv[i];
 	}
 	return diff === 0;
-}
-
-type BodyResult = { kind: 'body'; buffer: ArrayBuffer } | { kind: 'error'; response: Response };
-
-// Enforce MAX_BODY_BYTES while reading the stream, before anything parses it.
-async function readBody(request: Request): Promise<BodyResult> {
-	const declaredLength = Number(request.headers.get('content-length') ?? 0);
-	if (declaredLength > MAX_BODY_BYTES) {
-		return { kind: 'error', response: json(413, 'Request body is too large.') };
-	}
-	if (!request.body) return { kind: 'body', buffer: new Uint8Array(0).buffer };
-	const reader = request.body.getReader();
-	const chunks: Uint8Array[] = [];
-	let total = 0;
-	try {
-		// The await-in-loop here is inherent to streaming: each chunk only
-		// exists after the previous read resolves, so the reads must be
-		// sequential (there is nothing to parallelize).
-		for (;;) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			total += value.byteLength;
-			if (total > MAX_BODY_BYTES) {
-				await reader.cancel().catch(() => undefined);
-				return { kind: 'error', response: json(413, 'Request body is too large.') };
-			}
-			chunks.push(value);
-		}
-	} catch {
-		return { kind: 'error', response: json(400, 'Invalid request body.') };
-	}
-	const buffer = new Uint8Array(total);
-	let offset = 0;
-	for (const chunk of chunks) {
-		buffer.set(chunk, offset);
-		offset += chunk.byteLength;
-	}
-	return { kind: 'body', buffer: buffer.buffer };
 }
 
 function pushField(raw: string[], key: string, value: unknown): boolean {
@@ -144,30 +77,11 @@ function pushField(raw: string[], key: string, value: unknown): boolean {
 	return false;
 }
 
-async function handle(request: Request): Promise<Response> {
-	if (request.url.length > MAX_URL_BYTES) {
-		return json(414, 'Request URL is too long.');
-	}
+type FieldsResult = { kind: 'ok'; raw: string[] } | { kind: 'error'; response: Response };
 
-	if (isRateLimited(clientIp(request), Date.now())) {
-		return json(429, 'Too many purge requests. Please wait a minute and try again.');
-	}
-
-	const secret = process.env.BUNNY_PURGE_SECRET;
-	const apiKey = process.env.BUNNY_API_KEY;
-	const siteUrl = process.env.SITE_URL ?? '';
-	if (!secret || !apiKey || !siteUrl) {
-		// Don't reveal which piece is missing to the caller.
-		console.error('[bunny-purge] Endpoint not configured (BUNNY_PURGE_SECRET / BUNNY_API_KEY / SITE_URL missing).');
-		return json(503, 'Cache purging is not configured on this server.');
-	}
-
-	const url = new URL(request.url);
-	const provided = headerToken(request) ?? url.searchParams.get('token');
-	if (!provided || !(await secretMatches(provided, secret))) {
-		return json(401, 'Unauthorized.');
-	}
-
+// Gathers the purge targets from GET query params and (for POST) the request
+// body — JSON or form-encoded — into one flat list of raw values.
+async function collectRawFields(request: Request, url: URL): Promise<FieldsResult> {
 	const raw: string[] = [];
 	for (const key of ['url', 'path', 'urls']) {
 		for (const value of url.searchParams.getAll(key)) {
@@ -177,8 +91,8 @@ async function handle(request: Request): Promise<Response> {
 	}
 
 	if (request.method === 'POST') {
-		const body = await readBody(request);
-		if (body.kind === 'error') return body.response;
+		const body = await readBody(request, MAX_BODY_BYTES, 'Request body is too large.');
+		if (body.kind === 'error') return { kind: 'error', response: body.response };
 
 		const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
 		if (contentType.includes('application/json')) {
@@ -186,14 +100,14 @@ async function handle(request: Request): Promise<Response> {
 			try {
 				parsed = JSON.parse(new TextDecoder().decode(body.buffer));
 			} catch {
-				return json(400, 'Invalid JSON body.');
+				return { kind: 'error', response: jsonError(400, 'Invalid JSON body.') };
 			}
 			if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-				return json(400, 'Invalid JSON body.');
+				return { kind: 'error', response: jsonError(400, 'Invalid JSON body.') };
 			}
 			for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
 				if (key !== 'url' && key !== 'path' && key !== 'urls' && key !== 'paths') continue;
-				if (!pushField(raw, key, value)) return json(400, 'Invalid JSON body.');
+				if (!pushField(raw, key, value)) return { kind: 'error', response: jsonError(400, 'Invalid JSON body.') };
 			}
 		} else {
 			// formData() rejects malformed multipart bodies and unsupported
@@ -206,53 +120,88 @@ async function handle(request: Request): Promise<Response> {
 					body: body.buffer,
 				}).formData();
 			} catch {
-				return json(400, 'Invalid form body.');
+				return { kind: 'error', response: jsonError(400, 'Invalid form body.') };
 			}
 			for (const key of ['url', 'path', 'urls']) {
 				for (const value of form.getAll(key)) {
-					if (!pushField(raw, key, value)) return json(400, 'Invalid form body.');
+					if (!pushField(raw, key, value)) return { kind: 'error', response: jsonError(400, 'Invalid form body.') };
 				}
 			}
 		}
 	}
+	return { kind: 'ok', raw };
+}
 
-	const inputs = raw.map((entry) => entry.trim()).filter((entry) => entry.length > 0);
-	if (inputs.length === 0) {
-		return json(400, 'Provide at least one url or path to purge.');
-	}
-	if (inputs.length > MAX_URLS) {
-		return json(400, `At most ${MAX_URLS} URLs can be purged per request.`);
-	}
-
-	const targets: string[] = [];
-	for (const input of inputs) {
-		const normalized = normalizeSiteUrl(input, siteUrl);
-		if (!normalized) {
-			return json(400, 'A provided URL is not a valid site URL.');
-		}
-		targets.push(normalized);
-	}
-
+// Purges each target in order, stopping at the first failure. Sequential is
+// deliberate: Bunny's URL-purge API is rate-limited per account, and an early
+// 429/5xx should abort the batch rather than fan out more calls.
+async function purgeTargets(targets: string[], apiKey: string): Promise<Response | null> {
 	for (const target of targets) {
 		try {
 			await purgeUrl(target, apiKey);
 		} catch (error) {
 			if (error instanceof BunnyPurgeError) {
 				if (error.status === 429) {
-					return json(429, 'Bunny purge rate limit reached. Please wait a moment and try again.');
+					return jsonError(429, 'Bunny purge rate limit reached. Please wait a moment and try again.');
 				}
 				// S5145: never interpolate the Bunny API response body into
 				// logs — the status code identifies the failure class; use
 				// curl with the same call to see the full error body.
 				console.error(`[bunny-purge] URL purge failed: Bunny answered HTTP ${error.status}.`);
-				return json(502, 'Bunny cache purge failed upstream.');
+				return jsonError(502, 'Bunny cache purge failed upstream.');
 			}
 			console.error('[bunny-purge] URL purge failed:', error instanceof Error ? error.message : 'Unknown error');
-			return json(502, 'Bunny cache purge failed upstream.');
+			return jsonError(502, 'Bunny cache purge failed upstream.');
 		}
 	}
+	return null;
+}
 
-	return new Response(null, { status: 204 });
+async function handle(request: Request): Promise<Response> {
+	if (request.url.length > MAX_URL_BYTES) {
+		return jsonError(414, 'Request URL is too long.');
+	}
+
+	if (isRateLimited(clientIp(request), Date.now())) {
+		return jsonError(429, 'Too many purge requests. Please wait a minute and try again.');
+	}
+
+	const secret = process.env.BUNNY_PURGE_SECRET;
+	const apiKey = process.env.BUNNY_API_KEY;
+	const siteUrl = process.env.SITE_URL ?? '';
+	if (!secret || !apiKey || !siteUrl) {
+		// Don't reveal which piece is missing to the caller.
+		console.error('[bunny-purge] Endpoint not configured (BUNNY_PURGE_SECRET / BUNNY_API_KEY / SITE_URL missing).');
+		return jsonError(503, 'Cache purging is not configured on this server.');
+	}
+
+	const url = new URL(request.url);
+	const provided = headerToken(request) ?? url.searchParams.get('token');
+	if (!provided || !(await secretMatches(provided, secret))) {
+		return jsonError(401, 'Unauthorized.');
+	}
+
+	const fields = await collectRawFields(request, url);
+	if (fields.kind === 'error') return fields.response;
+
+	const inputs = fields.raw.map((entry) => entry.trim()).filter((entry) => entry.length > 0);
+	if (inputs.length === 0) {
+		return jsonError(400, 'Provide at least one url or path to purge.');
+	}
+	if (inputs.length > MAX_URLS) {
+		return jsonError(400, `At most ${MAX_URLS} URLs can be purged per request.`);
+	}
+
+	const targets: string[] = [];
+	for (const input of inputs) {
+		const normalized = normalizeSiteUrl(input, siteUrl);
+		if (!normalized) {
+			return jsonError(400, 'A provided URL is not a valid site URL.');
+		}
+		targets.push(normalized);
+	}
+
+	return (await purgeTargets(targets, apiKey)) ?? new Response(null, { status: 204 });
 }
 
 export const GET: APIRoute = ({ request }) => handle(request);
