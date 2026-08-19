@@ -102,23 +102,6 @@ const restoreConfig = () => {
   try { rmSync(backupDir, { recursive: true, force: true }); } catch { /* ignore */ }
 };
 
-// --- minimal MCP stdio client (JSON-RPC 2.0, newline-delimited) ---------------
-function rpc(proc, rl, id, method, params) {
-  return new Promise((resolve, reject) => {
-    const onLine = (line) => {
-      let msg;
-      try { msg = JSON.parse(line); } catch { return; }
-      if (msg.id === id) {
-        rl.off('line', onLine);
-        if (msg.error) reject(new Error(msg.error.message || JSON.stringify(msg.error)));
-        else resolve(msg.result);
-      }
-    };
-    rl.on('line', onLine);
-    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
-  });
-}
-
 // Bounded wait for one JSON-RPC response. Never hangs the push: a timeout,
 // a child-process error, or a premature close rejects, and the caller
 // degrades to "allow" on tooling failure (logged loudly).
@@ -151,8 +134,7 @@ function rpc(proc, rl, id, method, params, timeoutMs = 300_000) {
     rl.on('line', onLine);
     proc.on('error', onError);
     proc.on('close', onClose);
-    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '
-');
+    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
   });
 }
 
