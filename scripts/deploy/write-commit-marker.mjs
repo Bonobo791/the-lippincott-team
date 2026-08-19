@@ -19,7 +19,7 @@
 // When none is available the file is written empty and the purge workflow
 // refuses to purge blindly (it times out loudly instead of guessing).
 import { execSync } from 'node:child_process';
-import { accessSync, constants, writeFileSync } from 'node:fs';
+import { accessSync, constants, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -66,6 +66,9 @@ function resolveCommitSha() {
 }
 
 const markerPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'public', '__moderaty_commit.txt');
+// Remove any marker a previous (possibly failed) build left behind before
+// writing the current one, so stale content can never leak into a new build.
+rmSync(markerPath, { force: true });
 const sha = resolveCommitSha();
 writeFileSync(markerPath, `${sha}\n`);
 const summary = sha ? `Wrote ${sha}` : 'No commit SHA available; marker left empty';

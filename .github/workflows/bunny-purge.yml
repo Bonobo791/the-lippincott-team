@@ -64,9 +64,17 @@ jobs:
           ORIGIN_URL: ${{ secrets.BUNNY_ORIGIN_URL || secrets.SITE_URL || 'https://thelippincottteam.com' }}
           COMMIT_SHA: ${{ github.sha }}
         run: node scripts/bunny-purge.mjs --wait-for-commit "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
-      - name: Warn when Bunny secrets are not configured
-        if: ${{ secrets.BUNNY_API_KEY == '' || secrets.BUNNY_PULL_ZONE_ID == '' }}
+      - name: Warn when Bunny secrets are not configured (optional purge)
+        if: ${{ (secrets.BUNNY_API_KEY == '' || secrets.BUNNY_PULL_ZONE_ID == '') && vars.BUNNY_PURGE_REQUIRED != 'true' }}
         run: >-
           echo "::warning::BUNNY_API_KEY / BUNNY_PULL_ZONE_ID are not set as
           repository secrets — skipping the Bunny cache purge. Add them under
-          Settings -> Secrets and variables -> Actions to enable it."
+          Settings -> Secrets and variables -> Actions to enable it, or set
+          the BUNNY_PURGE_REQUIRED repository variable to 'true' to make a
+          missing purge fail the job instead."
+      - name: Fail when Bunny secrets are missing and purge is required
+        if: ${{ (secrets.BUNNY_API_KEY == '' || secrets.BUNNY_PULL_ZONE_ID == '') && vars.BUNNY_PURGE_REQUIRED == 'true' }}
+        run: >-
+          echo "::error::BUNNY_PURGE_REQUIRED is 'true' but BUNNY_API_KEY /
+          BUNNY_PULL_ZONE_ID are not set as repository secrets — refusing to
+          let a production deploy land with stale CDN content." && exit 1

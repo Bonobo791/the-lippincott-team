@@ -27,7 +27,20 @@ function fakeFetch(handler) {
 
 test('full purge is a no-op without credentials', async () => {
 	assert.equal(await main([], {}), 0);
-	assert.equal(await main([], { BUNNY_API_KEY: 'k' }, fakeFetch(() => response(204))), 0);
+});
+
+test('partial credentials fail loudly (key set, zone ID missing)', async () => {
+	// A set BUNNY_API_KEY with no BUNNY_PULL_ZONE_ID is a misconfiguration,
+	// not a dev no-op — exit 1 so CI cannot silently skip the purge.
+	assert.equal(await main([], { BUNNY_API_KEY: 'k' }, fakeFetch(() => response(204))), 1);
+});
+
+test('malformed wait args fail even without credentials', async () => {
+	// Argument validation runs before the credential no-op, so CI diagnostics
+	// are predictable in an unconfigured checkout too.
+	assert.equal(await main(['--wait-for-commit', 'not-a-sha'], {}), 1);
+	assert.equal(await main(['--wait-for-commit', 'a'.repeat(40)], {}), 1);
+	assert.equal(await main(['/pricing/'], {}), 1); // per-URL mode without SITE_URL
 });
 
 test('full purge succeeds on 204 and fails loudly on 500', async () => {

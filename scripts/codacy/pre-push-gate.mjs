@@ -88,8 +88,16 @@ for (const name of configFiles) {
   }
 }
 const restoreConfig = () => {
-  for (const name of backedUp) {
-    try { copyFileSync(path.join(backupDir, name), path.join(codacyDir, name)); } catch { /* ignore */ }
+  // Files that existed before analysis are restored; files Codacy generated
+  // that were absent before are removed, so the working tree returns exactly
+  // to its pre-push state (no stray untracked config after the gate runs).
+  for (const name of configFiles) {
+    const target = path.join(codacyDir, name);
+    if (backedUp.includes(name)) {
+      try { copyFileSync(path.join(backupDir, name), target); } catch { /* ignore */ }
+    } else {
+      try { rmSync(target, { force: true }); } catch { /* ignore */ }
+    }
   }
   try { rmSync(backupDir, { recursive: true, force: true }); } catch { /* ignore */ }
 };
@@ -117,6 +125,7 @@ async function runAnalysis(useToken) {
     env: useToken ? env : { ...env, CODACY_ACCOUNT_TOKEN: '' },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
+  let rl = null;
   // The analysis runner streams a lot of per-tool progress to stderr; collapse
   // consecutive repeats so a 40s analysis doesn't bury the gate's verdict.
   let lastLine = null;
@@ -136,7 +145,7 @@ async function runAnalysis(useToken) {
     }
   });
   try {
-    const rl = readline.createInterface({ input: proc.stdout });
+    rl = readline.createInterface({ input: proc.stdout });
     await rpc(proc, rl, 1, 'initialize', {
       protocolVersion: '2024-11-05',
       capabilities: {},
@@ -153,6 +162,7 @@ async function runAnalysis(useToken) {
   } catch (err) {
     return { error: err };
   } finally {
+    try { rl?.close(); } catch { /* ignore */ }
     try { proc.kill(); } catch { /* ignore */ }
     restoreConfig();
   }

@@ -149,7 +149,11 @@ async function waitForCommitMarker({ sha, origin, timeout, interval }, { originU
 		if (attempt % 6 === 0) {
 			console.log(`[bunny-purge] Still waiting for commit ${sha} (${Math.max(0, Math.round((deadline - Date.now()) / 1000))}s left)...`);
 		}
-		await sleep(interval * 1000);
+		// Never sleep past the deadline — the loop would otherwise take up to
+		// a full interval longer than the configured timeout.
+		const remaining = deadline - Date.now();
+		if (remaining <= 0) break;
+		await sleep(Math.min(interval * 1000, remaining));
 	}
 	console.error(
 		`[bunny-purge] Commit ${sha} was never observed serving at ${markerUrl} within ${timeout}s` +
@@ -236,6 +240,22 @@ export async function main(args, env = process.env, fetchImpl = fetch) {
 	const originUrl = env.BUNNY_ORIGIN_URL ?? '';
 	const parsed = parseArgs(args);
 
+	// Validate CLI arguments FIRST so a malformed command fails predictably
+	// even when credentials are absent (otherwise `--wait-for-commit nope`
+	// would exit 0 in an unconfigured checkout).
+	if (parsed.mode === 'wait' && (!parsed.sha || !SHA_RE.test(parsed.sha.trim()))) {
+		console.error('[bunny-purge] --wait-for-commit requires the commit SHA as its argument.');
+		return 1;
+	}
+	if (parsed.mode === 'wait' && !(parsed.origin ?? originUrl ?? siteUrl)) {
+		console.error('[bunny-purge] --wait-for-commit needs an origin: pass --origin, or set BUNNY_ORIGIN_URL / SITE_URL.');
+		return 1;
+	}
+	if (parsed.mode === 'urls' && !siteUrl) {
+		console.error('[bunny-purge] SITE_URL is required to resolve path arguments.');
+		return 1;
+	}
+
 	if (!apiKey) {
 		console.log('[bunny-purge] Skipped (BUNNY_API_KEY not set).');
 		return 0;
@@ -245,10 +265,12 @@ export async function main(args, env = process.env, fetchImpl = fetch) {
 		return purgeTargets(parsed.targets, { apiKey, siteUrl }, fetchImpl);
 	}
 
-	// Full-zone purge (mode 'full') or wait-then-purge (mode 'wait').
+	// Full-zone purge (mode 'full') or wait-then-purge (mode 'wait'): the zone
+	// ID is required. With a key set but no zone ID the configuration is
+	// wrong, not absent — fail loudly instead of pretending the purge ran.
 	if (!Number.isInteger(pullZoneId) || pullZoneId <= 0) {
-		console.log('[bunny-purge] Skipped (BUNNY_PULL_ZONE_ID not set).');
-		return 0;
+		console.error('[bunny-purge] BUNNY_PULL_ZONE_ID is required for a full-zone purge when BUNNY_API_KEY is set.');
+		return 1;
 	}
 
 	if (parsed.mode === 'wait') {
