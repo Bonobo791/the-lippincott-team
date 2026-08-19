@@ -119,6 +119,43 @@ function rpc(proc, rl, id, method, params) {
   });
 }
 
+// Bounded wait for one JSON-RPC response. Never hangs the push: a timeout,
+// a child-process error, or a premature close rejects, and the caller
+// degrades to "allow" on tooling failure (logged loudly).
+function rpc(proc, rl, id, method, params, timeoutMs = 300_000) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      clearTimeout(timer);
+      rl.off('line', onLine);
+      proc.off('error', onError);
+      proc.off('close', onClose);
+    };
+    const done = (fn, arg) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      fn(arg);
+    };
+    const onLine = (line) => {
+      let msg;
+      try { msg = JSON.parse(line); } catch { return; }
+      if (msg.id === id) {
+        if (msg.error) done(reject, new Error(msg.error.message || JSON.stringify(msg.error)));
+        else done(resolve, msg.result);
+      }
+    };
+    const onError = (err) => done(reject, new Error(`codacy MCP server error: ${err.message}`));
+    const onClose = () => done(reject, new Error('codacy MCP server closed before responding'));
+    const timer = setTimeout(() => done(reject, new Error(`codacy MCP server did not respond within ${timeoutMs}ms`)), timeoutMs);
+    rl.on('line', onLine);
+    proc.on('error', onError);
+    proc.on('close', onClose);
+    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '
+');
+  });
+}
+
 /** Spawn the server, run codacy_cli_analyze, kill the server. Returns {payload} or {error}. */
 async function runAnalysis(useToken) {
   const proc = spawn(serverBin, [], {

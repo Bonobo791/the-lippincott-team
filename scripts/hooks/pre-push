@@ -19,19 +19,32 @@ declare -A FILES
 while read -r local_ref local_sha remote_ref remote_sha; do
   [[ -n "$local_sha" && "$local_sha" != "0000000000000000000000000000000000000000" ]] || continue
   if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
-    # New branch: diff against origin/<branch> if known locally, else last commit.
+    # New branch: diff against origin/<branch> if known locally; otherwise use
+    # the merge base with origin/main so EVERY commit on the branch is covered
+    # (not just the last one); a parentless root commit falls back to the full
+    # tracked file set so the gate cannot silently skip analysis.
     remote_branch="${remote_ref#refs/heads/}"
     if git rev-parse --verify -q "refs/remotes/origin/$remote_branch" >/dev/null 2>&1; then
       base="refs/remotes/origin/$remote_branch"
-    else
+    elif mb="$(git merge-base "$local_sha" refs/remotes/origin/main 2>/dev/null)" && [[ -n "$mb" ]]; then
+      base="$mb"
+    elif git rev-parse --verify -q "$local_sha^" >/dev/null 2>&1; then
       base="$local_sha^"
+    else
+      base="__ALL_FILES__"
     fi
   else
     base="$remote_sha"
   fi
-  while IFS= read -r f; do
-    [[ -n "$f" ]] && FILES["$f"]=1
-  done < <(git diff --name-only --diff-filter=ACMR "$base" "$local_sha" 2>/dev/null || true)
+  if [[ "$base" == "__ALL_FILES__" ]]; then
+    while IFS= read -r f; do
+      [[ -n "$f" ]] && FILES["$f"]=1
+    done < <(git ls-files)
+  else
+    while IFS= read -r f; do
+      [[ -n "$f" ]] && FILES["$f"]=1
+    done < <(git diff --name-only --diff-filter=ACMR "$base" "$local_sha" 2>/dev/null || true)
+  fi
 done
 
 [[ ${#FILES[@]} -gt 0 ]] || exit 0

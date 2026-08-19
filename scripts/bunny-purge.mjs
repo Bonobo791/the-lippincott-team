@@ -189,9 +189,10 @@ async function purgePullZone({ apiKey, pullZoneId, fetchImpl }) {
 	}
 }
 
-// Purges each target in order, stopping at the first failure. Sequential is
+// Purges each target in order, aborting at the first failure. Sequential is
 // deliberate: Bunny's URL-purge API is rate-limited per account, and an early
-// 429/5xx should abort the batch rather than fan out more calls.
+// 429/5xx must stop the batch rather than fan out more calls (matches the
+// /api/bunny-purge endpoint's behavior).
 async function purgeTargets(targets, { apiKey, siteUrl }, fetchImpl) {
 	if (!siteUrl) {
 		console.error('[bunny-purge] SITE_URL is required to resolve path arguments.');
@@ -206,7 +207,6 @@ async function purgeTargets(targets, { apiKey, siteUrl }, fetchImpl) {
 		}
 		urls.push(url);
 	}
-	let ok = true;
 	for (const url of urls) {
 		console.log(`[bunny-purge] Purging ${url}`);
 		try {
@@ -217,15 +217,15 @@ async function purgeTargets(targets, { apiKey, siteUrl }, fetchImpl) {
 			});
 			if (!response.ok) {
 				// S5145: status code only (see purgePullZone).
-				console.error(`[bunny-purge] URL purge failed: HTTP ${response.status}`);
-				ok = false;
+				console.error(`[bunny-purge] URL purge failed: HTTP ${response.status}; aborting batch.`);
+				return 1;
 			}
 		} catch (error) {
-			ok = false;
-			console.error('[bunny-purge] URL purge failed:', error instanceof Error ? error.message : 'Unknown error');
+			console.error('[bunny-purge] URL purge failed:', error instanceof Error ? error.message : 'Unknown error', '; aborting batch.');
+			return 1;
 		}
 	}
-	return ok ? 0 : 1;
+	return 0;
 }
 
 /**

@@ -124,6 +124,12 @@ test('per-URL purge fails loudly on upstream errors', async () => {
 	assert.equal(await main(['/pricing/'], { BUNNY_API_KEY: 'k', SITE_URL: 'https://example.com' }, fetchImpl), 1);
 });
 
+test('per-URL purge aborts the batch after the first failure', async () => {
+	const fetchImpl = fakeFetch((url) => (url.includes('pricing') ? response(429) : response(204)));
+	assert.equal(await main(['/pricing/', '/blog/'], { BUNNY_API_KEY: 'k', SITE_URL: 'https://example.com' }, fetchImpl), 1);
+	assert.equal(fetchImpl.calls.length, 1, 'no further purge requests after the first failure');
+});
+
 test('per-URL purge requires SITE_URL', async () => {
 	const fetchImpl = fakeFetch(() => response(204));
 	assert.equal(await main(['/pricing/'], { BUNNY_API_KEY: 'k' }, fetchImpl), 1);
