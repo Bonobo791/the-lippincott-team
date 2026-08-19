@@ -10,7 +10,9 @@
  * Exit 0 = allow push; 1 = block push.
  *
  * Talks plain JSON-RPC 2.0 (newline-delimited) to the MCP server — no SDK
- * dependency, so the hook stays self-contained. Degrades to "allow" (with a
+ * dependency, so the hook stays self-contained. If the configured
+ * CODACY_ACCOUNT_TOKEN is invalid, remote-synced analysis fails and the gate
+ * retries once without a token (pure local mode). Degrades to "allow" (with a
  * warning) when the server is missing or analysis tooling fails, because a
  * broken tool must never brick pushes. Escape hatches: `git push --no-verify`
  * or CODACY_GATE_OFF=1.
@@ -52,12 +54,16 @@ if (!existsSync(serverBin)) {
 
 // --- optional token from the agent config (keeps analysis cloud-synced) ------
 const env = { ...process.env };
+let tokenConfigured = false;
 try {
   const envFile = path.join(os.homedir(), '.prime', 'agent', 'codacy', 'server.env');
   if (existsSync(envFile)) {
     for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
-      const m = line.match(/^CODACY_ACCOUNT_TOKEN=(.*)$/);
-      if (m && m[1].trim()) env.CODACY_ACCOUNT_TOKEN = m[1].trim().replace(/^["']|["']$/g, '');
+      const m = line.match(/^CODACY_ACCOUNT_TOKEN\s*=\s*(.*)$/);
+      if (m && m[1].trim()) {
+        env.CODACY_ACCOUNT_TOKEN = m[1].trim().replace(/^["']|["']$/g, '');
+        tokenConfigured = true;
+      }
     }
   }
 } catch { /* token is optional */ }
@@ -83,7 +89,7 @@ const restoreConfig = () => {
 };
 
 // --- minimal MCP stdio client (JSON-RPC 2.0, newline-delimited) ---------------
-function rpc(rl, id, method, params) {
+function rpc(proc, rl, id, method, params) {
   return new Promise((resolve, reject) => {
     const onLine = (line) => {
       let msg;
@@ -99,78 +105,104 @@ function rpc(rl, id, method, params) {
   });
 }
 
-let payload = null;
-let analysisError = null;
-const proc = spawn(serverBin, [], { env, stdio: ['pipe', 'pipe', 'pipe'] });
-// The analysis runner streams a lot of per-tool progress to stderr; collapse
-// consecutive repeats so a 40s analysis doesn't bury the gate's verdict.
-let lastLine = null;
-let repeatCount = 0;
-proc.stderr.setEncoding('utf8');
-proc.stderr.on('data', (chunk) => {
-  for (const line of chunk.split(/\r?\n/)) {
-    if (!line) continue;
-    if (line === lastLine) {
-      repeatCount += 1;
-      continue;
+/** Spawn the server, run codacy_cli_analyze, kill the server. Returns {payload} or {error}. */
+async function runAnalysis(useToken) {
+  const proc = spawn(serverBin, [], {
+    env: useToken ? env : { ...env, CODACY_ACCOUNT_TOKEN: '' },
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  // The analysis runner streams a lot of per-tool progress to stderr; collapse
+  // consecutive repeats so a 40s analysis doesn't bury the gate's verdict.
+  let lastLine = null;
+  let repeatCount = 0;
+  proc.stderr.setEncoding('utf8');
+  proc.stderr.on('data', (chunk) => {
+    for (const line of chunk.split(/\r?\n/)) {
+      if (!line) continue;
+      if (line === lastLine) {
+        repeatCount += 1;
+        continue;
+      }
+      if (repeatCount > 3) console.error(`   ... (${repeatCount} repeats)`);
+      repeatCount = 0;
+      lastLine = line;
+      console.error(line);
     }
-    if (repeatCount > 3) console.error(`   ... (${repeatCount} repeats)`);
-    repeatCount = 0;
-    lastLine = line;
-    console.error(line);
+  });
+  try {
+    const rl = readline.createInterface({ input: proc.stdout });
+    await rpc(proc, rl, 1, 'initialize', {
+      protocolVersion: '2024-11-05',
+      capabilities: {},
+      clientInfo: { name: 'codacy-pre-push-gate', version: '1.0.0' },
+    });
+    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
+    log('analyzing repository (first run may download tool runtimes) ...');
+    const result = await rpc(proc, rl, 2, 'tools/call', {
+      name: 'codacy_cli_analyze',
+      arguments: { rootPath: ROOT },
+    });
+    const text = result?.content?.[0]?.text;
+    return { payload: text ? JSON.parse(text) : { success: false, output: 'empty response' } };
+  } catch (err) {
+    return { error: err };
+  } finally {
+    try { proc.kill(); } catch { /* ignore */ }
+    restoreConfig();
   }
-});
-try {
-  const rl = readline.createInterface({ input: proc.stdout });
-  await rpc(rl, 1, 'initialize', {
-    protocolVersion: '2024-11-05',
-    capabilities: {},
-    clientInfo: { name: 'codacy-pre-push-gate', version: '1.0.0' },
-  });
-  proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
-  log('analyzing repository (first run may download tool runtimes) ...');
-  const result = await rpc(rl, 2, 'tools/call', {
-    name: 'codacy_cli_analyze',
-    arguments: { rootPath: ROOT },
-  });
-  const text = result?.content?.[0]?.text;
-  payload = text ? JSON.parse(text) : { success: false, output: 'empty response' };
-} catch (err) {
-  analysisError = err;
-} finally {
-  try { proc.kill(); } catch { /* ignore */ }
-  restoreConfig();
 }
-if (analysisError) {
-  log('analysis failed (%s); allowing push (tooling error, not a finding)', analysisError?.message || analysisError);
+
+let first = await runAnalysis(tokenConfigured);
+if (first.error && tokenConfigured) {
+  // A bad/revoked token can break remote-synced analysis; fall back to
+  // tokenless local analysis before giving up on the gate.
+  log('analysis with token failed (%s); retrying without token', first.error?.message || first.error);
+  first = await runAnalysis(false);
+}
+if (first.error) {
+  log('analysis failed (%s); allowing push (tooling error, not a finding)', first.error?.message || first.error);
   process.exit(0);
 }
 
+const payload = first.payload;
 if (!payload.success) {
+  if (tokenConfigured && /token|auth|credential|401|403/i.test(payload.output || '')) {
+    log('analysis with token failed (%s); retrying without token', payload.output || 'unknown');
+    const retried = await runAnalysis(false);
+    if (retried.error) {
+      log('analysis failed (%s); allowing push (tooling error, not a finding)', retried.error?.message || retried.error);
+      process.exit(0);
+    }
+    if (retried.payload.success) {
+      gateVerdict(Array.isArray(retried.payload.result) ? retried.payload.result : []);
+    }
+  }
   log('analysis failed: %s; allowing push (tooling error, not a finding)', payload.output || 'unknown');
   process.exit(0);
 }
 
-const findings = Array.isArray(payload.result) ? payload.result : [];
-const blockers = findings.filter(
-  (f) => f && f.level === 'error' && changed.has(String(f.filePath || '').replace(/^\.\//, '')),
-);
+gateVerdict(payload.result || []);
 
-if (blockers.length === 0) {
-  log('OK: no error-level Codacy findings in changed files');
-  process.exit(0);
+/** Filter to error-level findings in changed files; block (exit 1) or allow. */
+function gateVerdict(findings) {
+  const blockers = findings.filter(
+    (f) => f && f.level === 'error' && changed.has(String(f.filePath || '').replace(/^\.\//, '')),
+  );
+  if (blockers.length === 0) {
+    log('OK: no error-level Codacy findings in changed files');
+    process.exit(0);
+  }
+  console.error('');
+  console.error('Codacy gate: push blocked — %d error-level finding(s) in changed files:', blockers.length);
+  for (const f of blockers) {
+    const at = f.region
+      ? `${f.filePath}:${f.region.startLine ?? '?'}${f.region.startColumn ? ':' + f.region.startColumn : ''}`
+      : f.filePath;
+    console.error(`  [${f.tool}] ${f.rule?.name || f.rule?.id || '?'}  ${at}`);
+    console.error(`      ${f.message}`);
+  }
+  console.error('');
+  console.error('Fix the findings above (or suppress the pattern in .codacy/), then push again.');
+  console.error('Escape hatch: git push --no-verify  (or CODACY_GATE_OFF=1).');
+  process.exit(1);
 }
-
-console.error('');
-console.error('Codacy gate: push blocked — %d error-level finding(s) in changed files:', blockers.length);
-for (const f of blockers) {
-  const at = f.region
-    ? `${f.filePath}:${f.region.startLine ?? '?'}${f.region.startColumn ? ':' + f.region.startColumn : ''}`
-    : f.filePath;
-  console.error(`  [${f.tool}] ${f.rule?.name || f.rule?.id || '?'}  ${at}`);
-  console.error(`      ${f.message}`);
-}
-console.error('');
-console.error('Fix the findings above (or suppress the pattern in .codacy/), then push again.');
-console.error('Escape hatch: git push --no-verify  (or CODACY_GATE_OFF=1).');
-process.exit(1);
