@@ -179,7 +179,9 @@ and `/tina-island` endpoints are stateless (no cookies/sessions), and the
 contact form keeps its honeypot, size cap, and per-IP rate limit as abuse
 controls — and an endpoint-level `Origin` allowlist (`SITE_URL` + platform
 URL envs, the hardcoded brand origins `https://thelippincottteam.com` /
-`https://www.thelippincottteam.com` and the localhost ports, plus the
+`https://www.thelippincottteam.com` (and the old `https://lippincottteam.com` /
+`https://www.lippincottteam.com` pair while that domain transitions over) and
+the localhost ports, plus the
 optional comma-separated `CONTACT_ALLOWED_ORIGINS` for extra hosts like this
 staging edge hostname). Keep *Block Root Path Access*,
 *Block None Referrer*, and

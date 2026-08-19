@@ -456,7 +456,9 @@ Environment variables (see `.env.example`):
 - `CONTACT_ALLOWED_ORIGINS` — optional comma-separated list of extra origins
   allowed to submit the contact form, besides `SITE_URL`, the platform URL
   envs, and the hardcoded brand/localhost origins (`https://thelippincottteam.com`,
-  `https://www.thelippincottteam.com`, `localhost:4321/4322`) — e.g. staging
+  `https://www.thelippincottteam.com`, the old `https://lippincottteam.com` /
+  `https://www.lippincottteam.com` pair while that domain transitions over, and
+  `localhost:4321/4322`) — e.g. staging
   Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
   rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
   submissions are not allowed.").
