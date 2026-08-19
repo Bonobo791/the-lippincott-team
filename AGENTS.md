@@ -326,6 +326,21 @@ above rather than bare `astro build`.
 
 ## Testing and quality checks
 
+**Codacy quality gate (pre-push).** The repo is wired with a Codacy pre-push
+gate: before any `git push`, `scripts/codacy/pre-push-gate.mjs` runs Codacy
+local analysis (official `@codacy/codacy-mcp`, spawned over stdio) and the push
+is blocked when a changed file carries error-level (critical/major) findings.
+The hook lives at `scripts/hooks/pre-push` (activated via
+`git config core.hooksPath scripts/hooks`; see `scripts/codacy/README.md`).
+Escape hatches: `git push --no-verify` or `CODACY_GATE_OFF=1`. Agents should
+also run the analysis when finishing work — `import codacy; await
+codacy.codacy_cli_analyze(rootPath=".")` (kernel skill, no token needed for
+local analysis; cloud tools need `CODACY_ACCOUNT_TOKEN` in
+`~/.prime/agent/codacy/server.env`). Note: tokenless local analysis rewrites
+`.codacy/codacy.config.json` (committed, remote-sourced) — the gate restores
+it, but if you run analysis manually, `git checkout -- .codacy/` afterwards
+unless you intend to update the config.
+
 There is **no test suite, linter, or formatter configured** in this project
 (no test script, no ESLint/Prettier config). To validate changes:
 
