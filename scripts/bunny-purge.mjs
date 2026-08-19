@@ -52,6 +52,8 @@ const REQUEST_TIMEOUT_MS = 15_000;
 const PURGE_TIMEOUT_MS = 30_000;
 const DEFAULT_WAIT_TIMEOUT_S = 900;
 const DEFAULT_WAIT_INTERVAL_S = 10;
+// Module scope so the hot poll loop never recompiles it (S6397/S1442).
+const SHA_RE = /^[0-9a-f]{7,64}$/i;
 
 // Strips control characters (U+0000–U+001F and DEL) from a value before it is
 // echoed to the terminal, so a crafted input cannot inject log lines or
@@ -59,7 +61,7 @@ const DEFAULT_WAIT_INTERVAL_S = 10;
 function printable(value) {
 	let out = '';
 	for (let i = 0; i < value.length; i += 1) {
-		const code = value.charCodeAt(i);
+		const code = value.codePointAt(i) ?? 0;
 		if (code >= 0x20 && code !== 0x7f) out += value[i];
 	}
 	return out;
@@ -91,8 +93,33 @@ function parseArgs(argv) {
 // Polls the origin's deploy-commit marker until the commit is serving.
 // Returns true when the marker matched (caller then purges), false on
 // invalid arguments or timeout — never purges blindly.
+// Parses and validates the origin URL; returns the absolute marker URL or null.
+function resolveMarkerUrl(candidate) {
+	let base;
+	try {
+		base = new URL(candidate);
+	} catch {
+		return null;
+	}
+	if (base.protocol !== 'https:' && base.protocol !== 'http:') return null;
+	return new URL(MARKER_PATH, base.origin).toString();
+}
+
+// One poll of the commit marker. Returns { matched, error } — transient fetch
+// failures (rolling updates answering 503, dropped connections) are normal
+// during a deploy, so they are reported to the caller as error, not thrown.
+async function pollMarker(markerUrl, sha, fetchImpl) {
+	try {
+		const response = await fetchImpl(markerUrl, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+		if (response.ok && (await response.text()).trim() === sha) return { matched: true, error: null };
+		return { matched: false, error: null };
+	} catch (error) {
+		return { matched: false, error: error instanceof Error ? error.message : 'Unknown error' };
+	}
+}
+
 async function waitForCommitMarker({ sha, origin, timeout, interval }, { originUrl, siteUrl, fetchImpl }) {
-	if (!sha || typeof sha !== 'string' || !/^[0-9a-f]{7,64}$/i.test(sha.trim())) {
+	if (!sha || typeof sha !== 'string' || !SHA_RE.test(sha.trim())) {
 		console.error('[bunny-purge] --wait-for-commit requires the commit SHA as its argument.');
 		return false;
 	}
@@ -102,40 +129,23 @@ async function waitForCommitMarker({ sha, origin, timeout, interval }, { originU
 		console.error('[bunny-purge] --wait-for-commit needs an origin: pass --origin, or set BUNNY_ORIGIN_URL / SITE_URL.');
 		return false;
 	}
-	let base;
-	try {
-		base = new URL(candidate);
-	} catch {
-		console.error(`[bunny-purge] Invalid origin URL: ${printable(candidate)}`);
+	const markerUrl = resolveMarkerUrl(candidate);
+	if (!markerUrl) {
+		console.error(`[bunny-purge] Invalid origin URL (must be an http(s) site URL): ${printable(candidate)}`);
 		return false;
 	}
-	if (base.protocol !== 'https:' && base.protocol !== 'http:') {
-		console.error(`[bunny-purge] Invalid origin URL (must be http(s)): ${printable(candidate)}`);
-		return false;
-	}
-	const markerUrl = new URL(MARKER_PATH, base.origin).toString();
 	const deadline = Date.now() + timeout * 1000;
 	console.log(`[bunny-purge] Waiting for commit ${sha} at ${markerUrl} (timeout ${timeout}s)...`);
 	let attempt = 0;
 	let lastError = null;
 	while (Date.now() < deadline) {
 		attempt += 1;
-		try {
-			const response = await fetchImpl(markerUrl, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-			if (response.ok) {
-				const body = await response.text();
-				if (body.trim() === sha) {
-					console.log(`[bunny-purge] Commit ${sha} is serving; purging the cache.`);
-					return true;
-				}
-			}
-			lastError = null;
-		} catch (error) {
-			// Transient errors (rolling updates answering 503, dropped
-			// connections) are normal during a deploy — keep polling. The
-			// overall failure is reported loudly on timeout below.
-			lastError = error instanceof Error ? error.message : 'Unknown error';
+		const { matched, error } = await pollMarker(markerUrl, sha, fetchImpl);
+		if (matched) {
+			console.log(`[bunny-purge] Commit ${sha} is serving; purging the cache.`);
+			return true;
 		}
+		lastError = error;
 		if (attempt % 6 === 0) {
 			console.log(`[bunny-purge] Still waiting for commit ${sha} (${Math.max(0, Math.round((deadline - Date.now()) / 1000))}s left)...`);
 		}

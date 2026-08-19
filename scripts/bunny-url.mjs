@@ -22,7 +22,7 @@ const DECODED_DOT_SEGMENT_RE = /(^|\/)(\.|\.\.)(\/|$)/;
 // containing raw control-character escapes.
 function hasControlChars(value) {
 	for (let i = 0; i < value.length; i += 1) {
-		const code = value.charCodeAt(i);
+		const code = value.codePointAt(i) ?? 0;
 		if (code < 0x20 || code === 0x7f) return true;
 	}
 	return false;

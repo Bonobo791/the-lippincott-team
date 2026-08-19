@@ -180,7 +180,8 @@ above rather than bare `astro build`.
 - `.github/workflows/bunny-purge.yml` — primary deploy-time purge: on push to
   `main` it waits until the origin serves the pushed commit
   (`/__moderaty_commit.txt`), then full-purges the pull zone with the key
-  from repository secrets (never in the container).
+  from repository secrets (never in the container — the one exception is the
+  opt-in last-resort entrypoint purge for hosts without CI, below).
 - `scripts/deploy/write-commit-marker.mjs` — build-time step (prefixed onto
   the `build*` scripts) that writes `public/__moderaty_commit.txt` (gitignored)
   with the commit SHA producing the build, so the purge workflow can verify
@@ -427,14 +428,15 @@ origin's `/__moderaty_commit.txt` until it returns the pushed commit SHA
 Commit in Build* enabled — `COMMIT_REF`, `GITHUB_SHA`, or git), then runs
 `scripts/bunny-purge.mjs` with `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` from
 **repository secrets** — the key never enters the application environment
-(runtime-only `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID` on the app are no longer
-needed; a failed deploy or missing marker fails the workflow loudly instead
-of purging blindly). The in-container entrypoint purge
+except via the opt-in last-resort entrypoint purge (runtime-only
+`BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID` on the app are no longer needed; a
+failed deploy or missing marker fails the workflow loudly instead of purging
+blindly). The in-container entrypoint purge
 (`scripts/deploy/docker-entrypoint.sh`) is the **opt-in last resort** for
 hosts without CI (`BUNNY_PURGE_ON_START=true`): it still waits for the local
 readiness probe before purging, and skips the purge when readiness times out
-so a broken container can't clear a healthy cache — never enable it alongside
-the CI workflow (one purge per deploy event).
+so a broken container can't clear a healthy cache — enable it ONLY when CI
+cannot run; never alongside the CI workflow (one purge per deploy event).
 Single-page purges between deploys go through the protected
 `/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
 `x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
@@ -511,7 +513,8 @@ Environment variables (see `.env.example`):
   resort: set `BUNNY_PURGE_ON_START=true` plus runtime-only (Build Variable
   off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. Prefer the least-privilege
   pull-zone-scoped API key (Pull Zone → Security → API Key) over the
-  account-level key — never commit either or prefix it with `PUBLIC_`.
+  account-level key — treat it as an account secret: never commit it, never
+  prefix it with `PUBLIC_`, and regenerate it if it ever leaks.
 - `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
   webhook (per-page Bunny cache purges between deploys). Generate with
   `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on

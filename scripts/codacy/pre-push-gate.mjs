@@ -24,7 +24,10 @@ import path from 'node:path';
 import readline from 'node:readline';
 
 const ROOT = process.argv[2];
-const changed = new Set((process.argv.slice(3) || []).map((f) => f.replace(/^\.\//, '')));
+// Hoisted so the per-line/per-file hot paths never recompile them.
+const LEADING_DOT_SLASH_RE = /^\.\//;
+const LINE_SPLIT_RE = /\r?\n/;
+const changed = new Set((process.argv.slice(3) || []).map((f) => f.replace(LEADING_DOT_SLASH_RE, '')));
 const log = (...a) => console.error('[codacy-gate]', ...a);
 
 if (!ROOT || !existsSync(path.join(ROOT, '.git'))) {
@@ -59,8 +62,8 @@ try {
   const envFile = path.join(os.homedir(), '.prime', 'agent', 'codacy', 'server.env');
   if (existsSync(envFile)) {
     for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
-      const m = line.match(/^CODACY_ACCOUNT_TOKEN\s*=\s*(.*)$/);
-      if (m && m[1].trim()) {
+      const m = line.match(/^CODACY_ACCOUNT_TOKEN\s*=\s*([^\r\n]*)$/);
+      if (m?.[1]?.trim()) {
         env.CODACY_ACCOUNT_TOKEN = m[1].trim().replace(/^["']|["']$/g, '');
         tokenConfigured = true;
       }
@@ -117,7 +120,7 @@ async function runAnalysis(useToken) {
   let repeatCount = 0;
   proc.stderr.setEncoding('utf8');
   proc.stderr.on('data', (chunk) => {
-    for (const line of chunk.split(/\r?\n/)) {
+    for (const line of chunk.split(LINE_SPLIT_RE)) {
       if (!line) continue;
       if (line === lastLine) {
         repeatCount += 1;
@@ -186,7 +189,7 @@ gateVerdict(payload.result || []);
 /** Filter to error-level findings in changed files; block (exit 1) or allow. */
 function gateVerdict(findings) {
   const blockers = findings.filter(
-    (f) => f && f.level === 'error' && changed.has(String(f.filePath || '').replace(/^\.\//, '')),
+    (f) => f?.level === 'error' && changed.has(String(f.filePath || '').replace(LEADING_DOT_SLASH_RE, '')),
   );
   if (blockers.length === 0) {
     log('OK: no error-level Codacy findings in changed files');
@@ -195,9 +198,12 @@ function gateVerdict(findings) {
   console.error('');
   console.error('Codacy gate: push blocked — %d error-level finding(s) in changed files:', blockers.length);
   for (const f of blockers) {
-    const at = f.region
-      ? `${f.filePath}:${f.region.startLine ?? '?'}${f.region.startColumn ? ':' + f.region.startColumn : ''}`
-      : f.filePath;
+    let at = f.filePath;
+    if (f.region) {
+      const line = f.region.startLine ?? '?';
+      const col = f.region.startColumn ? `:${f.region.startColumn}` : '';
+      at = `${f.filePath}:${line}${col}`;
+    }
     console.error(`  [${f.tool}] ${f.rule?.name || f.rule?.id || '?'}  ${at}`);
     console.error(`      ${f.message}`);
   }

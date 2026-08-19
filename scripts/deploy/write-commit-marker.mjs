@@ -19,11 +19,31 @@
 // When none is available the file is written empty and the purge workflow
 // refuses to purge blindly (it times out loudly instead of guessing).
 import { execSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { accessSync, constants, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SOURCE_KEYS = ['COMMIT_SHA', 'SOURCE_COMMIT', 'COMMIT_REF', 'GITHUB_SHA'];
+const SHA_RE = /^[0-9a-f]{40}$/i;
+
+// S4036: only let PATH-resolved tools run against fixed, unwriteable
+// directories. Filters out relative and user-writable entries (a writable dir
+// could host a planted binary); falls back to the standard system dirs so
+// `/usr/bin/git` is still found. On machines where git lives only under a
+// user-writable prefix, the marker falls back to empty and the CI purge
+// workflow fails loudly instead of purging blindly — the safe direction.
+function safePath() {
+	const entries = (process.env.PATH ?? '').split(':').filter((dir) => {
+		if (!dir.startsWith('/')) return false;
+		try {
+			accessSync(dir, constants.W_OK);
+			return false;
+		} catch {
+			return true;
+		}
+	});
+	return entries.length > 0 ? entries.join(':') : '/usr/bin:/bin';
+}
 
 function resolveCommitSha() {
 	for (const key of SOURCE_KEYS) {
@@ -34,9 +54,10 @@ function resolveCommitSha() {
 		const sha = execSync('git rev-parse HEAD', {
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
+			env: { ...process.env, PATH: safePath() },
 		}).trim();
 		// Only trust well-formed full-length SHAs from git.
-		if (/^[0-9a-f]{40}$/i.test(sha)) return sha;
+		if (SHA_RE.test(sha)) return sha;
 	} catch {
 		// No git in the build environment — the marker is simply omitted and
 		// the purge workflow fails loudly rather than purging blindly.
@@ -47,4 +68,5 @@ function resolveCommitSha() {
 const markerPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'public', '__moderaty_commit.txt');
 const sha = resolveCommitSha();
 writeFileSync(markerPath, `${sha}\n`);
-console.log(`[commit-marker] ${sha ? `Wrote ${sha}` : 'No commit SHA available; marker left empty'} -> public/__moderaty_commit.txt`);
+const summary = sha ? `Wrote ${sha}` : 'No commit SHA available; marker left empty';
+console.log(`[commit-marker] ${summary} -> public/__moderaty_commit.txt`);

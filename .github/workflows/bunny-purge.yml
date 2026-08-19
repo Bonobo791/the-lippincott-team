@@ -33,13 +33,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      origin_url:
-        description: >-
-          Direct origin URL to poll for the deploy-commit marker (no CDN).
-          Leave blank to use the BUNNY_ORIGIN_URL secret, then SITE_URL.
-        required: false
-        type: string
+    # Manual runs use the same secrets as push runs (BUNNY_ORIGIN_URL -> SITE_URL
+    # -> https://thelippincottteam.com); no user inputs, so a manual dispatch can
+    # never steer the build or the purge target (supply-chain rule).
 
 permissions:
   contents: read
@@ -65,7 +61,7 @@ jobs:
           BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
           BUNNY_PULL_ZONE_ID: ${{ secrets.BUNNY_PULL_ZONE_ID }}
           SITE_URL: ${{ secrets.SITE_URL }}
-          ORIGIN_URL: ${{ inputs.origin_url || secrets.BUNNY_ORIGIN_URL || secrets.SITE_URL || 'https://thelippincottteam.com' }}
+          ORIGIN_URL: ${{ secrets.BUNNY_ORIGIN_URL || secrets.SITE_URL || 'https://thelippincottteam.com' }}
           COMMIT_SHA: ${{ github.sha }}
         run: node scripts/bunny-purge.mjs --wait-for-commit "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
       - name: Warn when Bunny secrets are not configured
