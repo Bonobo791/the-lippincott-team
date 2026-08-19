@@ -61,7 +61,7 @@ the gate and for final shots.
    shot can be compared against it:
    `node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/base`
    If the spec is the live site, also shoot it once:
-   `node scripts/audit/shoot.mjs --base https://lippincottteam.com --out .launch/qa/live`
+   `node scripts/audit/shoot.mjs --base https://thelippincottteam.com --out .launch/qa/live`
 2. **Edit** the frontend code.
 3. **Re-shoot** into a fresh round dir:
    `node scripts/audit/shoot.mjs --base http://localhost:4322 --out .launch/qa/round-N`

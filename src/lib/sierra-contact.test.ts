@@ -21,7 +21,7 @@ test('toSierraLead maps form fields into a Sierra lead', () => {
 		leadStatus: 'New',
 		sendRegistrationEmail: true,
 		sourceType: 'SierraApi',
-		source: 'lippincottteam.com contact form',
+		source: 'thelippincottteamlistings.com contact form',
 		leadType: 1,
 		note: 'Website consultation request\n\nInterest: Buy a home\n\nMessage:\nLooking in Cypress.\nReady this fall.',
 	});
@@ -45,7 +45,7 @@ test('createSierraLead posts the lead to Sierra and returns its ids', async () =
 	assert.equal(request?.url, 'https://api.sierrainteractivedev.com/leads');
 	assert.equal(request?.method, 'POST');
 	assert.equal(request?.headers.get('Sierra-ApiKey'), 'api-key');
-	assert.equal(request?.headers.get('Sierra-OriginatingSystemName'), 'lippincottteam.com');
+	assert.equal(request?.headers.get('Sierra-OriginatingSystemName'), 'thelippincottteamlistings.com');
 	assert.deepEqual(await request?.json(), buyerLead);
 });
 

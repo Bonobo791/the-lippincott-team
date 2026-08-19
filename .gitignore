@@ -103,3 +103,5 @@ dist
 .codex
 .cursor
 .reasonix
+# Generated at build time by scripts/deploy/write-commit-marker.mjs
+/public/__moderaty_commit.txt

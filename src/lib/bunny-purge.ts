@@ -1,11 +1,11 @@
 // Bunny CDN purge helpers for the /api/bunny-purge endpoint.
 //
-// normalizeSiteUrl lives in scripts/deploy/bunny-url.mjs (plain JS, shared
-// with scripts/deploy/purge-bunny-cache.mjs — the Docker runtime image ships
-// scripts/deploy but not src/, so the shared module lives there and this file
-// re-exports it; Vite bundles the .mjs into the server bundle).
+// normalizeSiteUrl lives in scripts/bunny-url.mjs (plain JS, shared with
+// scripts/bunny-purge.mjs — the Docker runtime image ships scripts/ but not
+// src/, so the shared module lives there and this file re-exports it; Vite
+// bundles the .mjs into the server bundle).
 
-export { normalizeSiteUrl } from '../../scripts/deploy/bunny-url.mjs';
+export { normalizeSiteUrl } from '../../scripts/bunny-url.mjs';
 
 const BUNNY_API_BASE = 'https://api.bunny.net';
 

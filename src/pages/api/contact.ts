@@ -33,8 +33,9 @@ function thankYou() {
 // theirs); CONTACT_ALLOWED_ORIGINS is a comma-separated list of extra origins
 // for hosts no platform var expresses — a Bunny edge hostname
 // (https://<zone>.b-cdn.net) or a second custom domain in front of the same
-// app, for example. The brand's legacy thelippincottteam.com origins and the
-// localhost ports are hardcoded below. Requests with no Origin header (curl
+// app, for example. The brand's own domains and the localhost ports are
+// hardcoded below: the canonical thelippincottteam.com pair, plus the old
+// lippincottteam.com pair while that domain is being transitioned over. Requests with no Origin header (curl
 // and other non-browser clients) are allowed through — the honeypot, size
 // cap, and rate limit remain the controls for them. This endpoint-level check
 // exists because astro.config.mjs keeps `security.checkOrigin` disabled:
@@ -63,12 +64,16 @@ function originAllowed(request: Request) {
 			// Ignore malformed env values and keep checking the rest.
 		}
 	}
-	// Brand domains (hardcoded, like the localhost ports): the legacy
+	// Brand domains (hardcoded, like the localhost ports): the canonical
 	// thelippincottteam.com domain and its www alias may serve the site or
-	// carry a visitor's Origin during the lippincottteam.com transition.
+	// carry a visitor's Origin. The old lippincottteam.com pair stays while
+	// that domain transitions to thelippincottteam.com — drop it once the
+	// cutover completes.
 	return (
 		origin === 'https://thelippincottteam.com' ||
 		origin === 'https://www.thelippincottteam.com' ||
+		origin === 'https://lippincottteam.com' ||
+		origin === 'https://www.lippincottteam.com' ||
 		origin === 'http://localhost:4321' ||
 		origin === 'http://localhost:4322'
 	);

@@ -3,7 +3,7 @@
  * Screenshot capture for the design-fidelity audit (Plan 5 / concept-to-launch G4).
  *
  * Usage:
- *   node scripts/audit/shoot.mjs --base https://lippincottteam.com --out .launch/qa/live
+ *   node scripts/audit/shoot.mjs --base https://thelippincottteam.com --out .launch/qa/live
  *   node scripts/audit/shoot.mjs --base http://localhost:4321 --out .launch/qa/branch
  *
  * Captures full-page screenshots of every audit template at desktop/tablet/mobile,

@@ -57,11 +57,14 @@ server.
      consumed during the image build only: it is passed as a build arg and
      is never baked into the image (keep its Build Variable flag on so the
      build receives it).
-   - `SITE_URL` — canonical origin, e.g. `https://lippincottteam.com`
+   - `SITE_URL` — canonical origin, e.g. `https://thelippincottteam.com`
      (drives sitemap/RSS/OpenGraph canonicals). Must be set at **runtime**
-     too: `/api/contact` rejects browser form posts whose `Origin` isn't in
-     its allowlist (see below), and the Dockerfile's default only applies
-     when the env var is absent from the app.
+     too — the Dockerfile bakes in no runtime default, so without it
+     `/api/contact` rejects browser form posts whose `Origin` isn't in its
+     allowlist (see below) and `/api/bunny-purge` answers 503; both fail
+     closed rather than assume the production origin. Set it **runtime-only**
+     (uncheck "Build Variable"): as a build arg it only feeds the build
+     stage and never reaches the running container.
    - `CONTACT_ALLOWED_ORIGINS` (optional) — comma-separated extra origins
      allowed to submit the contact form when the app is also served from a
      host no platform var expresses, e.g. a staging Bunny edge hostname
@@ -117,20 +120,52 @@ Setup (Bunny dashboard):
    4. Request URL `*/` → cache time **10 minutes** (HTML pages — the site
       uses trailing slashes everywhere).
 4. **Hostnames**: dev can use the pull zone's `*.b-cdn.net` system hostname.
-   For production add the real domain(s) (e.g. `lippincottteam.com` and
-   `www.lippincottteam.com`), enable **Force SSL** (automatic Let's Encrypt
+   For production add the real domain(s) (e.g. `thelippincottteam.com` and
+   `www.thelippincottteam.com`), enable **Force SSL** (automatic Let's Encrypt
    certificates), and create the DNS records Bunny shows. `SITE_URL` should
    already be the same domain.
 
 Cache purging on deploy:
 
-- **Coolify: automatic** — the image entrypoint purges the pull zone whenever
-  a new container starts (every deployment). Set `BUNNY_API_KEY` (runtime
-  only) and `BUNNY_PULL_ZONE_ID` on the app.
+The deploy-time purge runs **once, after the new code is serving**, from CI —
+never at push time, never blindly, and never from inside the container:
+
+- **Primary: GitHub Actions** — `.github/workflows/bunny-purge.yml` fires on
+  every push to `main` (the production deploy branch). Each build writes the
+  exact commit that produced it to `/__moderaty_commit.txt` (via
+  `scripts/deploy/write-commit-marker.mjs`, from `SOURCE_COMMIT` on Coolify —
+  enable *Include Source Commit in Build* — `COMMIT_REF` on Netlify, or git
+  locally). The workflow polls that marker at
+  the origin until it returns the pushed commit SHA — i.e. the new container
+  is actually serving — then full-purges the pull zone with `BUNNY_API_KEY` /
+  `BUNNY_PULL_ZONE_ID` from **repository secrets** (Settings → Secrets and
+  variables → Actions). The key never enters the application environment, and
+  a deploy that fails or never serves the marker makes the job fail loudly
+  instead of purging into nothing.
+  - Recommended extra secret: `BUNNY_ORIGIN_URL` — the Coolify app domain the
+    pull zone uses as its origin, **without** the CDN — so the marker is seen
+    as soon as the container serves it (the default falls back to `SITE_URL`,
+    which polls through the CDN and is subject to the edge's 10-minute HTML
+    TTL). `SITE_URL` is an optional final fallback.
+- **No-CI environments**: point Coolify's **`deployment_success` webhook** at
+  a tiny serverless purger that holds a purge key and calls Bunny after the
+  deploy finishes — the key stays out of the container and the trigger
+  correlates with deployment completion. The in-container entrypoint purge is
+  the **last resort**, not the second choice: set `BUNNY_PURGE_ON_START=true`
+  (plus runtime-only `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID`) on hosts where CI
+  and webhooks cannot run. It still waits for the container's readiness probe
+  before purging, but it is **off by default** — never enable it alongside
+  the CI workflow (one purge per deploy event; two triggers mean double
+  purges and two competing guarantees).
 - **Manual**: `BUNNY_API_KEY=… BUNNY_PULL_ZONE_ID=<id> node
-  scripts/deploy/purge-bunny-cache.mjs` — the key is created under
-  *Account → API*; the zone ID is the number in the pull zone's URL.
-- Without the env vars the script is a no-op, so local builds are unaffected.
+  scripts/bunny-purge.mjs` — the key is created under *Account → API*; the
+  zone ID is the number in the pull zone's URL. Use the **least-privilege
+  credential**: the pull-zone-scoped API key (Pull Zone → *Security* →
+  API Key) can purge only that zone — prefer it over the account key; keep it
+  only where the purger runs (repository secret) and regenerate it if it ever
+  leaks.
+- Without the env vars the script is a no-op, so local builds are unaffected;
+  with them set, a failed purge logs loudly and exits non-zero.
 
 Purging a single page (CMS edits between deploys):
 
@@ -140,7 +175,7 @@ Purging a single page (CMS edits between deploys):
   Variable off — it must never be public or committed), then call:
 
   ```sh
-  curl -X POST "https://lippincottteam.com/api/bunny-purge" \
+  curl -X POST "https://thelippincottteam.com/api/bunny-purge" \
     -H "Authorization: Bearer $BUNNY_PURGE_SECRET" \
     -d "url=/pricing/" -d "url=/about/team/"
   ```
@@ -156,11 +191,12 @@ Purging a single page (CMS edits between deploys):
 - **Callers**: anything server-side that knows the secret — a TinaCloud
   custom webhook (configure one in app.tina.io if the project offers it),
   a GitHub Action on content pushes, or manual curl. Note that Coolify
-  redeploys already full-purge via the entrypoint, so this is only for
-  edits that must go live faster than the 10-minute HTML cache TTL.
+  redeploys already full-purge via the CI workflow (or the opt-in entrypoint),
+  so this is only for edits that must go live faster than the 10-minute HTML
+  cache TTL.
 - **Manual page purge**: `BUNNY_API_KEY=… SITE_URL=…
-  node scripts/deploy/purge-bunny-cache.mjs /pricing/` — pass site paths or
-  URLs as arguments; with no arguments it does the full-zone purge.
+  node scripts/bunny-purge.mjs /pricing/` — pass site paths or URLs as
+  arguments; with no arguments it does the full-zone purge.
 - **Bunny rate limits URL purges per account**: a URL ending in `/` counts
   as a *prefix* (wildcard) purge — 20-token burst, ~30/min — while exact
   URLs (no trailing slash) get 120-token burst, ~300/min. The site uses
@@ -176,7 +212,9 @@ and `/tina-island` endpoints are stateless (no cookies/sessions), and the
 contact form keeps its honeypot, size cap, and per-IP rate limit as abuse
 controls — and an endpoint-level `Origin` allowlist (`SITE_URL` + platform
 URL envs, the hardcoded brand origins `https://thelippincottteam.com` /
-`https://www.thelippincottteam.com` and the localhost ports, plus the
+`https://www.thelippincottteam.com` (and the old `https://lippincottteam.com` /
+`https://www.lippincottteam.com` pair while that domain transitions over) and
+the localhost ports, plus the
 optional comma-separated `CONTACT_ALLOWED_ORIGINS` for extra hosts like this
 staging edge hostname). Keep *Block Root Path Access*,
 *Block None Referrer*, and

@@ -171,11 +171,21 @@ above rather than bare `astro build`.
   `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
   gitignored `.launch/qa/`. For interactive browsing use
   `npx playwright cli --browser=chromium` (no system Chrome installed).
-- `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
-  cache purge; run automatically by the Docker entrypoint on Coolify container
-  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set; with URL/path
-  arguments it purges only those pages via the URL-purge API) and
-  `docker-entrypoint.sh` (purge-then-serve container entrypoint).
+- `scripts/` — deploy tooling: `bunny-purge.mjs` (Bunny pull-zone cache
+  purge: full zone, per-URL, or the CI `--wait-for-commit` mode; no-op
+  without credentials, fails loudly with them) and `bunny-url.mjs` (shared
+  purge-URL normalization, also bundled into the `/api/bunny-purge`
+  endpoint). `scripts/deploy/docker-entrypoint.sh` is the container
+  entrypoint (serve + OPT-IN cache purge — see the CDN section).
+- `.github/workflows/bunny-purge.yml` — primary deploy-time purge: on push to
+  `main` it waits until the origin serves the pushed commit
+  (`/__moderaty_commit.txt`), then full-purges the pull zone with the key
+  from repository secrets (never in the container — the one exception is the
+  opt-in last-resort entrypoint purge for hosts without CI, below).
+- `scripts/deploy/write-commit-marker.mjs` — build-time step (prefixed onto
+  the `build*` scripts) that writes `public/__moderaty_commit.txt` (gitignored)
+  with the commit SHA producing the build, so the purge workflow can verify
+  the new code is serving before purging.
 
 ## Key conventions
 
@@ -326,6 +336,21 @@ above rather than bare `astro build`.
 
 ## Testing and quality checks
 
+**Codacy quality gate (pre-push).** The repo is wired with a Codacy pre-push
+gate: before any `git push`, `scripts/codacy/pre-push-gate.mjs` runs Codacy
+local analysis (official `@codacy/codacy-mcp`, spawned over stdio) and the push
+is blocked when a changed file carries error-level (critical/major) findings.
+The hook lives at `scripts/hooks/pre-push` (activated via
+`git config core.hooksPath scripts/hooks`; see `scripts/codacy/README.md`).
+Escape hatches: `git push --no-verify` or `CODACY_GATE_OFF=1`. Agents should
+also run the analysis when finishing work — `import codacy; await
+codacy.codacy_cli_analyze(rootPath=".")` (kernel skill, no token needed for
+local analysis; cloud tools need `CODACY_ACCOUNT_TOKEN` in
+`~/.prime/agent/codacy/server.env`). Note: tokenless local analysis rewrites
+`.codacy/codacy.config.json` (committed, remote-sourced) — the gate restores
+it, but if you run analysis manually, `git checkout -- .codacy/` afterwards
+unless you intend to update the config.
+
 There is **no test suite, linter, or formatter configured** in this project
 (no test script, no ESLint/Prettier config). To validate changes:
 
@@ -349,6 +374,11 @@ There is **no test suite, linter, or formatter configured** in this project
   cloud check). Note: in the pinned tinacms version the lock is only written
   by `tinacms dev`, not `tinacms build` — after a schema change, run
   `pnpm dev` once (then stop it) to regenerate `tina/tina-lock.json`.
+- SonarQube MCP (pre-commit): `import sonarqube`;
+  `get_project_quality_gate_status(projectKey="Bonobo791_lippincott-team-astro-tina")`;
+  issues: `search_sonar_issues_in_projects(projectKeys=[...])`; local:
+  `analyze_code_snippet(fileContent, language, projectKey)`.
+  Creds: `~/.prime/agent/sonarqube/server.env`.
 
 ## Deployment
 
@@ -362,7 +392,7 @@ Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 **Netlify**: `netlify.toml` pins the build command (`pnpm build` — TinaCloud
 credentials `PUBLIC_TINA_CLIENT_ID`/`TINA_TOKEN` are configured in the Netlify
 UI; the build fails fast with `ERR_MISSING_CLOUD_CREDS` without them). It also
-sets `SITE_URL = "https://lippincottteam.com"` under
+sets `SITE_URL = "https://thelippincottteam.com"` under
 `[context.production.environment]` so deploy previews keep their
 Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
 field in `package.json` are what make Netlify install with pnpm instead of
@@ -389,13 +419,24 @@ routes by `Host`), plus a storage zone serving `/uploads/*` media via an edge
 rule with the **Origin URL per request** action pointing at the storage
 zone's `*.b-cdn.net` hostname — media stays in the repo, content paths never
 change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
-→ storage origin + 30 d; `*/_astro/*` → 1 y; HTML `*/` → 10 min. Deploys purge
-the pull zone automatically: the Docker entrypoint
-(`scripts/deploy/docker-entrypoint.sh`) runs
-`scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
-readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
-(runtime-only secret; skipped without them, and when readiness times out the
-purge is skipped so a broken container can't clear a healthy cache).
+→ storage origin + 30 d; `*/_astro/*` → 1 y; `*/__moderaty_commit.txt*` →
+bypass cache (the deploy-commit marker); HTML `*/` → 10 min. Deploys purge
+the pull zone **after the new code is serving**, exactly once, from CI:
+`.github/workflows/bunny-purge.yml` fires on push to `main`, polls the
+origin's `/__moderaty_commit.txt` until it returns the pushed commit SHA
+(the build embeds it from `SOURCE_COMMIT` — Coolify needs *Include Source
+Commit in Build* enabled — `COMMIT_REF`, `GITHUB_SHA`, or git), then runs
+`scripts/bunny-purge.mjs` with `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` from
+**repository secrets** — the key never enters the application environment
+except via the opt-in last-resort entrypoint purge (runtime-only
+`BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID` on the app are no longer needed; a
+failed deploy or missing marker fails the workflow loudly instead of purging
+blindly). The in-container entrypoint purge
+(`scripts/deploy/docker-entrypoint.sh`) is the **opt-in last resort** for
+hosts without CI (`BUNNY_PURGE_ON_START=true`): it still waits for the local
+readiness probe before purging, and skips the purge when readiness times out
+so a broken container can't clear a healthy cache — enable it ONLY when CI
+cannot run; never alongside the CI workflow (one purge per deploy event).
 Single-page purges between deploys go through the protected
 `/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
 `x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
@@ -456,15 +497,24 @@ Environment variables (see `.env.example`):
 - `CONTACT_ALLOWED_ORIGINS` — optional comma-separated list of extra origins
   allowed to submit the contact form, besides `SITE_URL`, the platform URL
   envs, and the hardcoded brand/localhost origins (`https://thelippincottteam.com`,
-  `https://www.thelippincottteam.com`, `localhost:4321/4322`) — e.g. staging
+  `https://www.thelippincottteam.com`, the old `https://lippincottteam.com` /
+  `https://www.lippincottteam.com` pair while that domain transitions over, and
+  `localhost:4321/4322`) — e.g. staging
   Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
   rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
   submissions are not allowed.").
-- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
-  Docker entrypoint purges the pull zone on container start (every Coolify
-  deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
-  `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
-  when unset).
+- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging.
+  Deploy-time purges run from CI (`.github/workflows/bunny-purge.yml`) with
+  these set as **GitHub repository secrets** — the key should not live in the
+  app environment at all. `BUNNY_ORIGIN_URL` (repo secret, recommended) is
+  the direct origin the workflow polls for the deploy-commit marker
+  (`/__moderaty_commit.txt`) before purging; it falls back to `SITE_URL`.
+  For hosts without CI, the container entrypoint purge is the opt-in last
+  resort: set `BUNNY_PURGE_ON_START=true` plus runtime-only (Build Variable
+  off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. Prefer the least-privilege
+  pull-zone-scoped API key (Pull Zone → Security → API Key) over the
+  account-level key — treat it as an account secret: never commit it, never
+  prefix it with `PUBLIC_`, and regenerate it if it ever leaks.
 - `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
   webhook (per-page Bunny cache purges between deploys). Generate with
   `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on

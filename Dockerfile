@@ -38,16 +38,23 @@ WORKDIR /app
 # values are, so the credential cannot be recovered from the image.
 ARG PUBLIC_TINA_CLIENT_ID=""
 ARG TINA_TOKEN=""
-ARG SITE_URL="https://lippincottteam.com"
+ARG SITE_URL="https://thelippincottteam.com"
 ARG PUBLIC_GA_ID=""
 # Coolify sets COOLIFY_BRANCH (Build Variable) — promote it to ENV so
 # tina/config.ts branch detection sees it and staging builds don't fall
 # back to `main`.
 ARG COOLIFY_BRANCH=""
+# Coolify passes SOURCE_COMMIT as a build arg when "Include Source Commit in
+# Build" is enabled (Application -> General) — promote it to ENV so the
+# deploy-commit marker (/__moderaty_commit.txt) is correct. The CI purge
+# workflow (.github/workflows/bunny-purge.yml) waits for that marker before
+# purging the CDN. Not a credential.
+ARG SOURCE_COMMIT=""
 ENV PUBLIC_TINA_CLIENT_ID=$PUBLIC_TINA_CLIENT_ID \
     SITE_URL=$SITE_URL \
     PUBLIC_GA_ID=$PUBLIC_GA_ID \
     COOLIFY_BRANCH=$COOLIFY_BRANCH \
+    SOURCE_COMMIT=$SOURCE_COMMIT \
     NODE_ENV=production \
     NODE_OPTIONS=--max-old-space-size=4096
 COPY --from=deps /app/node_modules ./node_modules
@@ -70,16 +77,16 @@ FROM base AS runtime
 WORKDIR /app
 # Runtime endpoints read SITE_URL from process.env at request time
 # (/api/contact's Origin allowlist, /api/bunny-purge's path normalization).
-# ENV set in the build stage does NOT carry into this stage, so re-declare
-# the ARG and promote it here — otherwise a plain `docker build` (or a
-# Coolify app that only passes SITE_URL as a build arg) serves a container
-# whose contact form rejects every browser POST. Coolify's runtime env vars
-# still override this default.
-ARG SITE_URL="https://lippincottteam.com"
+# SITE_URL is deliberately NOT re-declared here: the build stage's URL
+# (sitemap/RSS/OpenGraph canonicals) does not carry into this stage, and no
+# default is baked in, so SITE_URL must be set explicitly on the app
+# (Coolify runtime env var or `docker run -e`). When omitted it stays unset
+# and both endpoints fail closed — /api/contact rejects browser Origins that
+# are not otherwise allowlisted and /api/bunny-purge answers 503 ("not
+# configured") — instead of silently assuming the production origin.
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
-    PORT=4321 \
-    SITE_URL=$SITE_URL
+    PORT=4321
 COPY package.json pnpm-lock.yaml ./
 # Production dependencies only: the standalone server bundle plus native
 # modules (sharp) — drops the heavy devDependencies (playwright, tsc, React).
@@ -92,8 +99,13 @@ COPY --from=build /app/dist ./dist
 # The generated Tina client + seeded content cache (tina/__generated__) are
 # referenced by the /tina-island re-render endpoint at runtime.
 COPY --from=build /app/tina ./tina
-# Deploy tooling: the entrypoint purges the Bunny pull-zone cache on container
-# start (Coolify starts a new container per deploy), then runs the server.
+# Deploy tooling: the container entrypoint (serve + OPT-IN cache purge) and
+# the purge script it calls (scripts/bunny-purge.mjs + its shared URL
+# normalizer). No purge credential is ever baked into the image — the CI
+# workflow holds the key in repository secrets and purges after the deploy is
+# serving; BUNNY_PURGE_ON_START is the opt-in last resort for hosts without
+# CI.
+COPY scripts/bunny-purge.mjs scripts/bunny-url.mjs ./scripts/
 COPY scripts/deploy ./scripts/deploy
 USER node
 EXPOSE 4321

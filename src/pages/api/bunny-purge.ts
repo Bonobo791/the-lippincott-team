@@ -5,8 +5,10 @@ import { BunnyPurgeError, normalizeSiteUrl, purgeUrl } from '../../lib/bunny-pur
 // Protected per-URL Bunny cache purge endpoint. Lets a server-side caller
 // (TinaCloud webhook, GitHub Action, manual curl) purge one or more page URLs
 // immediately after a content edit, instead of waiting for the 10-minute HTML
-// cache TTL. Full-zone purges still happen automatically on every Coolify
-// deploy via the Docker entrypoint (scripts/deploy/purge-bunny-cache.mjs).
+// cache TTL. Deploy-time full-zone purges run from CI
+// (.github/workflows/bunny-purge.yml), which waits for the new commit to be
+// serving (/__moderaty_commit.txt) before purging with the key from
+// repository secrets — not from the application environment.
 //
 // Auth: the shared BUNNY_PURGE_SECRET, passed as an `Authorization: Bearer`
 // header, an `x-bunny-purge-token` header, or a `?token=` query parameter
@@ -16,7 +18,7 @@ import { BunnyPurgeError, normalizeSiteUrl, purgeUrl } from '../../lib/bunny-pur
 // comma-separated) or a POST body (JSON or form-encoded) with the same
 // fields. Each value must be a site path or an absolute URL that matches the
 // SITE_URL origin exactly — protocol, hostname, and port (see
-// normalizeSiteUrl in scripts/deploy/bunny-url.mjs).
+// normalizeSiteUrl in scripts/bunny-url.mjs).
 //
 // The `*/api/*` edge rule already bypasses the CDN cache for this route.
 export const prerender = false;

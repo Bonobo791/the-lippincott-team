@@ -3,7 +3,7 @@
  * Computed-style probe for the design-fidelity audit.
  *
  * Usage:
- *   node scripts/audit/probe-styles.mjs --base https://lippincottteam.com --out .launch/qa/live-styles.json
+ *   node scripts/audit/probe-styles.mjs --base https://thelippincottteam.com --out .launch/qa/live-styles.json
  *
  * Visits every audit template on the live site at desktop (1440x900) and mobile
  * (402x900) and extracts exact getComputedStyle() values for typography, buttons,
@@ -46,7 +46,7 @@ const BLOCKED_HOSTS = [
 ];
 
 function parseArgs(argv) {
-	const args = { base: 'https://lippincottteam.com', out: '.launch/qa/live-styles.json' };
+	const args = { base: 'https://thelippincottteam.com', out: '.launch/qa/live-styles.json' };
 	for (let i = 2; i < argv.length; i++) {
 		if (argv[i] === '--base') args.base = argv[++i];
 		else if (argv[i] === '--out') args.out = argv[++i];

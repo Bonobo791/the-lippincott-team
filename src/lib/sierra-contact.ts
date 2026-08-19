@@ -71,7 +71,7 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 		leadStatus: 'New',
 		sendRegistrationEmail: true,
 		sourceType: 'SierraApi',
-		source: 'lippincottteam.com contact form',
+		source: 'thelippincottteamlistings.com contact form',
 		leadType: leadTypeForInterest(interest),
 		note: ['Website consultation request', `Interest: ${interest}`, ...(message ? [`Message:\n${message}`] : [])].join('\n\n'),
 	};
@@ -96,7 +96,7 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 			headers: {
 				'Content-Type': 'application/json',
 				'Sierra-ApiKey': apiKey,
-				'Sierra-OriginatingSystemName': 'lippincottteam.com',
+				'Sierra-OriginatingSystemName': 'thelippincottteamlistings.com',
 			},
 			body: JSON.stringify(lead),
 			signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
