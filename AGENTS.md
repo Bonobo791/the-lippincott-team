@@ -362,7 +362,7 @@ Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 **Netlify**: `netlify.toml` pins the build command (`pnpm build` — TinaCloud
 credentials `PUBLIC_TINA_CLIENT_ID`/`TINA_TOKEN` are configured in the Netlify
 UI; the build fails fast with `ERR_MISSING_CLOUD_CREDS` without them). It also
-sets `SITE_URL = "https://lippincottteam.com"` under
+sets `SITE_URL = "https://thelippincottteam.com"` under
 `[context.production.environment]` so deploy previews keep their
 Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
 field in `package.json` are what make Netlify install with pnpm instead of

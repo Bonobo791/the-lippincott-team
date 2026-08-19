@@ -38,7 +38,7 @@ WORKDIR /app
 # values are, so the credential cannot be recovered from the image.
 ARG PUBLIC_TINA_CLIENT_ID=""
 ARG TINA_TOKEN=""
-ARG SITE_URL="https://lippincottteam.com"
+ARG SITE_URL="https://thelippincottteam.com"
 ARG PUBLIC_GA_ID=""
 # Coolify sets COOLIFY_BRANCH (Build Variable) — promote it to ENV so
 # tina/config.ts branch detection sees it and staging builds don't fall
@@ -70,16 +70,16 @@ FROM base AS runtime
 WORKDIR /app
 # Runtime endpoints read SITE_URL from process.env at request time
 # (/api/contact's Origin allowlist, /api/bunny-purge's path normalization).
-# ENV set in the build stage does NOT carry into this stage, so re-declare
-# the ARG and promote it here — otherwise a plain `docker build` (or a
-# Coolify app that only passes SITE_URL as a build arg) serves a container
-# whose contact form rejects every browser POST. Coolify's runtime env vars
-# still override this default.
-ARG SITE_URL="https://lippincottteam.com"
+# SITE_URL is deliberately NOT re-declared here: the build stage's URL
+# (sitemap/RSS/OpenGraph canonicals) does not carry into this stage, and no
+# default is baked in, so SITE_URL must be set explicitly on the app
+# (Coolify runtime env var or `docker run -e`). When omitted it stays unset
+# and both endpoints fail closed — /api/contact rejects browser Origins that
+# are not otherwise allowlisted and /api/bunny-purge answers 503 ("not
+# configured") — instead of silently assuming the production origin.
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
-    PORT=4321 \
-    SITE_URL=$SITE_URL
+    PORT=4321
 COPY package.json pnpm-lock.yaml ./
 # Production dependencies only: the standalone server bundle plus native
 # modules (sharp) — drops the heavy devDependencies (playwright, tsc, React).

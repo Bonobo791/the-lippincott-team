@@ -16,8 +16,8 @@
 [context.production.environment]
   # Canonical production origin for sitemap/RSS/OpenGraph (Astro `site`).
   # Applies to the production context only, so deploy previews keep their
-  # Netlify-injected URL. Correct after the DNS cutover to lippincottteam.com.
-  SITE_URL = "https://lippincottteam.com"
+  # Netlify-injected URL. Correct after the DNS cutover to thelippincottteam.com.
+  SITE_URL = "https://thelippincottteam.com"
 
 # The shared `dev` branch can carry Tina schema changes TinaCloud has not
 # indexed yet (it indexes `main` on push), so the cloud schema check can fail.

@@ -57,11 +57,14 @@ server.
      consumed during the image build only: it is passed as a build arg and
      is never baked into the image (keep its Build Variable flag on so the
      build receives it).
-   - `SITE_URL` — canonical origin, e.g. `https://lippincottteam.com`
+   - `SITE_URL` — canonical origin, e.g. `https://thelippincottteam.com`
      (drives sitemap/RSS/OpenGraph canonicals). Must be set at **runtime**
-     too: `/api/contact` rejects browser form posts whose `Origin` isn't in
-     its allowlist (see below), and the Dockerfile's default only applies
-     when the env var is absent from the app.
+     too — the Dockerfile bakes in no runtime default, so without it
+     `/api/contact` rejects browser form posts whose `Origin` isn't in its
+     allowlist (see below) and `/api/bunny-purge` answers 503; both fail
+     closed rather than assume the production origin. Set it **runtime-only**
+     (uncheck "Build Variable"): as a build arg it only feeds the build
+     stage and never reaches the running container.
    - `CONTACT_ALLOWED_ORIGINS` (optional) — comma-separated extra origins
      allowed to submit the contact form when the app is also served from a
      host no platform var expresses, e.g. a staging Bunny edge hostname
@@ -117,8 +120,8 @@ Setup (Bunny dashboard):
    4. Request URL `*/` → cache time **10 minutes** (HTML pages — the site
       uses trailing slashes everywhere).
 4. **Hostnames**: dev can use the pull zone's `*.b-cdn.net` system hostname.
-   For production add the real domain(s) (e.g. `lippincottteam.com` and
-   `www.lippincottteam.com`), enable **Force SSL** (automatic Let's Encrypt
+   For production add the real domain(s) (e.g. `thelippincottteam.com` and
+   `www.thelippincottteam.com`), enable **Force SSL** (automatic Let's Encrypt
    certificates), and create the DNS records Bunny shows. `SITE_URL` should
    already be the same domain.
 
@@ -140,7 +143,7 @@ Purging a single page (CMS edits between deploys):
   Variable off — it must never be public or committed), then call:
 
   ```sh
-  curl -X POST "https://lippincottteam.com/api/bunny-purge" \
+  curl -X POST "https://thelippincottteam.com/api/bunny-purge" \
     -H "Authorization: Bearer $BUNNY_PURGE_SECRET" \
     -d "url=/pricing/" -d "url=/about/team/"
   ```

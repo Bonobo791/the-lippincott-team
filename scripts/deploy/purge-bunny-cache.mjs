@@ -8,7 +8,7 @@
 // Manual full purge:
 //   BUNNY_API_KEY=... BUNNY_PULL_ZONE_ID=<id> node scripts/deploy/purge-bunny-cache.mjs
 // Manual page-level purge (no zone ID needed; paths resolve against SITE_URL):
-//   BUNNY_API_KEY=... SITE_URL=https://lippincottteam.com \
+//   BUNNY_API_KEY=... SITE_URL=https://thelippincottteam.com \
 //     node scripts/deploy/purge-bunny-cache.mjs /pricing/ /blog/
 //
 // Env:
