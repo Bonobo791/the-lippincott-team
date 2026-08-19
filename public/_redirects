@@ -16,3 +16,6 @@
 # Legacy buyer/seller section URLs now live at /buy/ and /sell/.
 /buyers/*  /buy/  301
 /sellers/*  /sell/  301
+
+# Cimarron community guide was unpublished (the team does not sell there).
+/northwest-houston-real-estate/katy-tx-real-estate/cimarron-real-estate/  /northwest-houston-real-estate/katy-tx-real-estate/  301

@@ -68,9 +68,18 @@ RUN case "$BUILD_SCRIPT" in \
 # ---------- runtime ----------
 FROM base AS runtime
 WORKDIR /app
+# Runtime endpoints read SITE_URL from process.env at request time
+# (/api/contact's Origin allowlist, /api/bunny-purge's path normalization).
+# ENV set in the build stage does NOT carry into this stage, so re-declare
+# the ARG and promote it here — otherwise a plain `docker build` (or a
+# Coolify app that only passes SITE_URL as a build arg) serves a container
+# whose contact form rejects every browser POST. Coolify's runtime env vars
+# still override this default.
+ARG SITE_URL="https://lippincottteam.com"
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
-    PORT=4321
+    PORT=4321 \
+    SITE_URL=$SITE_URL
 COPY package.json pnpm-lock.yaml ./
 # Production dependencies only: the standalone server bundle plus native
 # modules (sharp) — drops the heavy devDependencies (playwright, tsc, React).

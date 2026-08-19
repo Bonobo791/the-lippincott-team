@@ -1,6 +1,9 @@
 // `/(?!/)` rejects protocol-relative URLs (`//host`) — those would navigate
 // off-site while looking like same-site relative paths.
 const SAFE_URL = /^(\/(?!\/)[^\\]*|#[^\\]*|(https?|mailto|tel):[^\s]*)$/i;
+const HTTP_URL_RE = /^https?:\/\//i;
+const DOWNLOAD_FILE_RE = /\.(pdf|docx?|xlsx?|pptx?|zip)(?:[?#].*)?$/i;
+const NON_DIGIT_RE = /\D/g;
 
 /**
  * Sanitize a CMS-provided URL for use in `href`. Allows relative paths,
@@ -16,13 +19,27 @@ export function safeHref(href?: string | null): string | undefined {
 
 /** True for absolute http(s) URLs — external links open in a new tab. */
 export function isExternal(link: string | undefined | null): boolean {
-	return !!link && /^https?:\/\//i.test(link.trim());
+	return !!link && HTTP_URL_RE.test(link.trim());
+}
+
+/**
+ * Anchor attrs for links that should open in a new tab: absolute http(s)
+ * URLs (external) and downloadable files (`.pdf`/`.docx`/`.zip`/office
+ * docs). Download links are relative (`/uploads/…`), so they need their own
+ * rule — `isExternal` alone would leave them navigating in-place. Everything
+ * else gets `{}`.
+ */
+export function linkTargetAttrs(link: string | undefined | null): Record<string, string> {
+	if (!link) return {};
+	const value = link.trim();
+	const opensInNewTab = HTTP_URL_RE.test(value) || DOWNLOAD_FILE_RE.test(value);
+	return opensInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 }
 
 /** Build a `tel:` href from a display phone number (US 10-digit numbers get the leading 1). */
 export function telHref(phone?: string | null): string | undefined {
 	if (!phone) return undefined;
-	const digits = phone.replace(/\D/g, '');
+	const digits = phone.replace(NON_DIGIT_RE, '');
 	if (!digits) return undefined;
 	return `tel:+${digits.length === 10 ? '1' : ''}${digits}`;
 }

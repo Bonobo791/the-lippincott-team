@@ -2,13 +2,13 @@
   "seo": {
     "title": "The Lippincott Team",
     "description": "Award-winning Northwest Houston Realtors with eXp Realty, serving Cypress, Tomball, Katy, Waller, Hockley, and Magnolia, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities. Winners of the Houston Business Journal Residential Real Estate Award 9 times.",
-    "siteOwner": "The Lippincott Team — eXp Realty",
+    "siteOwner": "The Lippincott Team \u2014 eXp Realty",
     "logo": "/logo.webp"
   },
   "nav": [
     {
       "title": "Search",
-      "link": "https://www.thelippincottteam.com/property-search/results/"
+      "link": "https://www.thelippincottteamlistings.com/property-search/results/"
     },
     {
       "title": "NW Houston Communities",
@@ -18,42 +18,90 @@
           "title": "Cypress",
           "link": "/northwest-houston-real-estate/cypress-tx-real-estate/",
           "children": [
-            { "title": "Bridgeland", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/" },
-            { "title": "Coles Crossing", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/coles-crossing-real-estate/" },
-            { "title": "Towne Lake", "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/" }
+            {
+              "title": "Bridgeland",
+              "link": "/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/"
+            },
+            {
+              "title": "Coles Crossing",
+              "link": "/northwest-houston-real-estate/cypress-tx-real-estate/coles-crossing-real-estate/"
+            },
+            {
+              "title": "Fairfield Village",
+              "link": "/northwest-houston-real-estate/cypress-tx-real-estate/fairfield-village-real-estate/"
+            },
+            {
+              "title": "Towne Lake",
+              "link": "/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/"
+            }
           ]
         },
         {
           "title": "Tomball",
           "link": "/northwest-houston-real-estate/tomball-tx-real-estate/",
           "children": [
-            { "title": "Villages of Northpointe", "link": "/northwest-houston-real-estate/tomball-tx-real-estate/villages-of-northpointe-real-estate/" }
+            {
+              "title": "Villages of Northpointe",
+              "link": "/northwest-houston-real-estate/tomball-tx-real-estate/villages-of-northpointe-real-estate/"
+            }
           ]
         },
         {
           "title": "Katy",
           "link": "/northwest-houston-real-estate/katy-tx-real-estate/",
           "children": [
-            { "title": "Cane Island", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cane-island-real-estate/" },
-            { "title": "Cimarron", "link": "/northwest-houston-real-estate/katy-tx-real-estate/cimarron-real-estate/" },
-            { "title": "Elyson", "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/" },
-            { "title": "Grand Lakes", "link": "/northwest-houston-real-estate/katy-tx-real-estate/grand-lakes-real-estate/" },
-            { "title": "Seven Meadows", "link": "/northwest-houston-real-estate/katy-tx-real-estate/seven-meadows-real-estate/" }
+            {
+              "title": "Cane Island",
+              "link": "/northwest-houston-real-estate/katy-tx-real-estate/cane-island-real-estate/"
+            },
+            {
+              "title": "Elyson",
+              "link": "/northwest-houston-real-estate/katy-tx-real-estate/elyson-real-estate/"
+            },
+            {
+              "title": "Grand Lakes",
+              "link": "/northwest-houston-real-estate/katy-tx-real-estate/grand-lakes-real-estate/"
+            },
+            {
+              "title": "Seven Meadows",
+              "link": "/northwest-houston-real-estate/katy-tx-real-estate/seven-meadows-real-estate/"
+            }
           ]
         },
-        { "title": "Waller", "link": "/northwest-houston-real-estate/waller-tx-real-estate/" },
-        { "title": "Hockley", "link": "/northwest-houston-real-estate/hockley-tx-real-estate/" },
-        { "title": "Magnolia", "link": "/northwest-houston-real-estate/magnolia-tx-real-estate/" }
+        {
+          "title": "Waller",
+          "link": "/northwest-houston-real-estate/waller-tx-real-estate/"
+        },
+        {
+          "title": "Hockley",
+          "link": "/northwest-houston-real-estate/hockley-tx-real-estate/"
+        },
+        {
+          "title": "Magnolia",
+          "link": "/northwest-houston-real-estate/magnolia-tx-real-estate/"
+        }
       ]
     },
     {
       "title": "NW Houston Schools",
       "link": "/northwest-houston-schools-real-estate/",
       "children": [
-        { "title": "Cy-Fair ISD", "link": "/northwest-houston-schools-real-estate/cypress-fairbanks-isd-real-estate/" },
-        { "title": "Katy ISD", "link": "/northwest-houston-schools-real-estate/katy-isd-real-estate/" },
-        { "title": "Tomball ISD", "link": "/northwest-houston-schools-real-estate/tomball-isd-real-estate/" },
-        { "title": "Waller ISD", "link": "/northwest-houston-schools-real-estate/waller-isd-real-estate/" }
+        {
+          "title": "Cy-Fair ISD",
+          "link": "/northwest-houston-schools-real-estate/cypress-fairbanks-isd-real-estate/"
+        },
+        {
+          "title": "Katy ISD",
+          "link": "/northwest-houston-schools-real-estate/katy-isd-real-estate/"
+        },
+        {
+          "title": "Tomball ISD",
+          "link": "/northwest-houston-schools-real-estate/tomball-isd-real-estate/"
+        },
+        {
+          "title": "Waller ISD",
+          "link": "/northwest-houston-schools-real-estate/waller-isd-real-estate/"
+        }
       ]
     },
     {
@@ -64,16 +112,48 @@
       "title": "Sellers",
       "link": "/sell/"
     },
-    { "title": "About", "link": "/about/" },
-    { "title": "Reviews", "link": "/reviews/" },
-    { "title": "Contact", "link": "/contact-us/" },
-    { "title": "Blog", "link": "/blog/" }
+    {
+      "title": "About",
+      "link": "/about/"
+    },
+    {
+      "title": "Reviews",
+      "link": "/reviews/"
+    },
+    {
+      "title": "Contact",
+      "link": "/contact-us/"
+    },
+    {
+      "title": "Blog",
+      "link": "/blog/"
+    }
   ],
   "contactLinks": [
     {
       "title": "Facebook",
       "link": "https://www.facebook.com/realestatewithamy",
       "icon": "tabler:brand-facebook"
+    },
+    {
+      "title": "Instagram",
+      "link": "https://www.instagram.com/the_lippincott-team_cypress",
+      "icon": "tabler:brand-instagram"
+    },
+    {
+      "title": "YouTube",
+      "link": "https://www.youtube.com/@realestatewithamy",
+      "icon": "tabler:brand-youtube"
+    },
+    {
+      "title": "X / Twitter",
+      "link": "https://www.twitter.com/amylippincott",
+      "icon": "tabler:brand-x"
+    },
+    {
+      "title": "LinkedIn",
+      "link": "https://www.linkedin.com/company/4802854",
+      "icon": "tabler:brand-linkedin"
     }
   ],
   "contact": {
@@ -81,5 +161,5 @@
     "phone": "713-494-1818",
     "email": "amy@lippincottteam.com"
   },
-  "footerBlurb": "The Lippincott Team at eXp Realty provides buying, selling, rental, and relocation services across Northwest Houston — backed by a proven track record and 9 Houston Business Journal Residential Real Estate Awards."
+  "footerBlurb": "The Lippincott Team at eXp Realty provides buying, selling, rental, and relocation services across Northwest Houston \u2014 backed by a proven track record and 9 Houston Business Journal Residential Real Estate Awards."
 }

@@ -1,6 +1,6 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
-import { safeHref, isExternal } from '../../lib/url';
+import { safeHref, linkTargetAttrs } from '../../lib/url';
 
 interface ActionItem {
 	[key: string]: unknown;
@@ -20,27 +20,25 @@ const actions = (raw ?? []).flatMap((action) => {
 	if (!action) return [];
 	const href = safeHref(action.link);
 	if (!href) return [];
-	const externalAttrs = isExternal(action.link)
-		? { target: '_blank', rel: 'noopener noreferrer' }
-		: {};
-	return [{ action, href, externalAttrs }];
+	const linkAttrs = linkTargetAttrs(action.link);
+	return [{ action, href, linkAttrs }];
 });
 ---
 {actions.length > 0 && (
 	<div class={`flex flex-wrap items-center gap-4 ${className ?? ''}`}>
-		{actions.map(({ action, href, externalAttrs }) => (
+		{actions.map(({ action, href, linkAttrs }) => (
 			action.type === 'link' ? (
 				<a
 					href={href}
 					data-tina-field={tinaField(action)}
-					{...externalAttrs}
+					{...linkAttrs}
 					class="self-center border-b border-white/35 pb-0.5 text-sm font-semibold text-white/85 no-underline transition-colors duration-200 hover:border-white hover:text-white"
 				>{action.label}</a>
 			) : (
 				<a
 					href={href}
 					data-tina-field={tinaField(action)}
-					{...externalAttrs}
+					{...linkAttrs}
 					class="btn-magnetic inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95"
 				>{action.label} <span aria-hidden="true">→</span></a>
 			)

@@ -30,6 +30,7 @@ import NotePanel from './NotePanel.astro';
 import ProofStage from './ProofStage.astro';
 import RelatedChips from './RelatedChips.astro';
 import GuideCta from './GuideCta.astro';
+import GuideDownload from './GuideDownload.astro';
 import ChecklistSplit from './ChecklistSplit.astro';
 import StepsSplit from './StepsSplit.astro';
 import type { CmsPage, CmsCommunity } from '../../lib/data';
@@ -40,8 +41,24 @@ interface Props {
 
 const { data } = Astro.props;
 const blocks = (data?.blocks ?? []).filter(b => b !== null);
+// The downloadable community guides (e.g. guide-to-cypress.docx) are only
+// linked inside the bottom guideCta block. Surface a binding-free duplicate
+// of that download action in a prominent band right under the hero on the
+// pages that have one; the bottom copy keeps the tina bindings (duplicate
+// data-tina-field attributes break visual editing — same pattern as
+// GuideHero's mobile CTA row).
+const isCommunityGuide = blocks.some((b) => b.__typename.startsWith('CommunityBlocks'));
+const guideDownload = (() => {
+	if (!isCommunityGuide) return null;
+	const cta = blocks.find((b) => b.__typename.replace(/^(Page|Community)Blocks/, '') === 'GuideCta') as
+		{ actions?: ({ type?: string | null; label?: string | null; link?: string | null } | null)[] | null } | undefined;
+	const action = (cta?.actions ?? []).find(
+		(a) => a && a.type === 'link' && /^\/uploads\/.*\.(pdf|docx?)$/i.test(a.link ?? '')
+	);
+	return action ? { label: action.label, link: action.link } : null;
+})();
 ---
-{blocks.map((block) => {
+{blocks.map((block, i) => {
 	const rendered = (() => {
 		// Tina namespaces block typenames per collection+field (PageBlocksHero
 		// vs CommunityBlocksHero); the shared templates render identically, so
@@ -82,5 +99,12 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 			case 'StepsSplit': return <StepsSplit data={block as never} />;
 		}
 	})();
-	return <div data-tina-field={tinaField(block)}>{rendered}</div>;
+	return (
+		<Fragment>
+			{i === 1 && guideDownload && (
+				<GuideDownload label={guideDownload.label} link={guideDownload.link} />
+			)}
+			<div data-tina-field={tinaField(block)}>{rendered}</div>
+		</Fragment>
+	);
 })}

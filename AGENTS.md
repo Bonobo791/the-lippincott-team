@@ -145,23 +145,14 @@ above rather than bare `astro build`.
   its own FAQPage JSON-LD),
   `reviews.astro` (**static one-off reviews page**, same v2 world — not
   Tina-editable; `reviews.mdx` stays in Tina unrendered). The live feed is
-  the HAR.com widget (`har.com/mopx_services/realtor-agent-rating`), a legacy
-  **`document.write` script**: reviews.astro loads it through an inline
-  loader that redirects `document.write`/`writeln` into the `#har-feed`
-  container (a native call would wipe the document on ClientRouter swaps)
-  and restores the originals once the script settles; `#har-feed` overrides
-  in `v2.css` re-skin the widget's inline styles to the v2 tokens. Caveat:
-  HAR sits behind PerimeterX — a browser with no PX session gets the captcha
-  page (403, `text/html`) instead of the widget. A script element can't
-  execute HTML, but it does store the response's `Set-Cookie: _pxhd`, so the
-  loader retries the script after the first failure (up to 3 attempts, also
-  on a silent empty load): the retry carries the cookie and HAR serves the
-  real widget JS. The loader depends on the widget payload being a single
-  self-contained synchronous `document.writeln` (observed: no nested
-  scripts/XHRs) — one successful load renders the whole feed; re-check that
-  if HAR ever changes the payload. Headless-Chromium screenshot runs can
-  route `**/mopx_services/**` to a captured copy of the widget JS (e.g.
-  Playwright `context.route`) if PX ever blocks them,
+  the HAR.com native script widget (`https://members.har.com/realtor-agent-rating/api/default.cfm`).
+  The endpoint returns the rendered ratings and comments directly for a
+  `<script src>` embed. The widget uses legacy `document.writeln`, so
+  links to `/reviews/` carry `data-astro-reload` and open the page with
+  a full document load instead of ClientRouter navigation; card chrome
+  lives on `.har-widget` in `v2.css`, and `.feed-note` links to the full
+  survey history on HAR.com. `shoot.mjs` and `probe-styles.mjs` hit the
+  native endpoint directly,
   `[...slug].astro` (pages), `about/[...slug].astro`
   (team bios), `northwest-houston-real-estate/[...slug].astro` and
   `northwest-houston-schools-real-estate/[...slug].astro` (community/school
@@ -182,7 +173,8 @@ above rather than bare `astro build`.
   `npx playwright cli --browser=chromium` (no system Chrome installed).
 - `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
   cache purge; run automatically by the Docker entrypoint on Coolify container
-  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set) and
+  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set; with URL/path
+  arguments it purges only those pages via the URL-purge API) and
   `docker-entrypoint.sh` (purge-then-serve container entrypoint).
 
 ## Key conventions
@@ -403,7 +395,12 @@ the pull zone automatically: the Docker entrypoint
 `scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
 readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
 (runtime-only secret; skipped without them, and when readiness times out the
-purge is skipped so a broken container can't clear a healthy cache). The pull zone sends the app's own domain to the origin
+purge is skipped so a broken container can't clear a healthy cache).
+Single-page purges between deploys go through the protected
+`/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
+`x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
+`src/lib/bunny-purge.ts`; Bunny URL purges are rate-limited per account —
+trailing-slash URLs count as prefix purges, ~30/min). The pull zone sends the app's own domain to the origin
 (*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
 Traefik routes without CDN hostnames being Coolify domains; Bunny does not
 forward the visitor host, so `security.checkOrigin` is `false` in
@@ -456,9 +453,21 @@ Environment variables (see `.env.example`):
 - `SIERRA_API_KEY` — Sierra lead-forwarding key for the `/api/contact`
   endpoint (all platforms). Never commit its value or prefix it with
   `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
+- `CONTACT_ALLOWED_ORIGINS` — optional comma-separated list of extra origins
+  allowed to submit the contact form, besides `SITE_URL`, the platform URL
+  envs, and the hardcoded brand/localhost origins (`https://thelippincottteam.com`,
+  `https://www.thelippincottteam.com`, `localhost:4321/4322`) — e.g. staging
+  Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
+  rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
+  submissions are not allowed.").
 - `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
   Docker entrypoint purges the pull zone on container start (every Coolify
   deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
   `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
   when unset).
+- `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
+  webhook (per-page Bunny cache purges between deploys). Generate with
+  `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on
+  Coolify keep its Build Variable flag off. Optional (the endpoint answers
+  503 without it).
 - `DEPLOY_ADAPTER` — optional adapter override.

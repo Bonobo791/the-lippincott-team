@@ -62,9 +62,28 @@ const includeAnalytics =
 					<Icon name="tabler:phone" class="size-5" />
 					{config.contact.phone}
 				</a>
-			</>
-		)}
-		{/* Shared Apple-style motion: masked h2 reveals + magnetic primary CTAs.
+				</>
+			)}
+			<script is:inline>
+				const markHarReviewLinks = () => {
+					document.querySelectorAll('a[href="/reviews/"]').forEach((link) => link.setAttribute('data-astro-reload', ''));
+				};
+				markHarReviewLinks();
+				document.addEventListener('astro:page-load', markHarReviewLinks);
+
+				// Browser Back/Forward to /reviews/ bypasses the data-astro-reload
+				// mutation above (no anchor click fires), so ClientRouter would
+				// swap in the page without the parser-time document.writeln the
+				// HAR widget needs — the live feed would come back empty. window
+				// survives ClientRouter swaps (the same reason the GA loader is
+				// __gaLoaderBound-guarded), so a popstate listener registered on
+				// any full page load stays live across pages; pushState/replaceState
+				// navigations don't fire popstate, so only Back/Forward reloads.
+				window.addEventListener('popstate', () => {
+					if (location.pathname === '/reviews/') location.reload();
+				});
+			</script>
+			{/* Shared Apple-style motion: masked h2 reveals + magnetic primary CTAs.
 		    Everything is a no-op under prefers-reduced-motion. */}
 		<script is:inline>
 			if (!window.__appleMotionBound) {
