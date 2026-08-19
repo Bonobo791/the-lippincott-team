@@ -1,0 +1,76 @@
+name: Bunny cache purge
+
+# Primary deploy-time cache purge — the repo's ONE purge trigger per deploy
+# event (the in-container entrypoint purge is opt-in and reserved for hosts
+# without CI).
+#
+# Fires on every push to `main` (= every production deploy of this repo: the
+# Coolify app builds the Docker image from main, Netlify deploys main).
+# It never purges blindly and never at push time: each build embeds the exact
+# commit that produced it at /__moderaty_commit.txt (built from SOURCE_COMMIT
+# on Coolify, COMMIT_REF on Netlify, or git locally). This workflow polls that
+# marker at the origin until it returns the pushed commit's SHA — i.e. the new
+# code is actually serving — and only then full-purges the Bunny pull zone,
+# with BUNNY_API_KEY / BUNNY_PULL_ZONE_ID from repository secrets. The key
+# never enters the application environment, and a deploy that fails (or never
+# serves the marker) makes this job fail loudly instead of purging into
+# nothing.
+#
+# Secrets:
+#   BUNNY_API_KEY       Bunny account AccessKey (Account -> API).
+#   BUNNY_PULL_ZONE_ID  Numeric ID of the site's pull zone (in the zone URL).
+#   BUNNY_ORIGIN_URL    (recommended) Direct origin the marker is polled at —
+#                       the Coolify app domain the pull zone uses as its
+#                       origin, WITHOUT the CDN — so the new commit is seen as
+#                       soon as the container serves it. Falls back to SITE_URL.
+#   SITE_URL            (optional) Fallback origin.
+#
+# Repo setup for the marker to be correct on Coolify: enable "Include Source
+# Commit in Build" on the application (General settings) so SOURCE_COMMIT is
+# passed to the Docker build (the Dockerfile promotes it to ENV).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      origin_url:
+        description: >-
+          Direct origin URL to poll for the deploy-commit marker (no CDN).
+          Leave blank to use the BUNNY_ORIGIN_URL secret, then SITE_URL.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # A newer push supersedes an older one that has not purged yet — the full
+  # zone purge is idempotent, so the newest run's purge covers both deploys
+  # and rapid pushes never pile up queued jobs.
+  group: bunny-purge
+  cancel-in-progress: true
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Wait for the commit to serve, then purge the pull zone
+        if: ${{ secrets.BUNNY_API_KEY != '' && secrets.BUNNY_PULL_ZONE_ID != '' }}
+        env:
+          BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+          BUNNY_PULL_ZONE_ID: ${{ secrets.BUNNY_PULL_ZONE_ID }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+          ORIGIN_URL: ${{ inputs.origin_url || secrets.BUNNY_ORIGIN_URL || secrets.SITE_URL || 'https://thelippincottteam.com' }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: node scripts/bunny-purge.mjs --wait-for-commit "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
+      - name: Warn when Bunny secrets are not configured
+        if: ${{ secrets.BUNNY_API_KEY == '' || secrets.BUNNY_PULL_ZONE_ID == '' }}
+        run: >-
+          echo "::warning::BUNNY_API_KEY / BUNNY_PULL_ZONE_ID are not set as
+          repository secrets — skipping the Bunny cache purge. Add them under
+          Settings -> Secrets and variables -> Actions to enable it."

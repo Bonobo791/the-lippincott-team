@@ -2,8 +2,8 @@
 //
 // Single copy of the site-URL validation used by BOTH consumers, so they can
 // never drift:
-//   - scripts/deploy/purge-bunny-cache.mjs (imports this file directly; the
-//     Docker runtime image ships scripts/deploy/)
+//   - scripts/bunny-purge.mjs (imports this file directly; the Docker
+//     runtime image ships scripts/)
 //   - the /api/bunny-purge endpoint (src/lib/bunny-purge.ts re-exports it;
 //     Vite bundles this .mjs into the server bundle)
 //

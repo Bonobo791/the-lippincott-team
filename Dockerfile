@@ -44,10 +44,17 @@ ARG PUBLIC_GA_ID=""
 # tina/config.ts branch detection sees it and staging builds don't fall
 # back to `main`.
 ARG COOLIFY_BRANCH=""
+# Coolify passes SOURCE_COMMIT as a build arg when "Include Source Commit in
+# Build" is enabled (Application -> General) — promote it to ENV so the
+# deploy-commit marker (/__moderaty_commit.txt) is correct. The CI purge
+# workflow (.github/workflows/bunny-purge.yml) waits for that marker before
+# purging the CDN. Not a credential.
+ARG SOURCE_COMMIT=""
 ENV PUBLIC_TINA_CLIENT_ID=$PUBLIC_TINA_CLIENT_ID \
     SITE_URL=$SITE_URL \
     PUBLIC_GA_ID=$PUBLIC_GA_ID \
     COOLIFY_BRANCH=$COOLIFY_BRANCH \
+    SOURCE_COMMIT=$SOURCE_COMMIT \
     NODE_ENV=production \
     NODE_OPTIONS=--max-old-space-size=4096
 COPY --from=deps /app/node_modules ./node_modules
@@ -92,8 +99,13 @@ COPY --from=build /app/dist ./dist
 # The generated Tina client + seeded content cache (tina/__generated__) are
 # referenced by the /tina-island re-render endpoint at runtime.
 COPY --from=build /app/tina ./tina
-# Deploy tooling: the entrypoint purges the Bunny pull-zone cache on container
-# start (Coolify starts a new container per deploy), then runs the server.
+# Deploy tooling: the container entrypoint (serve + OPT-IN cache purge) and
+# the purge script it calls (scripts/bunny-purge.mjs + its shared URL
+# normalizer). No purge credential is ever baked into the image — the CI
+# workflow holds the key in repository secrets and purges after the deploy is
+# serving; BUNNY_PURGE_ON_START is the opt-in last resort for hosts without
+# CI.
+COPY scripts/bunny-purge.mjs scripts/bunny-url.mjs ./scripts/
 COPY scripts/deploy ./scripts/deploy
 USER node
 EXPOSE 4321

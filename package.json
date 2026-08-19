@@ -19,14 +19,15 @@
   },
   "scripts": {
     "dev": "tinacms dev -c \"astro dev\"",
-    "build": "tinacms build --content=local -c \"NODE_ENV=production astro build\"",
-    "build:local": "tinacms build --local --skip-cloud-checks -c \"NODE_ENV=production astro build\"",
-    "build:preview": "tinacms build --content=local --skip-cloud-checks -c \"NODE_ENV=production astro build\"",
+    "build": "node scripts/deploy/write-commit-marker.mjs && tinacms build --content=local -c \"NODE_ENV=production astro build\"",
+    "build:local": "node scripts/deploy/write-commit-marker.mjs && tinacms build --local --skip-cloud-checks -c \"NODE_ENV=production astro build\"",
+    "build:preview": "node scripts/deploy/write-commit-marker.mjs && tinacms build --content=local --skip-cloud-checks -c \"NODE_ENV=production astro build\"",
     "build:search": "tinacms search-index",
     "preview": "astro preview",
     "test:rich-text": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/rich-text-test src/lib/rich-text.test.ts && node .launch/rich-text-test/rich-text.test.js",
     "test:sierra": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/sierra-test src/lib/sierra-contact.test.ts && node --test .launch/sierra-test/sierra-contact.test.js",
-    "astro": "astro"
+    "astro": "astro",
+    "test:bunny-purge": "node --test scripts/bunny-purge.test.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.4",

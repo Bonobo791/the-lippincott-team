@@ -127,13 +127,44 @@ Setup (Bunny dashboard):
 
 Cache purging on deploy:
 
-- **Coolify: automatic** — the image entrypoint purges the pull zone whenever
-  a new container starts (every deployment). Set `BUNNY_API_KEY` (runtime
-  only) and `BUNNY_PULL_ZONE_ID` on the app.
+The deploy-time purge runs **once, after the new code is serving**, from CI —
+never at push time, never blindly, and never from inside the container:
+
+- **Primary: GitHub Actions** — `.github/workflows/bunny-purge.yml` fires on
+  every push to `main` (the production deploy branch). Each build writes the
+  exact commit that produced it to `/__moderaty_commit.txt` (via
+  `scripts/deploy/write-commit-marker.mjs`, from `SOURCE_COMMIT` on Coolify —
+  enable *Include Source Commit in Build* — `COMMIT_REF` on Netlify, or git
+  locally). The workflow polls that marker at
+  the origin until it returns the pushed commit SHA — i.e. the new container
+  is actually serving — then full-purges the pull zone with `BUNNY_API_KEY` /
+  `BUNNY_PULL_ZONE_ID` from **repository secrets** (Settings → Secrets and
+  variables → Actions). The key never enters the application environment, and
+  a deploy that fails or never serves the marker makes the job fail loudly
+  instead of purging into nothing.
+  - Recommended extra secret: `BUNNY_ORIGIN_URL` — the Coolify app domain the
+    pull zone uses as its origin, **without** the CDN — so the marker is seen
+    as soon as the container serves it (the default falls back to `SITE_URL`,
+    which polls through the CDN and is subject to the edge's 10-minute HTML
+    TTL). `SITE_URL` is an optional final fallback.
+- **No-CI environments**: point Coolify's **`deployment_success` webhook** at
+  a tiny serverless purger that holds a purge key and calls Bunny after the
+  deploy finishes — the key stays out of the container and the trigger
+  correlates with deployment completion. The in-container entrypoint purge is
+  the **last resort**, not the second choice: set `BUNNY_PURGE_ON_START=true`
+  (plus runtime-only `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID`) on hosts where CI
+  and webhooks cannot run. It still waits for the container's readiness probe
+  before purging, but it is **off by default** — never enable it alongside
+  the CI workflow (one purge per deploy event; two triggers mean double
+  purges and two competing guarantees).
 - **Manual**: `BUNNY_API_KEY=… BUNNY_PULL_ZONE_ID=<id> node
-  scripts/deploy/purge-bunny-cache.mjs` — the key is created under
-  *Account → API*; the zone ID is the number in the pull zone's URL.
-- Without the env vars the script is a no-op, so local builds are unaffected.
+  scripts/bunny-purge.mjs` — the key is created under *Account → API*; the
+  zone ID is the number in the pull zone's URL. It is the account-level key
+  (Bunny offers no narrower pull-zone credential for the purge API today) —
+  treat it as an account secret: keep it only where the purger runs and
+  regenerate it if it ever leaks.
+- Without the env vars the script is a no-op, so local builds are unaffected;
+  with them set, a failed purge logs loudly and exits non-zero.
 
 Purging a single page (CMS edits between deploys):
 
@@ -159,11 +190,12 @@ Purging a single page (CMS edits between deploys):
 - **Callers**: anything server-side that knows the secret — a TinaCloud
   custom webhook (configure one in app.tina.io if the project offers it),
   a GitHub Action on content pushes, or manual curl. Note that Coolify
-  redeploys already full-purge via the entrypoint, so this is only for
-  edits that must go live faster than the 10-minute HTML cache TTL.
+  redeploys already full-purge via the CI workflow (or the opt-in entrypoint),
+  so this is only for edits that must go live faster than the 10-minute HTML
+  cache TTL.
 - **Manual page purge**: `BUNNY_API_KEY=… SITE_URL=…
-  node scripts/deploy/purge-bunny-cache.mjs /pricing/` — pass site paths or
-  URLs as arguments; with no arguments it does the full-zone purge.
+  node scripts/bunny-purge.mjs /pricing/` — pass site paths or URLs as
+  arguments; with no arguments it does the full-zone purge.
 - **Bunny rate limits URL purges per account**: a URL ending in `/` counts
   as a *prefix* (wildcard) purge — 20-token burst, ~30/min — while exact
   URLs (no trailing slash) get 120-token burst, ~300/min. The site uses

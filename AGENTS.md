@@ -171,11 +171,20 @@ above rather than bare `astro build`.
   `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
   gitignored `.launch/qa/`. For interactive browsing use
   `npx playwright cli --browser=chromium` (no system Chrome installed).
-- `scripts/deploy/` — deploy tooling: `purge-bunny-cache.mjs` (Bunny pull-zone
-  cache purge; run automatically by the Docker entrypoint on Coolify container
-  start when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set; with URL/path
-  arguments it purges only those pages via the URL-purge API) and
-  `docker-entrypoint.sh` (purge-then-serve container entrypoint).
+- `scripts/` — deploy tooling: `bunny-purge.mjs` (Bunny pull-zone cache
+  purge: full zone, per-URL, or the CI `--wait-for-commit` mode; no-op
+  without credentials, fails loudly with them) and `bunny-url.mjs` (shared
+  purge-URL normalization, also bundled into the `/api/bunny-purge`
+  endpoint). `scripts/deploy/docker-entrypoint.sh` is the container
+  entrypoint (serve + OPT-IN cache purge — see the CDN section).
+- `.github/workflows/bunny-purge.yml` — primary deploy-time purge: on push to
+  `main` it waits until the origin serves the pushed commit
+  (`/__moderaty_commit.txt`), then full-purges the pull zone with the key
+  from repository secrets (never in the container).
+- `scripts/deploy/write-commit-marker.mjs` — build-time step (prefixed onto
+  the `build*` scripts) that writes `public/__moderaty_commit.txt` (gitignored)
+  with the commit SHA producing the build, so the purge workflow can verify
+  the new code is serving before purging.
 
 ## Key conventions
 
@@ -409,13 +418,23 @@ routes by `Host`), plus a storage zone serving `/uploads/*` media via an edge
 rule with the **Origin URL per request** action pointing at the storage
 zone's `*.b-cdn.net` hostname — media stays in the repo, content paths never
 change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
-→ storage origin + 30 d; `*/_astro/*` → 1 y; HTML `*/` → 10 min. Deploys purge
-the pull zone automatically: the Docker entrypoint
-(`scripts/deploy/docker-entrypoint.sh`) runs
-`scripts/deploy/purge-bunny-cache.mjs` on container start — after the local
-readiness probe passes — when `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` are set
-(runtime-only secret; skipped without them, and when readiness times out the
-purge is skipped so a broken container can't clear a healthy cache).
+→ storage origin + 30 d; `*/_astro/*` → 1 y; `*/__moderaty_commit.txt*` →
+bypass cache (the deploy-commit marker); HTML `*/` → 10 min. Deploys purge
+the pull zone **after the new code is serving**, exactly once, from CI:
+`.github/workflows/bunny-purge.yml` fires on push to `main`, polls the
+origin's `/__moderaty_commit.txt` until it returns the pushed commit SHA
+(the build embeds it from `SOURCE_COMMIT` — Coolify needs *Include Source
+Commit in Build* enabled — `COMMIT_REF`, `GITHUB_SHA`, or git), then runs
+`scripts/bunny-purge.mjs` with `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` from
+**repository secrets** — the key never enters the application environment
+(runtime-only `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID` on the app are no longer
+needed; a failed deploy or missing marker fails the workflow loudly instead
+of purging blindly). The in-container entrypoint purge
+(`scripts/deploy/docker-entrypoint.sh`) is the **opt-in last resort** for
+hosts without CI (`BUNNY_PURGE_ON_START=true`): it still waits for the local
+readiness probe before purging, and skips the purge when readiness times out
+so a broken container can't clear a healthy cache — never enable it alongside
+the CI workflow (one purge per deploy event).
 Single-page purges between deploys go through the protected
 `/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
 `x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
@@ -482,11 +501,17 @@ Environment variables (see `.env.example`):
   Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
   rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
   submissions are not allowed.").
-- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging: the
-  Docker entrypoint purges the pull zone on container start (every Coolify
-  deploy), after the local readiness probe passes. `BUNNY_API_KEY` is a secret — never commit it or prefix it with
-  `PUBLIC_`; keep its Build Variable flag off. Both are optional (no-op
-  when unset).
+- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging.
+  Deploy-time purges run from CI (`.github/workflows/bunny-purge.yml`) with
+  these set as **GitHub repository secrets** — the key should not live in the
+  app environment at all. `BUNNY_ORIGIN_URL` (repo secret, recommended) is
+  the direct origin the workflow polls for the deploy-commit marker
+  (`/__moderaty_commit.txt`) before purging; it falls back to `SITE_URL`.
+  For hosts without CI, the container entrypoint purge is the opt-in last
+  resort: set `BUNNY_PURGE_ON_START=true` plus runtime-only (Build Variable
+  off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. `BUNNY_API_KEY` is the
+  account-level key (Bunny offers no narrower pull-zone credential for the
+  purge API today) — never commit it or prefix it with `PUBLIC_`.
 - `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
   webhook (per-page Bunny cache purges between deploys). Generate with
   `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on
