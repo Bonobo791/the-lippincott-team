@@ -40,6 +40,37 @@ function hasControlChars(value) {
  * segments (raw and percent-encoded), backslashes, and control characters.
  * Fragments are accepted and stripped (the edge never caches by fragment).
  */
+function parseSiteUrl(baseUrl) {
+	try {
+		return new URL(baseUrl);
+	} catch {
+		return null;
+	}
+}
+
+// Parses the input as either an absolute URL on the site's own host or a
+// site-relative path; returns null when it is not a purgeable site URL.
+function parseCandidateUrl(value, site) {
+	if (SCHEME_RE.test(value)) {
+		let candidate;
+		try {
+			candidate = new URL(value);
+		} catch {
+			return null;
+		}
+		if (candidate.protocol !== site.protocol) return null;
+		if (candidate.hostname.toLowerCase() !== site.hostname.toLowerCase()) return null;
+		if (candidate.port !== site.port) return null;
+		return candidate;
+	}
+	if (!value.startsWith('/') || value.startsWith('//')) return null;
+	try {
+		return new URL(value, site.origin);
+	} catch {
+		return null;
+	}
+}
+
 export function normalizeSiteUrl(input, baseUrl) {
 	const value = String(input ?? '').trim();
 	if (!value || value.length > 1024) return null;
@@ -53,29 +84,11 @@ export function normalizeSiteUrl(input, baseUrl) {
 	const rawPath = value.split(PATH_SPLIT_RE, 1)[0].replace(SCHEME_STRIP_RE, '');
 	if (DOT_SEGMENT_RE.test(rawPath)) return null;
 
-	let site;
-	try {
-		site = new URL(baseUrl);
-	} catch {
-		return null;
-	}
+	const site = parseSiteUrl(baseUrl);
+	if (!site) return null;
 
-	let candidate;
-	if (SCHEME_RE.test(value)) {
-		try {
-			candidate = new URL(value);
-		} catch {
-			return null;
-		}
-		if (candidate.protocol !== site.protocol || candidate.hostname.toLowerCase() !== site.hostname.toLowerCase() || candidate.port !== site.port) return null;
-	} else {
-		if (!value.startsWith('/') || value.startsWith('//')) return null;
-		try {
-			candidate = new URL(value, site.origin);
-		} catch {
-			return null;
-		}
-	}
+	const candidate = parseCandidateUrl(value, site);
+	if (!candidate) return null;
 
 	candidate.hash = '';
 

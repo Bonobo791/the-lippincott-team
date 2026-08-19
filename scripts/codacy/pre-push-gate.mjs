@@ -27,6 +27,7 @@ const ROOT = process.argv[2];
 // Hoisted so the per-line/per-file hot paths never recompile them.
 const LEADING_DOT_SLASH_RE = /^\.\//;
 const LINE_SPLIT_RE = /\r?\n/;
+const QUOTE_STRIP_RE = /^["']|["']$/g;
 const changed = new Set((process.argv.slice(3) || []).map((f) => f.replace(LEADING_DOT_SLASH_RE, '')));
 const log = (...a) => console.error('[codacy-gate]', ...a);
 
@@ -61,10 +62,12 @@ let tokenConfigured = false;
 try {
   const envFile = path.join(os.homedir(), '.prime', 'agent', 'codacy', 'server.env');
   if (existsSync(envFile)) {
-    for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
-      const m = line.match(/^CODACY_ACCOUNT_TOKEN\s*=\s*([^\r\n]*)$/);
+    for (const line of readFileSync(envFile, 'utf8').split(LINE_SPLIT_RE)) {
+      const eq = line.indexOf('=');
+      const name = eq === -1 ? '' : line.slice(0, eq).trim();
+      const m = name === 'CODACY_ACCOUNT_TOKEN' ? ['', line.slice(eq + 1)] : null;
       if (m?.[1]?.trim()) {
-        env.CODACY_ACCOUNT_TOKEN = m[1].trim().replace(/^["']|["']$/g, '');
+        env.CODACY_ACCOUNT_TOKEN = m[1].trim().replace(QUOTE_STRIP_RE, '');
         tokenConfigured = true;
       }
     }
