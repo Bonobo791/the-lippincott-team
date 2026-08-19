@@ -159,10 +159,11 @@ never at push time, never blindly, and never from inside the container:
   purges and two competing guarantees).
 - **Manual**: `BUNNY_API_KEY=… BUNNY_PULL_ZONE_ID=<id> node
   scripts/bunny-purge.mjs` — the key is created under *Account → API*; the
-  zone ID is the number in the pull zone's URL. It is the account-level key
-  (Bunny offers no narrower pull-zone credential for the purge API today) —
-  treat it as an account secret: keep it only where the purger runs and
-  regenerate it if it ever leaks.
+  zone ID is the number in the pull zone's URL. Use the **least-privilege
+  credential**: the pull-zone-scoped API key (Pull Zone → *Security* →
+  API Key) can purge only that zone — prefer it over the account key; keep it
+  only where the purger runs (repository secret) and regenerate it if it ever
+  leaks.
 - Without the env vars the script is a no-op, so local builds are unaffected;
   with them set, a failed purge logs loudly and exits non-zero.
 

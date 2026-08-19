@@ -20,7 +20,10 @@
 //     node scripts/bunny-purge.mjs /pricing/ /blog/
 //
 // Env:
-//   BUNNY_API_KEY       Bunny account AccessKey (dashboard: Account -> API).
+//   BUNNY_API_KEY       Bunny API key. Prefer the least-privilege
+//                       pull-zone-scoped key (Pull Zone -> Security -> API
+//                       Key), which can purge only that zone; fall back to
+//                       the account AccessKey (dashboard: Account -> API).
 //                       Secret — never commit it or prefix it with PUBLIC_,
 //                       and keep it OUT of the application environment: the
 //                       CI workflow reads it from repository secrets, so the

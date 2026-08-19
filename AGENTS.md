@@ -509,9 +509,9 @@ Environment variables (see `.env.example`):
   (`/__moderaty_commit.txt`) before purging; it falls back to `SITE_URL`.
   For hosts without CI, the container entrypoint purge is the opt-in last
   resort: set `BUNNY_PURGE_ON_START=true` plus runtime-only (Build Variable
-  off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. `BUNNY_API_KEY` is the
-  account-level key (Bunny offers no narrower pull-zone credential for the
-  purge API today) — never commit it or prefix it with `PUBLIC_`.
+  off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. Prefer the least-privilege
+  pull-zone-scoped API key (Pull Zone → Security → API Key) over the
+  account-level key — never commit either or prefix it with `PUBLIC_`.
 - `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
   webhook (per-page Bunny cache purges between deploys). Generate with
   `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on
