@@ -349,6 +349,11 @@ There is **no test suite, linter, or formatter configured** in this project
   cloud check). Note: in the pinned tinacms version the lock is only written
   by `tinacms dev`, not `tinacms build` — after a schema change, run
   `pnpm dev` once (then stop it) to regenerate `tina/tina-lock.json`.
+- SonarQube MCP (pre-commit): `import sonarqube`;
+  `get_project_quality_gate_status(projectKey="Bonobo791_lippincott-team-astro-tina")`;
+  issues: `search_sonar_issues_in_projects(projectKeys=[...])`; local:
+  `analyze_code_snippet(fileContent, language, projectKey)`.
+  Creds: `~/.prime/agent/sonarqube/server.env`.
 
 ## Deployment
 
