@@ -36,12 +36,18 @@ Status key: [ ] open · [x] done · (owner) who it belongs to
       links (/buyers/, /sellers/, /communities/) 404; ask the listings provider
       for correct deep links or add those pages. Cards now point to the site's
       own /buy/, /sell/, and community hub.
+      (Re-checked 2026-08-20: the whole listings site now 403s bots, so
+      existence can't be verified from here — needs a browser or the provider.)
 - [ ] **thelippincottteam.com DNS cutover** — the new canonical domain still 404s
       (old WordPress site live at lippincottteam.com). After cutover, re-check
       the terms/privacy links (now relative, so they work either way).
+      (Re-checked 2026-08-20: not cut over yet — thelippincottteam.com still
+      redirects to the old site.)
 - [ ] **Amira on the Tomball guide** — label fixed to "Cypress" (its actual
       address), but confirm with the client whether Amira belongs on the Tomball
       page at all (it is Cy-Fair ISD territory).
+      (Re-checked 2026-08-20: Amira's site is JS-only and the listings site
+      bot-blocks, so no fresh citation; awaiting client sign-off on placement.)
 
 ## Coordination (other sessions)
 
