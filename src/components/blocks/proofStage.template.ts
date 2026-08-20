@@ -33,6 +33,7 @@ export const proofStageBlockSchema: Template = {
 				{ type: 'string', label: 'Suffix', name: 'suffix', description: 'Red mark after the number (e.g. "+", "×").' },
 				{ type: 'string', label: 'Label', name: 'label' },
 				{ type: 'string', label: 'Source', name: 'source' },
+				{ type: 'string', label: 'Link (optional)', name: 'link', description: 'Makes the whole tile clickable — e.g. link the reviews tile to the Google review page.' },
 			],
 		},
 	],
