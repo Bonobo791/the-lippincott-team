@@ -95,7 +95,7 @@ above rather than bare `astro build`.
 - `src/components/blocks/` — the page-builder blocks (Hero, CTA, Features,
   Stats, Testimonial, Callout, Content, Split, Video, Faq, TeamGrid,
   CommunityGrid, TrustStrip, TestimonialShowcase, Awards, TeamBanner,
-  ContactForm — page collection only; plus the **community guide blocks**:
+  ContactForm — page collection only; plus the **community page blocks**:
   GuideHero, StatLedger, PriceLadder, CalloutRail, DataTable, PhotoCardGrid,
   CategoryTiles, RouteLedger, TradeOffs, NotePanel, ProofStage, RelatedChips,
   GuideCta, ChecklistSplit, StepsSplit — registered in **both** the page and community collections).
@@ -114,12 +114,12 @@ above rather than bare `astro build`.
   `backgroundImage`) instead. The shared block templates serve
   two collections: `page.ts` registers all of them, while
   `tina/collections/community.ts` registers the 7 legacy templates (hero,
-  split, features, stats, content, faq, cta) plus the 15 community guide
+  split, features, stats, content, faq, cta) plus the 15 community page
   blocks — Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
-- **Every community/school doc is now a block-driven guide** (Cypress order:
+- **Every community/school page is block-driven** (Cypress order:
   guideHero → market statLedger → priceLadder → schools calloutRail/dataTable
   → photoCardGrid → categoryTiles → routeLedger → cost-of-living statLedger →
   tradeOffs → comparison dataTable → proofStage → faq → relatedChips →
@@ -189,6 +189,16 @@ above rather than bare `astro build`.
 
 ## Key conventions
 
+- **Community pages are NOT "guides".** The pages under `/northwest-houston-real-estate/` and
+  `/northwest-houston-schools-real-estate/` (e.g. `cypress-tx-real-estate.mdx`) are **community
+  pages**. "Guides" are the separate downloadable documents (e.g. `/uploads/2026/08/guide-to-waller.pdf`,
+  `guide-to-tomball.pdf`, `guide-to-cypress.docx`) that are linked from — and downloaded from — those
+  pages. Never call the pages guides, and never call the PDFs/DOCX pages. Block component names
+  (`GuideHero`, `GuideCta`, etc.) are legacy identifiers and stay unchanged.
+- **Copy style: research/marketing voice, not chat-room phrasing.** Never use "Bottom Line" as a
+  heading or summary marker (use "The Takeaway" or a plain paragraph), never use "not a guess" or
+  similar offhand filler ("not an algorithm", "no guess", etc.), and avoid other conversational
+  interjections in published copy. The site's voice is direct and data-backed.
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
 - The `/about/` roster (`teamGrid` block) shows only team docs with
   `featured: true`, ordered by the `order` field (lowest first; the first
@@ -276,7 +286,7 @@ above rather than bare `astro build`.
   35–468 MB originals). Posters are webp. Larger future videos (e.g. hero
   `backgroundVideo` loops) should still go to Cloudflare R2 behind the CDN
   rather than into the repo.
-- GuideHero block (community guides): the "stage" hero — a `min-h-[72svh]`
+- GuideHero block (community pages): the "stage" hero — a `min-h-[72svh]`
   ink band with optional `backgroundImage` (full-bleed, gradient scrim),
   bottom-left content: gold `eyebrow on-dark`, Fraunces-light H1 with gold
   italic accent, ghost chips (`border-white/30 bg-white/10`), and optional
