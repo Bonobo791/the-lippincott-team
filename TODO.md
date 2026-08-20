@@ -11,9 +11,8 @@ Status key: [ ] open · [x] done · (owner) who it belongs to
 - [x] **About proof-stage tiles** — all three tiles linked (reviews -> Google
       reviews; homes sold -> live listings; HBJ awards -> Google search; URLs are
       Tina-editable if better sources are provided).
-- [ ] **`.stylelintrc.json`** — CodeRabbit (trivial): scope the 5 disabled rules
-      to the two stylesheet files instead of global `null`s? (Tailwind v4
-      false-positive cluster; global disables are justified but scoping is cleaner)
+- [x] **`.stylelintrc.json`** — exceptions scoped to src/styles/global.css +
+      v2.css via `overrides`; `at-rule-no-unknown` stays active globally.
 
 ## Content facts to verify (client-supplied)
 
