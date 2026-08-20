@@ -32,12 +32,11 @@ Status key: [ ] open · [x] done · (owner) who it belongs to
 
 ## Listings-site / domain coordination
 
-- [ ] **Listings site lacks buyer/seller/community pages** — the original deep
-      links (/buyers/, /sellers/, /communities/) 404; ask the listings provider
-      for correct deep links or add those pages. Cards now point to the site's
-      own /buy/, /sell/, and community hub.
-      (Re-checked 2026-08-20: the whole listings site now 403s bots, so
-      existence can't be verified from here — needs a browser or the provider.)
+- [x] **Buyer/seller/community pages** — they ARE on this website (/buy/, /sell/,
+      /northwest-houston-real-estate/ + community pages). The only broken links
+      were the LISTINGS-site URLs (/buyers/, /sellers/, /communities/ on
+      thelippincottteamlistings.com), which now point to the site's own pages.
+      No provider coordination needed.
 - [ ] **thelippincottteam.com DNS cutover** — the new canonical domain still 404s
       (old WordPress site live at lippincottteam.com). After cutover, re-check
       the terms/privacy links (now relative, so they work either way).
