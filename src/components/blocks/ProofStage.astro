@@ -55,8 +55,11 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 			)}
 			{metrics.length > 0 && (
 				<div class={metricsGridClass}>
-					{metrics.map((metric) => (
-						<div data-tina-field={tinaField(metric)} class="bg-tile p-8 transition-colors duration-300 hover:bg-[#2e2e31] md:p-10">
+					{metrics.map((metric) => {
+					const metricHref = metric.link ? safeHref(metric.link) : null;
+					const tileClass = `block bg-tile p-8 transition-colors duration-300 md:p-10 ${metricHref ? 'hover:bg-[#2e2e31]' : 'cursor-default'}`;
+					const tileInner = (
+						<>
 							<div class="flex items-baseline whitespace-nowrap text-[clamp(2.6rem,5vw,4rem)] font-serif font-light leading-none tracking-[-0.03em]">
 								{typeof metric.value === 'number' ? (
 									<span class="proof-count" data-target={metric.value}>{metric.value.toLocaleString('en-US')}</span>
@@ -65,8 +68,14 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 							</div>
 							{metric.label && <span class="mt-4 block text-xs font-semibold uppercase tracking-[0.22em] text-white/50">{metric.label}</span>}
 							{metric.source && <span class="mt-1.5 block text-xs text-white/50">{metric.source}</span>}
-						</div>
-					))}
+						</>
+					);
+					return metricHref ? (
+						<a href={metricHref} data-tina-field={tinaField(metric)} {...(metric.link && isExternal(metric.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class={tileClass}>{tileInner}</a>
+					) : (
+						<div data-tina-field={tinaField(metric)} class={tileClass}>{tileInner}</div>
+					);
+				})}
 				</div>
 			)}
 		</div>
