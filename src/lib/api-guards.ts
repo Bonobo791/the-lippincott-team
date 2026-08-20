@@ -16,13 +16,26 @@ export function jsonError(status: number, error: string): Response {
 // value (the proxy-appended tail); the first value is client-controlled and
 // must never be trusted, or a rotating forged header would bypass the rate
 // limit entirely.
-export function clientIp(request: Request): string {
-	return (
-		request.headers.get('x-real-ip')?.trim() ||
-		request.headers.get('client-ip')?.trim() ||
-		request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() ||
-		'unknown'
-	);
+export function clientIp(request: Request, clientAddress?: string): string {
+	// Trusted-proxy headers first (the XFF tail is the proxy-appended value;
+	// the first value is client-controlled and must never be trusted). Then
+	// the runtime's actual connection address (Astro's `clientAddress`, set by
+	// every adapter) — correct for direct-to-server deployments that receive
+	// none of the proxy headers. A literal "unknown" from any source is
+	// treated as absent, so unidentified clients never collapse into ONE
+	// shared rate-limit bucket (5 requests from one user would otherwise block
+	// the form for everyone).
+	const candidates = [
+		request.headers.get('x-real-ip'),
+		request.headers.get('client-ip'),
+		request.headers.get('x-forwarded-for')?.split(',').at(-1),
+		clientAddress,
+	];
+	for (const value of candidates) {
+		const ip = value?.trim();
+		if (ip && ip !== 'unknown') return ip;
+	}
+	return 'unknown';
 }
 
 /**

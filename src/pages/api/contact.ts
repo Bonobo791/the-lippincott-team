@@ -115,14 +115,14 @@ async function parseContactForm(request: Request, body: BodyResult):
 	return { kind: 'ok', data };
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
 	// Browser CSRF guard first: reject cross-origin form posts before they
 	// consume rate-limit budget or touch Sierra.
 	if (!originAllowed(request)) {
 		return jsonError(403, 'Cross-origin form submissions are not allowed.');
 	}
 
-	if (isRateLimited(clientIp(request), Date.now())) {
+	if (isRateLimited(clientIp(request, clientAddress), Date.now())) {
 		return jsonError(429, 'Too many requests. Please wait a few minutes, or call or text us directly.');
 	}
 
