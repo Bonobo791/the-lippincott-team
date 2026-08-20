@@ -16,6 +16,7 @@ CODE_RE='\.(ts|tsx|js|mjs|cjs|jsx|astro|css|py|rb|go|java|php|sh|vue|svelte)$'
 SKIP_RE='^(node_modules/|dist/|dist-server/|\.launch/|tina/__generated__/|public/uploads/|public/admin/|\.codacy/)'
 
 declare -A FILES
+total=0
 while read -r local_ref local_sha remote_ref remote_sha; do
   [[ -n "$local_sha" && "$local_sha" != "0000000000000000000000000000000000000000" ]] || continue
   if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
@@ -38,16 +39,22 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   fi
   if [[ "$base" == "__ALL_FILES__" ]]; then
     while IFS= read -r f; do
-      [[ -n "$f" ]] && FILES["$f"]=1
+      [[ -n "$f" ]] || continue
+      FILES["$f"]=1
+      total=$((total + 1))
     done < <(git ls-files)
   else
     while IFS= read -r f; do
-      [[ -n "$f" ]] && FILES["$f"]=1
+      [[ -n "$f" ]] || continue
+      FILES["$f"]=1
+      total=$((total + 1))
     done < <(git diff --name-only --diff-filter=ACMR "$base" "$local_sha" 2>/dev/null || true)
   fi
 done
 
-[[ ${#FILES[@]} -gt 0 ]] || exit 0
+# total is a plain integer — immune to the set -u "unbound variable" trap that
+# ${#FILES[@]} hits on an empty associative array.
+[[ $total -gt 0 ]] || exit 0
 
 CHANGED=()
 for f in "${!FILES[@]}"; do

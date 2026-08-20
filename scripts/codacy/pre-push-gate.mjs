@@ -17,7 +17,7 @@
  * broken tool must never brick pushes. Escape hatches: `git push --no-verify`
  * or CODACY_GATE_OFF=1.
  */
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, copyFileSync, rmSync, mkdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -41,11 +41,38 @@ if (changed.size === 0) {
 }
 
 // --- resolve the global Codacy MCP server binary -----------------------------
+// Derive the npm global root WITHOUT spawning npm (S4036: no PATH-resolved
+// subprocess). Order: NPM_CONFIG_PREFIX / npm_config_prefix env -> `prefix=`
+// in ~/.npmrc -> the node install layout. The execPath fallback is LAST
+// because node is often symlinked into a different prefix than npm's
+// (e.g. /usr/bin/node with prefix=/home/user/.local/npm in .npmrc).
+function readNpmrcPrefix() {
+  try {
+    const npmrc = path.join(os.homedir(), '.npmrc');
+    if (existsSync(npmrc)) {
+      for (const line of readFileSync(npmrc, 'utf8').split(LINE_SPLIT_RE)) {
+        if (line.startsWith('prefix=')) {
+          const value = line.slice('prefix='.length).trim();
+          if (value) return value;
+        }
+      }
+    }
+  } catch { /* fall through */ }
+  return null;
+}
+function npmGlobalRoot() {
+  const prefix =
+    process.env.NPM_CONFIG_PREFIX ||
+    process.env.npm_config_prefix ||
+    readNpmrcPrefix() ||
+    path.dirname(path.dirname(process.execPath)); // <prefix>/bin/node -> <prefix>
+  return path.join(prefix, process.platform === 'win32' ? 'node_modules' : 'lib/node_modules');
+}
 let globalRoot;
 try {
-  globalRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim();
+  globalRoot = npmGlobalRoot();
 } catch {
-  log('npm not found; skipping Codacy gate');
+  log('could not resolve the npm global root; skipping Codacy gate');
   process.exit(0);
 }
 // npm root -g -> <prefix>/lib/node_modules ; the bin lives at <prefix>/bin.
