@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { clientIp, createRateLimiter, jsonError, readBody } from '../../lib/api-guards';
+import { clientIp, createRateLimiter, jsonError, readBody, type BodyResult } from '../../lib/api-guards';
 import { ContactValidationError, forwardContactLead } from '../../lib/sierra-contact';
 
 // Host-neutral contact endpoint: the contact form POSTs here and the lead is
@@ -79,23 +79,14 @@ function originAllowed(request: Request) {
 	);
 }
 
-export const POST: APIRoute = async ({ request }) => {
-	// Browser CSRF guard first: reject cross-origin form posts before they
-	// consume rate-limit budget or touch Sierra.
-	if (!originAllowed(request)) {
-		return jsonError(403, 'Cross-origin form submissions are not allowed.');
-	}
-
-	if (isRateLimited(clientIp(request), Date.now())) {
-		return jsonError(429, 'Too many requests. Please wait a few minutes, or call or text us directly.');
-	}
-
-	const body = await readBody(request, MAX_BODY_BYTES, 'Your message is too long. Please shorten it and try again.');
-	if (body.kind === 'error') return body.response;
+// Parses the POST body into string fields and enforces the character cap.
+// formData() rejects malformed multipart bodies and unsupported content
+// types — treated as a client error (400) rather than a 500.
+async function parseContactForm(request: Request, body: BodyResult):
+	| { kind: 'error'; response: Response }
+	| { kind: 'ok'; data: Record<string, string> } {
+	if (body.kind === 'error') return body;
 	const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
-	// formData() rejects malformed multipart bodies and unsupported content
-	// types — treat those as a client error (400) rather than letting the
-	// rejection surface as a 500.
 	let formData: FormData;
 	try {
 		formData = await new Request(request.url, {
@@ -104,24 +95,41 @@ export const POST: APIRoute = async ({ request }) => {
 			body: body.buffer,
 		}).formData();
 	} catch {
-		return jsonError(400, 'Invalid form submission.');
+		return { kind: 'error', response: jsonError(400, 'Invalid form submission.') };
 	}
-
 	const data: Record<string, string> = {};
 	let totalChars = 0;
 	for (const [key, value] of formData.entries()) {
 		// The form only ever submits strings — a File part means a crafted
 		// multipart upload, which the size cap alone does not constrain.
 		if (typeof value !== 'string') {
-			return jsonError(400, 'Invalid form submission.');
+			return { kind: 'error', response: jsonError(400, 'Invalid form submission.') };
 		}
 		data[key] = value;
 		totalChars += value.length;
 	}
 	// Second layer (character count) on top of the byte cap.
 	if (totalChars > MAX_BODY_BYTES) {
-		return jsonError(413, 'Your message is too long. Please shorten it and try again.');
+		return { kind: 'error', response: jsonError(413, 'Your message is too long. Please shorten it and try again.') };
 	}
+	return { kind: 'ok', data };
+}
+
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+	// Browser CSRF guard first: reject cross-origin form posts before they
+	// consume rate-limit budget or touch Sierra.
+	if (!originAllowed(request)) {
+		return jsonError(403, 'Cross-origin form submissions are not allowed.');
+	}
+
+	if (isRateLimited(clientIp(request, clientAddress), Date.now())) {
+		return jsonError(429, 'Too many requests. Please wait a few minutes, or call or text us directly.');
+	}
+
+	const body = await readBody(request, MAX_BODY_BYTES, 'Your message is too long. Please shorten it and try again.');
+	const parsed = await parseContactForm(request, body);
+	if (parsed.kind === 'error') return parsed.response;
+	const data = parsed.data;
 
 	// Honeypot: humans never fill the hidden bot-field. Fake success (as
 	// Netlify's spam filter did) so bots learn nothing.

@@ -165,12 +165,12 @@ async function purgeTargets(targets: string[], apiKey: string): Promise<Response
 	return null;
 }
 
-async function handle(request: Request): Promise<Response> {
+async function handle(request: Request, clientAddress?: string): Promise<Response> {
 	if (request.url.length > MAX_URL_BYTES) {
 		return jsonError(414, 'Request URL is too long.');
 	}
 
-	if (isRateLimited(clientIp(request), Date.now())) {
+	if (isRateLimited(clientIp(request, clientAddress), Date.now())) {
 		return jsonError(429, 'Too many purge requests. Please wait a minute and try again.');
 	}
 
@@ -212,5 +212,5 @@ async function handle(request: Request): Promise<Response> {
 	return (await purgeTargets(targets, apiKey)) ?? new Response(null, { status: 204 });
 }
 
-export const GET: APIRoute = ({ request }) => handle(request);
-export const POST: APIRoute = ({ request }) => handle(request);
+export const GET: APIRoute = ({ request, clientAddress }) => handle(request, clientAddress);
+export const POST: APIRoute = ({ request, clientAddress }) => handle(request, clientAddress);
