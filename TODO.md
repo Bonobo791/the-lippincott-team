@@ -4,10 +4,8 @@ Status key: [ ] open · [x] done · (owner) who it belongs to
 
 ## Pending client/user decisions
 
-- [ ] **Home hero headline** — change "The team that sells Northwest Houston." to
-      "The team that lives it and sells it."? (proposed; awaiting go-ahead)
-- [ ] **Sell page heading** — "The record behind your sale" → "The accomplishments
-      behind your sale" for consistency with the Buy page change (commit f3dfbb1)?
+- [x] **Home hero headline** — "The team that lives it and sells it." (1118f3e)
+- [x] **Sell page heading** — "The accomplishments behind your sale" (this commit)
 - [ ] **Janet Nicholson + Ryan Zimmerman bios** — still first person; align to
       third person like the other bios (Stacy was converted in f707ab8)?
 - [ ] **About proof-stage tiles** — provide public source URLs if "Homes sold"
