@@ -18,16 +18,15 @@ imports `tinacms/dist/client` in the standalone server bundle.
 - Astro **7** (`output: 'static'`), Tailwind CSS **v4** (via `@tailwindcss/vite`),
   TypeScript strict (`tsconfig.json` extends `astro/tsconfigs/strict`).
 - Content (Markdown/MDX + JSON) is managed by **TinaCMS** and queried through
-  the generated client in `tina/__generated__/` — not through Astro's content 
-  layer at runtime (see the comment in `src/content.config.ts`).
+  the generated client in `tina/__generated__/` — not through Astro's content
+  layer (`src/content.config.ts` exists only to silence a warning).
 - Visual editing uses `@tinacms/astro`: a vanilla-JS bridge plus one on-demand
   endpoint (`/tina-island/[name]`) that re-renders editable regions. Everything
   else prerenders to static HTML.
 - Package manager: **pnpm** (not npm/yarn), pinned via `packageManager` in
   `package.json`. Node **>= 22.22.0** (`.nvmrc`).
-- A minimal root `pyproject.toml` (name/version/`requires-python >= 3.13`, no
-  dependencies) backs the `.venv/` used by tooling scripts — the site itself
-  has no Python code.
+- A minimal root `pyproject.toml` (no dependencies) backs the `.venv/` used by
+  tooling scripts — the site itself has no Python code.
 
 ## Agent skills
 
@@ -68,12 +67,22 @@ Both build scripts prefix the subcommand with `NODE_ENV=production` on purpose:
 the tinacms CLI bundles its config via Vite in-process, and Vite defaults
 `process.env.NODE_ENV` to `development` when unset — without the prefix that
 value leaks into `astro build` and flips `import.meta.env.PROD` to false
-(which would silently drop the production-only GA4 snippet at the end of
-`<body>` in `src/layouts/Base.astro`).
+(which would silently drop the production-only GA4 snippet — see Analytics
+under Deployment).
 
 **Build order matters**: `tinacms build` must run before `astro build` so the
 generated client/types in `tina/__generated__/` exist. Always use the scripts
 above rather than bare `astro build`.
+
+The generated client reads content from a **seeded cache**
+(`tina/__generated__/.cache/<timestamp>`) written by the last Tina build —
+plain `npx astro dev` keeps serving that snapshot. After editing content
+files outside the Tina admin, rerun `pnpm build:local` and restart the dev
+server, or changes (new frontmatter fields, removed URLs) won't show up.
+Related caveat: bare `astro dev` only serves content when
+`tina/__generated__/client.ts` points at TinaCloud — `pnpm dev` and
+`pnpm build:local` both pin it to `localhost:4001`, so after either, run a
+credentialed `pnpm build` (or use `pnpm dev`) before dev-server iteration.
 
 ## Code organization
 
@@ -83,7 +92,10 @@ above rather than bare `astro build`.
   `global-config.ts`, `team.ts`, `community.ts`. The page collection's block
   list imports per-block template schemas.
 - `tina/__generated__/` — generated Tina client/types; regenerate via the
-  dev/build scripts after any schema change. Do not hand-edit.
+  dev/build scripts after any schema change. Do not hand-edit. Note: in the
+  pinned tinacms version, `tina/tina-lock.json` is only written by
+  `tinacms dev`, not `tinacms build` — after a schema change, run `pnpm dev`
+  once (then stop it) to regenerate the lock.
 - `src/lib/data.ts` — per-collection data loaders over the generated client,
   plus **all** content types. Types are pure derivations from the Tina schema
   (inferred from loader return types / `Extract` on `PageBlock`) — never
@@ -104,18 +116,14 @@ above rather than bare `astro build`.
   `Template` schema). Multi-word blocks use camelCase template filenames
   (`teamGrid.template.ts`, not snake_case) — snake_case generates mismatched
   GraphQL typenames. Add a new block by creating the pair and registering the
-  template in `tina/collections/page.ts` (and `community.ts` when it should be
-  available on community pages). **Watch field-name collisions across
+  template in `tina/collections/page.ts` (always) and `community.ts` (when it
+  should be available on community pages). **Watch field-name collisions across
   the block union**: two templates in the same `blocks` field may not reuse a
   field name with a different value type (e.g. `body` rich-text JSON vs
   string, `image` object vs image string) — **nullability counts too**
   (`String` vs `String!` from `required: true`) — Tina's codegen fails with
   "Fields ... conflict". Pick a distinct name (`summary`, `description`,
-  `backgroundImage`) instead. The shared block templates serve
-  two collections: `page.ts` registers all of them, while
-  `tina/collections/community.ts` registers the 7 legacy templates (hero,
-  split, features, stats, content, faq, cta) plus the 15 community page
-  blocks — Tina namespaces block
+  `backgroundImage`) instead. Tina namespaces block
   typenames per collection+field (`PageBlocksHero` vs `CommunityBlocksHero`),
   and `Blocks.astro` dispatches on the suffix after stripping the
   `Page|CommunityBlocks` prefix.
@@ -171,21 +179,10 @@ above rather than bare `astro build`.
   `node scripts/audit/<name>.mjs --base <url> --out <dir>`; output goes to the
   gitignored `.launch/qa/`. For interactive browsing use
   `npx playwright cli --browser=chromium` (no system Chrome installed).
-- `scripts/` — deploy tooling: `bunny-purge.mjs` (Bunny pull-zone cache
-  purge: full zone, per-URL, or the CI `--wait-for-commit` mode; no-op
-  without credentials, fails loudly with them) and `bunny-url.mjs` (shared
-  purge-URL normalization, also bundled into the `/api/bunny-purge`
-  endpoint). `scripts/deploy/docker-entrypoint.sh` is the container
-  entrypoint (serve + OPT-IN cache purge — see the CDN section).
-- `.github/workflows/bunny-purge.yml` — primary deploy-time purge: on push to
-  `main` it waits until the origin serves the pushed commit
-  (`/__moderaty_commit.txt`), then full-purges the pull zone with the key
-  from repository secrets (never in the container — the one exception is the
-  opt-in last-resort entrypoint purge for hosts without CI, below).
-- `scripts/deploy/write-commit-marker.mjs` — build-time step (prefixed onto
-  the `build*` scripts) that writes `public/__moderaty_commit.txt` (gitignored)
-  with the commit SHA producing the build, so the purge workflow can verify
-  the new code is serving before purging.
+- `scripts/` + `.github/workflows/bunny-purge.yml` — Bunny CDN purge tooling
+  (`bunny-purge.mjs`, `bunny-url.mjs`, `deploy/docker-entrypoint.sh`,
+  `deploy/write-commit-marker.mjs`, the CI workflow). Roles and flow are
+  described once under "CDN (Bunny)" in Deployment below.
 
 ## Key conventions
 
@@ -232,13 +229,6 @@ above rather than bare `astro build`.
   + `netlify/functions/contact-sierra.ts` flow — config-driven contact rail,
   reassurance strip) — `contact-us.mdx` is that single block. See
   `src/pages/api/contact.ts` + `src/lib/sierra-contact.ts`.
-- After changing the Tina schema, regenerate the client (`tina/__generated__/`)
-  via `pnpm dev` / `pnpm build`.
-- The generated client reads content from a **seeded cache**
-  (`tina/__generated__/.cache/<timestamp>`) written by the last Tina build —
-  plain `npx astro dev` keeps serving that snapshot. After editing content
-  files outside the Tina admin, rerun `pnpm build:local` and restart the dev
-  server, or changes (new frontmatter fields, removed URLs) won't show up.
 - Rich-text bodies render through `<TinaMarkdown>` from `@tinacms/astro`.
   In template conditionals, never test a rich-text field with plain truthiness
   (`data.note && ...`) — Tina returns an empty root-node **object** for unset
@@ -341,8 +331,6 @@ above rather than bare `astro build`.
   community page.
 - `compressHTML: true` in `astro.config.mjs` is deliberate (pins Astro 6
   whitespace behavior) — see the inline comment before changing it.
-- `src/content.config.ts` exists only to silence a warning; content is **not**
-  loaded through Astro's content layer.
 
 ## Testing and quality checks
 
@@ -374,16 +362,12 @@ There is **no test suite, linter, or formatter configured** in this project
   stay on 4321. Reserve `NODE_ENV=production pnpm build:local` + `pnpm preview`
   for per-task gates, Tina schema changes, production-only behavior
   (`compressHTML`, GA4 gating, island endpoints), and final evidence shots. See the `visual-loop`
-  skill for the full loop. Caveat: bare `astro dev` only serves content when
-  `tina/__generated__/client.ts` points at TinaCloud — `pnpm dev` and
-  `pnpm build:local` both pin it to `localhost:4001`, so after either, run a
-  credentialed `pnpm build` (or use `pnpm dev`) before dev-server iteration.
+  skill for the full loop, and the seeded-cache/client-pointer caveats under
+  "Build and dev commands" before iterating against bare `astro dev`.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to
   `main` and fails if `tina/tina-lock.json` is stale (schema changed without
   regenerating the lock — a stale lock breaks the Netlify build's TinaCloud
-  cloud check). Note: in the pinned tinacms version the lock is only written
-  by `tinacms dev`, not `tinacms build` — after a schema change, run
-  `pnpm dev` once (then stop it) to regenerate `tina/tina-lock.json`.
+  cloud check; see the `tina/__generated__/` note above for how to regenerate it).
 - SonarQube MCP (pre-commit): `import sonarqube`;
   `get_project_quality_gate_status(projectKey="Bonobo791_lippincott-team-astro-tina")`;
   issues: `search_sonar_issues_in_projects(projectKeys=[...])`; local:
@@ -399,9 +383,9 @@ standalone Node server (`node ./dist/server/entry.mjs`). Force one with
 Cloudflare Workers with `nodejs_compat` (required by the `/tina-island` route's
 `node:async_hooks`).
 
-**Netlify**: `netlify.toml` pins the build command (`pnpm build` — TinaCloud
-credentials `PUBLIC_TINA_CLIENT_ID`/`TINA_TOKEN` are configured in the Netlify
-UI; the build fails fast with `ERR_MISSING_CLOUD_CREDS` without them). It also
+**Netlify**: `netlify.toml` pins the build command (`pnpm build`, so the
+TinaCloud credentials requirement above applies — they are configured in the
+Netlify UI). It also
 sets `SITE_URL = "https://thelippincottteam.com"` under
 `[context.production.environment]` so deploy previews keep their
 Netlify-injected URL. The committed `pnpm-lock.yaml` and the `packageManager`
@@ -415,8 +399,7 @@ use the **Dockerfile** build pack (location `/Dockerfile`, the default). Env
 vars set on the app are passed as build args by default (Build Variable flag)
 and the proxy injects `PORT`/`HOST` — keep **Ports Exposes** on `4321` to
 match `EXPOSE`. Required env: `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`,
-`SITE_URL`; the `SIERRA_API_KEY` runtime secret (contact form → Sierra) should
-have its Build Variable flag **off**. The Dockerfile `HEALTHCHECK` (node fetch
+`SITE_URL`. The Dockerfile `HEALTHCHECK` (node fetch
 on `/`) is parsed by Coolify, takes precedence over UI checks, and gates
 Traefik routing + rolling updates. The container needs egress to TinaCloud
 (`content.tina.io` / `app.tina.io`) for content and visual editing; no volumes
@@ -430,37 +413,46 @@ rule with the **Origin URL per request** action pointing at the storage
 zone's `*.b-cdn.net` hostname — media stays in the repo, content paths never
 change. Cache rules (in order): bypass `*/api/*` + `*/tina-island/*`; uploads
 → storage origin + 30 d; `*/_astro/*` → 1 y; `*/__moderaty_commit.txt*` →
-bypass cache (the deploy-commit marker); HTML `*/` → 10 min. Deploys purge
-the pull zone **after the new code is serving**, exactly once, from CI:
-`.github/workflows/bunny-purge.yml` fires on push to `main`, polls the
-origin's `/__moderaty_commit.txt` until it returns the pushed commit SHA
-(the build embeds it from `SOURCE_COMMIT` — Coolify needs *Include Source
-Commit in Build* enabled — `COMMIT_REF`, `GITHUB_SHA`, or git), then runs
-`scripts/bunny-purge.mjs` with `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` from
-**repository secrets** — the key never enters the application environment
-except via the opt-in last-resort entrypoint purge (runtime-only
-`BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID` on the app are no longer needed; a
-failed deploy or missing marker fails the workflow loudly instead of purging
-blindly). The in-container entrypoint purge
-(`scripts/deploy/docker-entrypoint.sh`) is the **opt-in last resort** for
-hosts without CI (`BUNNY_PURGE_ON_START=true`): it still waits for the local
-readiness probe before purging, and skips the purge when readiness times out
-so a broken container can't clear a healthy cache — enable it ONLY when CI
-cannot run; never alongside the CI workflow (one purge per deploy event).
+bypass cache (the deploy-commit marker); HTML `*/` → 10 min.
+
+Deploys purge the pull zone **after the new code is serving**, exactly once,
+from CI. The pieces: `scripts/deploy/write-commit-marker.mjs` (prefixed onto
+the `build*` scripts) writes `public/__moderaty_commit.txt` (gitignored) with
+the commit SHA producing the build (from `SOURCE_COMMIT` — Coolify needs
+*Include Source Commit in Build* enabled — `COMMIT_REF`, `GITHUB_SHA`, or
+git). On push to `main`, `.github/workflows/bunny-purge.yml` polls the
+origin's marker until it returns the pushed SHA, then runs
+`scripts/bunny-purge.mjs` (full zone, per-URL, or the CI `--wait-for-commit`
+mode; no-op without credentials, fails loudly with them) using
+`BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` from **repository secrets** — the key
+never enters the application environment, and a failed deploy or missing
+marker fails the workflow loudly instead of purging blindly.
+`scripts/bunny-url.mjs` holds the shared purge-URL normalization, also bundled
+into the `/api/bunny-purge` endpoint.
+
+The in-container entrypoint purge (`scripts/deploy/docker-entrypoint.sh`,
+serve + purge) is the **opt-in last resort** for hosts without CI
+(`BUNNY_PURGE_ON_START=true` plus runtime-only Bunny credentials on the app):
+it still waits for the local readiness probe before purging, and skips the
+purge when readiness times out so a broken container can't clear a healthy
+cache — enable it ONLY when CI cannot run; never alongside the CI workflow
+(one purge per deploy event).
+
 Single-page purges between deploys go through the protected
 `/api/bunny-purge` endpoint (`BUNNY_PURGE_SECRET` via Bearer/
 `x-bunny-purge-token`/`?token=`; paths normalized against `SITE_URL` in
 `src/lib/bunny-purge.ts`; Bunny URL purges are rate-limited per account —
-trailing-slash URLs count as prefix purges, ~30/min). The pull zone sends the app's own domain to the origin
-(*Origin Host Header* = the Coolify app domain, *Add Host Header* off), so
-Traefik routes without CDN hostnames being Coolify domains; Bunny does not
-forward the visitor host, so `security.checkOrigin` is `false` in
-`astro.config.mjs` (see the inline comment). `/api/contact` compensates with
-its own endpoint-level browser CSRF guard — an `Origin` allowlist against
-`SITE_URL` / platform URL envs — plus the honeypot, streaming size cap, and
-per-IP rate limit (keyed by the proxy-set `X-Real-IP`/`Client-IP` header or
-the proxy-appended tail of `X-Forwarded-For` — never the client-controlled
-first value).
+trailing-slash URLs count as prefix purges, ~30/min).
+
+The pull zone sends the app's own domain to the origin (*Origin Host Header* =
+the Coolify app domain, *Add Host Header* off), so Traefik routes without CDN
+hostnames being Coolify domains; Bunny does not forward the visitor host, so
+`security.checkOrigin` is `false` in `astro.config.mjs` (see the inline
+comment). `/api/contact` compensates with its own endpoint-level browser CSRF
+guard — an `Origin` allowlist (see `CONTACT_ALLOWED_ORIGINS` below) — plus
+the honeypot, streaming size cap, and per-IP rate limit (keyed by the
+proxy-set `X-Real-IP`/`Client-IP` header or the proxy-appended tail of
+`X-Forwarded-For` — never the client-controlled first value).
 Keep `Block Root Path Access`, `Block None Referrer`, and `Block POST
 Requests` **off** on the zone (Bunny's defaults for some zone types flip
 them on, which 403s first-time visitors and form submissions; the pull
@@ -476,12 +468,11 @@ All other migrated WP URLs map 1:1 onto existing routes.
 
 Analytics: GA4 loads via a single inline script rendered at the end of
 `<body>` in `src/layouts/Base.astro`, gated on `import.meta.env.PROD` **and**
-Netlify's `CONTEXT` being `production` (or unset) — see the
-`NODE_ENV=production` note under "Build and dev commands". Netlify deploy
-previews and branch deploys build with `NODE_ENV=production` but get
-`CONTEXT=deploy-preview`/`branch-deploy`, so that traffic is **excluded**;
-local dev is also excluded. The
-measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`). The
+Netlify's `CONTEXT` being `production` (or unset) — which is why the build
+scripts force `NODE_ENV=production` (see "Build and dev commands"). Netlify
+deploy previews and branch deploys get `CONTEXT=deploy-preview`/
+`branch-deploy`, so that traffic is **excluded**; local dev is also excluded.
+The measurement ID comes from `PUBLIC_GA_ID` (defaults to `G-ZREVRSHYJB`). The
 inline script starts the `dataLayer` queue immediately (so the initial
 `page_view` and `<ClientRouter/>` re-fires are captured from page load), but
 the **gtag.js library itself is interaction/idle-gated**: it is injected on
@@ -492,18 +483,20 @@ PSI traces) that no script placement can avoid. The script carries
 `window.__gaLoaderBound` guard (window survives ClientRouter swaps) keeps the
 loader from double-binding on reruns.
 
-Environment variables (see `.env.example`):
+Environment variables (see `.env.example`). Shared rule for the secrets
+(`SIERRA_API_KEY`, `BUNNY_API_KEY`, `BUNNY_PULL_ZONE_ID`,
+`BUNNY_PURGE_SECRET`): never commit them, never prefix them with `PUBLIC_`,
+and on Coolify keep their Build Variable flag **off** (runtime-only).
 
 - `SITE_URL` — production URL for sitemap/RSS/OpenGraph. Most platforms inject
   a fallback URL; **Cloudflare Workers does not — set `SITE_URL` there**; set
   it on Coolify too (`COOLIFY_URL` is only a fallback).
 - `PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN` — TinaCloud credentials, required for
-  `pnpm build` (including the Coolify Docker build).
+  `pnpm build` everywhere (Netlify, Coolify Docker, local).
 - `PUBLIC_GA_ID` — optional GA4 measurement ID override (default
   `G-ZREVRSHYJB`).
 - `SIERRA_API_KEY` — Sierra lead-forwarding key for the `/api/contact`
-  endpoint (all platforms). Never commit its value or prefix it with
-  `PUBLIC_`; on Coolify keep its Build Variable flag off (runtime-only).
+  endpoint (all platforms).
 - `CONTACT_ALLOWED_ORIGINS` — optional comma-separated list of extra origins
   allowed to submit the contact form, besides `SITE_URL`, the platform URL
   envs, and the hardcoded brand/localhost origins (`https://thelippincottteam.com`,
@@ -513,21 +506,15 @@ Environment variables (see `.env.example`):
   Bunny edge hostnames. The `/api/contact` endpoint's browser CSRF guard
   rejects POSTs whose `Origin` is not allowlisted ("Cross-origin form
   submissions are not allowed.").
-- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny CDN cache purging.
-  Deploy-time purges run from CI (`.github/workflows/bunny-purge.yml`) with
-  these set as **GitHub repository secrets** — the key should not live in the
-  app environment at all. `BUNNY_ORIGIN_URL` (repo secret, recommended) is
-  the direct origin the workflow polls for the deploy-commit marker
-  (`/__moderaty_commit.txt`) before purging; it falls back to `SITE_URL`.
-  For hosts without CI, the container entrypoint purge is the opt-in last
-  resort: set `BUNNY_PURGE_ON_START=true` plus runtime-only (Build Variable
-  off) `BUNNY_API_KEY`/`BUNNY_PULL_ZONE_ID`. Prefer the least-privilege
-  pull-zone-scoped API key (Pull Zone → Security → API Key) over the
-  account-level key — treat it as an account secret: never commit it, never
-  prefix it with `PUBLIC_`, and regenerate it if it ever leaks.
+- `BUNNY_API_KEY` + `BUNNY_PULL_ZONE_ID` — Bunny pull-zone purge credentials.
+  Set them as **GitHub repository secrets** for the deploy-purge workflow —
+  they should not live in the app environment except for the opt-in
+  entrypoint purge. `BUNNY_ORIGIN_URL` (repo secret, recommended) is the
+  direct origin the workflow polls for the deploy-commit marker; it falls
+  back to `SITE_URL`. Prefer the least-privilege pull-zone-scoped API key
+  (Pull Zone → Security → API Key) over the account-level key, and
+  regenerate it if it ever leaks.
 - `BUNNY_PURGE_SECRET` — shared secret authorizing the `/api/bunny-purge`
   webhook (per-page Bunny cache purges between deploys). Generate with
-  `openssl rand -hex 32`; never commit it or prefix it with `PUBLIC_`; on
-  Coolify keep its Build Variable flag off. Optional (the endpoint answers
-  503 without it).
+  `openssl rand -hex 32`. Optional (the endpoint answers 503 without it).
 - `DEPLOY_ADAPTER` — optional adapter override.
