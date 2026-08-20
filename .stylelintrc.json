@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "apply",
+          "layer",
+          "config",
+          "screen",
+          "theme",
+          "plugin",
+          "variant",
+          "custom-variant",
+          "reference"
+        ]
+      }
+    ],
+    "declaration-property-value-no-unknown": null,
+    "dimension-no-non-numeric-values": null,
+    "function-no-unknown": null,
+    "no-obsolete-attribute": null,
+    "property-no-unknown": null
+  }
+}
