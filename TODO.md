@@ -8,9 +8,9 @@ Status key: [ ] open · [x] done · (owner) who it belongs to
 - [x] **Sell page heading** — "The accomplishments behind your sale" (this commit)
 - [ ] **Janet Nicholson + Ryan Zimmerman bios** — still first person; align to
       third person like the other bios (Stacy was converted in f707ab8)?
-- [ ] **About proof-stage tiles** — provide public source URLs if "Homes sold"
-      and "HBJ awards" tiles should link anywhere (reviews tile already links to
-      Google reviews; component supports per-metric links).
+- [x] **About proof-stage tiles** — all three tiles linked (reviews -> Google
+      reviews; homes sold -> live listings; HBJ awards -> Google search; URLs are
+      Tina-editable if better sources are provided).
 - [ ] **`.stylelintrc.json`** — CodeRabbit (trivial): scope the 5 disabled rules
       to the two stylesheet files instead of global `null`s? (Tailwind v4
       false-positive cluster; global disables are justified but scoping is cleaner)
