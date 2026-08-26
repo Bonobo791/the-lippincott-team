@@ -50,6 +50,13 @@ concurrency:
 jobs:
   purge:
     runs-on: ubuntu-latest
+    env:
+      # The `secrets` context is not allowed in `if:` conditions — the
+      # documented workaround is to map secrets to JOB-LEVEL env vars and gate
+      # each step's `if` on those (a step's own `env:` block is not reliably
+      # visible to its own `if`).
+      BUNNY_API_KEY_SET: ${{ secrets.BUNNY_API_KEY != '' }}
+      BUNNY_PULL_ZONE_ID_SET: ${{ secrets.BUNNY_PULL_ZONE_ID != '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -58,7 +65,7 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Wait for the commit to serve, then purge the pull zone
-        if: ${{ secrets.BUNNY_API_KEY != '' && secrets.BUNNY_PULL_ZONE_ID != '' }}
+        if: ${{ env.BUNNY_API_KEY_SET == 'true' && env.BUNNY_PULL_ZONE_ID_SET == 'true' }}
         env:
           BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
           BUNNY_PULL_ZONE_ID: ${{ secrets.BUNNY_PULL_ZONE_ID }}
@@ -67,12 +74,8 @@ jobs:
           COMMIT_SHA: ${{ github.sha }}
         run: node scripts/bunny-purge.mjs --wait-for-commit "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
       - name: Warn when Bunny secrets are not configured (optional purge)
-        # Secrets are mapped to env vars because the `if` condition only sees
-        # env context portably (the documented workaround for secrets in if).
         if: ${{ (env.BUNNY_API_KEY_SET != 'true' || env.BUNNY_PULL_ZONE_ID_SET != 'true') && env.PURGE_REQUIRED != 'true' }}
         env:
-          BUNNY_API_KEY_SET: ${{ secrets.BUNNY_API_KEY != '' }}
-          BUNNY_PULL_ZONE_ID_SET: ${{ secrets.BUNNY_PULL_ZONE_ID != '' }}
           PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
         run: >-
           echo "::warning::BUNNY_API_KEY / BUNNY_PULL_ZONE_ID are not set as
@@ -83,8 +86,6 @@ jobs:
       - name: Fail when Bunny secrets are missing and purge is required
         if: ${{ (env.BUNNY_API_KEY_SET != 'true' || env.BUNNY_PULL_ZONE_ID_SET != 'true') && env.PURGE_REQUIRED == 'true' }}
         env:
-          BUNNY_API_KEY_SET: ${{ secrets.BUNNY_API_KEY != '' }}
-          BUNNY_PULL_ZONE_ID_SET: ${{ secrets.BUNNY_PULL_ZONE_ID != '' }}
           PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
         run: >-
           echo "::error::BUNNY_PURGE_REQUIRED is 'true' but BUNNY_API_KEY /
