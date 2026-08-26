@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /tina-island/
+
+Sitemap: https://thelippincottteam.com/sitemap-index.xml
