@@ -1,14 +1,14 @@
 // Fails when the generated Tina schema (tina/__generated__/_schema.json)
-// contains an empty `ui: {}` on any LEAF field — the residue left when a
-// function (ui.validate, ...) is dropped during JSON serialization. Local
+// contains an empty `ui: {}` on any non-object field — the residue left when
+// a function (ui.validate, ...) is dropped during JSON serialization. Local
 // codegen keeps the empty object while TinaCloud's indexer prunes it, so the
 // schema-hash check then fails every credentialed build with
 // ERR_CLOUD_CHECK_FAILED (see AGENTS.md "Key conventions").
 //
-// Only leaf fields (no nested `fields`/`templates`) are flagged: empty `ui`
-// on collections and object/object-list fields serializes identically on both
-// sides (empirically verified against TinaCloud's indexed schema), so it is
-// benign there.
+// Only `object` (object/object-list) fields and collections are exempt:
+// their empty `ui` serializes identically on both sides (empirically verified
+// against TinaCloud's indexed schema). Leaf scalars AND rich-text fields with
+// templates are checked — a function-only `ui` on either breaks the hash.
 //
 // Run after any tinacms codegen (build/dev). Wired into tina-lock.yml.
 // The schema path is hardcoded on purpose: taking it from argv would be a
@@ -33,8 +33,7 @@ const isEmptyPlainObject = (value) =>
 	value !== null && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0;
 
 function visit(node, trail) {
-	const isLeaf = !node.fields && !node.templates;
-	if (isLeaf && isEmptyPlainObject(node.ui)) offenders.push(trail);
+	if (node.type !== 'object' && isEmptyPlainObject(node.ui)) offenders.push(trail);
 	for (const field of node.fields ?? []) visit(field, `${trail} > ${field.name}`);
 	for (const template of node.templates ?? []) visit(template, `${trail} > ${template.name}`);
 }
@@ -45,7 +44,7 @@ for (const collection of schema.collections ?? []) {
 }
 
 if (offenders.length > 0) {
-	console.error('Empty `ui: {}` in the generated Tina schema — a field/template likely carries a function (ui.validate, ui.itemProps, ...) that JSON serialization dropped. This breaks the TinaCloud schema-hash check (ERR_CLOUD_CHECK_FAILED) on credentialed builds. Move the constraint into the field description instead:');
+	console.error('Empty `ui: {}` in the generated Tina schema — a field likely carries a function (ui.validate, ...) that JSON serialization dropped, which breaks the TinaCloud schema-hash check (ERR_CLOUD_CHECK_FAILED) on credentialed builds. Functions cannot live in the schema: document the constraint in the field description (display guidance, not enforcement) or enforce it with a custom field plugin registered on the CMS. Offenders:');
 	for (const offender of offenders) console.error(`  - ${offender}`);
 	process.exit(1);
 }
