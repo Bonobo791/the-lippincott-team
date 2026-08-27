@@ -155,6 +155,11 @@ dev-server iteration.
   algorithm", "no guess"), no conversational interjections in published copy. The voice is direct and
   data-backed.
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
+- No functions (`ui.validate`, etc.) in Tina **field** definitions: functions don't survive JSON
+  serialization, and the empty-object residue (`ui: {}`) makes the local `_schema.json` sha differ from
+  TinaCloud's, failing every credentialed build with `ERR_CLOUD_CHECK_FAILED`. Put constraints in the
+  field `description` instead. (The collection-level `ui.router` function is fine — both sides strip it
+  the same way.)
 - The `/about/` roster (`teamGrid` block) shows only team docs with `featured: true`, ordered by `order`
   (lowest first; the first member renders as the large lead cell). Bio pages under `/about/<slug>/`
   render all team docs regardless of `featured`.
