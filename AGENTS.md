@@ -280,7 +280,10 @@ There is **no test suite, linter, or formatter configured**. Validate changes wi
   and dev commands" before iterating against bare `astro dev`.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to `main` and fails if
   `tina/tina-lock.json` is stale (a stale lock breaks the Netlify build's TinaCloud cloud check; see the
-  `tina/__generated__/` note above for how to regenerate it).
+  `tina/__generated__/` note above for how to regenerate it). It then runs
+  `scripts/check-tina-schema.mjs`, which fails on empty `ui: {}` residue in the generated `_schema.json`
+  (function-bearing leaf field `ui` — breaks the TinaCloud schema-hash check; see Key conventions).
+  Both checks are also runnable locally after any tinacms codegen.
 - SonarQube MCP (pre-commit): `import sonarqube`;
   `get_project_quality_gate_status(projectKey="Bonobo791_lippincott-team-astro-tina")`; issues:
   `search_sonar_issues_in_projects(projectKeys=[...])`; local: `analyze_code_snippet(fileContent,

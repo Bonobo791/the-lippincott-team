@@ -3,6 +3,8 @@ name: Tina lock check
 # Fails PRs that change the Tina schema without regenerating tina/tina-lock.json.
 # A stale lock makes TinaCloud index main with an outdated schema, which fails
 # the `tinacms build` cloud check on Netlify (ERR_CLOUD_CHECK_FAILED).
+# Also fails PRs whose schema leaves function residue (empty `ui: {}` on leaf
+# fields) in the generated _schema.json — that likewise breaks the cloud check.
 
 on:
   pull_request:
@@ -25,3 +27,5 @@ jobs:
         run: pnpm build:local
       - name: Fail if tina-lock.json was not regenerated
         run: git diff --exit-code tina/tina-lock.json
+      - name: Fail on function residue in the generated schema
+        run: node scripts/check-tina-schema.mjs
