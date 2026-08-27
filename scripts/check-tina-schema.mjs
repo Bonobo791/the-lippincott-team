@@ -11,20 +11,30 @@
 // benign there.
 //
 // Run after any tinacms codegen (build/dev). Wired into tina-lock.yml.
-// Usage: node scripts/check-tina-schema.mjs [schemaPath]
+// The schema path is hardcoded on purpose: taking it from argv would be a
+// path-injection vector (jssecurity:S8707) for zero real benefit.
+// Usage: node scripts/check-tina-schema.mjs
 
 import { readFileSync } from 'node:fs';
 
-const schemaPath = process.argv[2] ?? 'tina/__generated__/_schema.json';
-const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+const SCHEMA_PATH = 'tina/__generated__/_schema.json';
+
+let schema;
+try {
+	schema = JSON.parse(readFileSync(SCHEMA_PATH, 'utf8'));
+} catch (error) {
+	console.error(`Cannot read ${SCHEMA_PATH} (${error.message}). Run tinacms codegen first (pnpm build:local or pnpm dev).`);
+	process.exit(1);
+}
 
 const offenders = [];
 
+const isEmptyPlainObject = (value) =>
+	value !== null && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0;
+
 function visit(node, trail) {
 	const isLeaf = !node.fields && !node.templates;
-	if (isLeaf && node.ui && typeof node.ui === 'object' && !Array.isArray(node.ui) && Object.keys(node.ui).length === 0) {
-		offenders.push(trail);
-	}
+	if (isLeaf && isEmptyPlainObject(node.ui)) offenders.push(trail);
 	for (const field of node.fields ?? []) visit(field, `${trail} > ${field.name}`);
 	for (const template of node.templates ?? []) visit(template, `${trail} > ${template.name}`);
 }
