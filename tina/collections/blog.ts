@@ -31,6 +31,14 @@ export const BlogCollection: Collection = {
       type: "string",
       description:
         'Overrides the meta title (the visible H1 stays the Title field). Keep under 60 characters including the brand. Falls back to "Title | The Lippincott Team".',
+      ui: {
+        validate: (value?: string) => {
+          const length = value?.trim().length ?? 0;
+          if (length > 60) {
+            return `Meta titles should stay under 60 characters including the brand (currently ${length}).`;
+          }
+        },
+      },
     },
     {
       name: "pubDate",
