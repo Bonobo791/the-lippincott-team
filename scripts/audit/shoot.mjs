@@ -37,6 +37,20 @@ const VIEWPORTS = [
 	{ name: 'mobile', width: 375, height: 812 },
 ];
 
+// Resolve a CLI-supplied output path against the working directory and
+// refuse anything that escapes it — the value drives mkdir/writeFile/
+// screenshot targets, so an absolute or `../` path would write outside
+// the repo (S8707).
+function resolveInsideCwd(outPath) {
+	const root = process.cwd();
+	const resolved = path.resolve(root, outPath);
+	if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+		console.error(`Refusing to write outside the working directory (${root}): ${resolved}`);
+		process.exit(2);
+	}
+	return resolved;
+}
+
 function parseArgs(argv) {
 	const args = { base: null, out: null };
 	for (let i = 2; i < argv.length; i++) {
@@ -47,6 +61,7 @@ function parseArgs(argv) {
 		console.error('Usage: node scripts/audit/shoot.mjs --base <url> --out <dir>');
 		process.exit(2);
 	}
+	args.out = resolveInsideCwd(args.out);
 	return args;
 }
 
