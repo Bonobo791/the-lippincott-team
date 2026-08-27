@@ -16,7 +16,11 @@ const data = blog.data?.blog;
 if (!data) return new Response('Not Found', { status: 404 });
 
 const layoutProps = {
-	title: data.title ?? '',
+	// seoTitle overrides the meta title only; the article H1 keeps data.title.
+	// trim() + || because Tina returns "" (not null) for editor-cleared
+	// optional fields, and ?? would keep the blank override.
+	// Fallback keeps the brand in the meta title per SEO convention.
+	title: data.seoTitle?.trim() || `${data.title ?? ''} | The Lippincott Team`,
 	description: data.description ?? '',
 	pubDate: data.pubDate ? new Date(data.pubDate) : new Date(),
 	updatedDate: data.updatedDate ? new Date(data.updatedDate) : undefined,

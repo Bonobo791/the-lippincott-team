@@ -26,6 +26,13 @@ export const BlogCollection: Collection = {
       type: "string",
     },
     {
+      name: "seoTitle",
+      label: "Meta Title (SEO)",
+      type: "string",
+      description:
+        'Overrides the meta title (the visible H1 stays the Title field). Keep under 60 characters including the brand. Falls back to "Title | The Lippincott Team".',
+    },
+    {
       name: "pubDate",
       label: "Publication Date",
       type: "datetime",

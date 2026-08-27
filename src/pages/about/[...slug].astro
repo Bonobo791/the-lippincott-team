@@ -23,10 +23,10 @@ const BOILERPLATE_DESC = 'Meet Your Local Expert';
 const customDesc = data.description?.trim();
 const description = customDesc && customDesc.toLowerCase() !== BOILERPLATE_DESC.toLowerCase()
 	? customDesc
-	: `${name}${data.role ? ` is a ${data.role.toLowerCase()}` : ''} with The Lippincott Team at eXp Realty, serving buyers and sellers across Northwest Houston. Read ${firstName}'s bio and reach ${firstName} directly.`;
+	: `${name} is a Northwest Houston real estate professional with The Lippincott Team at eXp Realty. Read ${firstName}'s bio and contact details.`;
 ---
 
-<Base title={`${name}${data.role ? `, ${data.role}` : ''} | The Lippincott Team`} description={description}>
+<Base title={`${name} | The Lippincott Team`} description={description}>
 	<TinaIsland name="team" wrapper={islands.team.wrapper} params={{ slug }} primary>
 		<TeamBody data={data} />
 	</TinaIsland>
