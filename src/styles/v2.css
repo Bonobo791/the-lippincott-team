@@ -90,9 +90,12 @@
 .home-v2 .testi video{width:100%;border-radius:18px;box-shadow:0 24px 60px rgba(23,21,26,.18)}
 .home-v2 .testi .who{font-size:13px;color:var(--muted)}
 .home-v2 .review-card{
-	flex:1;background:var(--ink);color:var(--ivory);border-radius:18px;
+	background:var(--ink);color:var(--ivory);border-radius:18px;
 	padding:26px 30px;display:flex;align-items:center;gap:22px;
 }
+/* The section CTA moved inside the left column (see index.astro) — flex gap is
+   18px, so top up to the standard 44px rhythm rather than stacking on it. */
+.home-v2 .testi-left .sec-cta{margin-top:26px}
 .home-v2 .review-card .big{font-family:var(--serif);font-weight:300;font-size:44px;line-height:1;white-space:nowrap}
 .home-v2 .review-card .big span{color:var(--red);font-family:var(--sans);font-weight:600;font-size:30px}
 .home-v2 .review-card .rc-text{font-size:13.5px;line-height:1.6;color:var(--ivory-dim)}
@@ -221,6 +224,9 @@
 .home-v2 .team h2{max-width:16ch}
 .home-v2 .team p{margin-top:24px;max-width:44ch;font-size:16.5px;line-height:1.75;color:rgba(255,255,255,.85)}
 .home-v2 .team .btn{margin-top:34px}
+/* Inside the hero-actions flex row the button's margin-top would push it below
+   the text link's center line — the row's own margin provides the spacing. */
+.home-v2 .team .hero-actions .btn{margin-top:0}
 @media(max-width:860px){
 	.home-v2 .team-split{grid-template-columns:1fr}
 	.home-v2 .team .ph{order:-1;min-height:0;padding-top:clamp(32px,7vw,56px)}
