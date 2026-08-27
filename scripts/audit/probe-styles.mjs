@@ -45,12 +45,27 @@ const BLOCKED_HOSTS = [
 	'clarity.ms',
 ];
 
+// Resolve a CLI-supplied output path against the working directory and
+// refuse anything that escapes it — the value drives mkdir/writeFile
+// targets, so an absolute or `../` path would write outside the repo
+// (S8707).
+function resolveInsideCwd(outPath) {
+	const root = process.cwd();
+	const resolved = path.resolve(root, outPath);
+	if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+		console.error(`Refusing to write outside the working directory (${root}): ${resolved}`);
+		process.exit(2);
+	}
+	return resolved;
+}
+
 function parseArgs(argv) {
 	const args = { base: 'https://thelippincottteam.com', out: '.launch/qa/live-styles.json' };
 	for (let i = 2; i < argv.length; i++) {
 		if (argv[i] === '--base') args.base = argv[++i];
 		else if (argv[i] === '--out') args.out = argv[++i];
 	}
+	args.out = resolveInsideCwd(args.out);
 	return args;
 }
 
