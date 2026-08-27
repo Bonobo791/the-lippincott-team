@@ -157,9 +157,11 @@ dev-server iteration.
 - Tina field names: **letters, numbers, and underscores only (no hyphens)**.
 - No functions (`ui.validate`, etc.) in Tina **field** definitions: functions don't survive JSON
   serialization, and the empty-object residue (`ui: {}`) makes the local `_schema.json` sha differ from
-  TinaCloud's, failing every credentialed build with `ERR_CLOUD_CHECK_FAILED`. Put constraints in the
-  field `description` instead. (The collection-level `ui.router` function is fine — both sides strip it
-  the same way.)
+  TinaCloud's, failing every credentialed build with `ERR_CLOUD_CHECK_FAILED`. Document constraints in
+  the field `description` instead (guidance, not enforcement — real enforcement needs a custom field
+  plugin registered on the CMS, which lives outside the serialized schema). Object/object-list fields
+  and collection-level `ui.router` are exempt in practice — both sides serialize their empty `ui`
+  identically.
 - The `/about/` roster (`teamGrid` block) shows only team docs with `featured: true`, ordered by `order`
   (lowest first; the first member renders as the large lead cell). Bio pages under `/about/<slug>/`
   render all team docs regardless of `featured`.
@@ -280,7 +282,10 @@ There is **no test suite, linter, or formatter configured**. Validate changes wi
   and dev commands" before iterating against bare `astro dev`.
 - CI: `.github/workflows/tina-lock.yml` runs `pnpm build:local` on PRs to `main` and fails if
   `tina/tina-lock.json` is stale (a stale lock breaks the Netlify build's TinaCloud cloud check; see the
-  `tina/__generated__/` note above for how to regenerate it).
+  `tina/__generated__/` note above for how to regenerate it). It then runs
+  `scripts/check-tina-schema.mjs`, which fails on empty `ui: {}` residue in the generated `_schema.json`
+  (function-bearing leaf field `ui` — breaks the TinaCloud schema-hash check; see Key conventions).
+  Both checks are also runnable locally after any tinacms codegen.
 - SonarQube MCP (pre-commit): `import sonarqube`;
   `get_project_quality_gate_status(projectKey="Bonobo791_lippincott-team-astro-tina")`; issues:
   `search_sonar_issues_in_projects(projectKeys=[...])`; local: `analyze_code_snippet(fileContent,
