@@ -22,13 +22,13 @@ editor, and deployed on Netlify. Most pages are delivered as fast static HTML.
 ## A note on the Astro pin
 
 `astro` is pinned to the exact version `7.2.8` (no `^`), and `@astrojs/node`
-must stay `>=11.1.0` alongside it. Astro 7.2.3 replaced the public
-`App#pipeline` property with `App#getLogger()`; adapter versions `<=11.0.x`
+must stay `>=11.1.6` alongside it. Astro 7.2.3 replaced the public
+`App#pipeline` property with `App#getLogger()`; adapter versions `<=11.1.2`
 still call `app.pipeline.getLogger()` in their standalone entry
 (`node ./dist/server/entry.mjs`, the Coolify/Docker runtime), which crashes
 the container on startup with
 `Cannot read properties of undefined (reading 'getLogger')`. The reverse
-pairing is broken too: adapter `>=11.1` calls `app.getLogger()`, which only
+pairing is broken too: adapter `>=11.1.3` calls `app.getLogger()`, which only
 exists on astro `>=7.2.3`. Keep the two in lockstep when bumping either, and
 re-test with `node ./dist/server/entry.mjs` (not just `astro build`) before
 merging the bump.

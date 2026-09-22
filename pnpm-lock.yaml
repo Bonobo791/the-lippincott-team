@@ -66,8 +66,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.3(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@1.21.7)(yaml@2.9.0))
       '@tinacms/astro':
-        specifier: ^0.5.1
-        version: 0.5.1(astro@7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0))
+        specifier: ^0.7.0
+        version: 0.7.0(astro@7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0))
       astro:
         specifier: 7.2.8
         version: 7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0)
@@ -2578,13 +2578,10 @@ packages:
       react: '>=18.3.1 <20.0.0'
       react-dom: '>=18.3.1 <20.0.0'
 
-  '@tinacms/astro@0.5.1':
-    resolution: {integrity: sha512-uJB7ZDaWY6rJry3zBnc/YV63fNZJVLO17oLxda+pKR5UqW9mscziKZB1VoaSa5bI2PkeEPe/dtCZj6MRWyWjRQ==}
+  '@tinacms/astro@0.7.0':
+    resolution: {integrity: sha512-i/JEwwKZCtsIxHG34QoU1ZuViWmf+1OleVL4IOfOQSkgpACTNeJboP4iQR8djcFMwqpCL+yjkn3EnoZEg2D20g==}
     peerDependencies:
-      astro: ^5.0.0 || ^6.0.0
-
-  '@tinacms/bridge@0.3.0':
-    resolution: {integrity: sha512-I7rHRprsL+9e4W5kcyWVEk+ApGGxEZgXBEt5W+rMrODpFxmmxaTMLks7It2DIBVOeXCPZguvirUd3DNqC0Yy0Q==}
+      astro: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   '@tinacms/bridge@0.3.1':
     resolution: {integrity: sha512-HgFZGFec+92FvXR5NVinQtPmkidWIubkjyYkNnRWlqFmGbhzIZE6GhMX/RWZ9uNYek6kRQUtpFnGaQeBkXo95Q==}
@@ -11226,12 +11223,10 @@ snapshots:
       - use-sync-external-store
       - yup
 
-  '@tinacms/astro@0.5.1(astro@7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0))':
+  '@tinacms/astro@0.7.0(astro@7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0))':
     dependencies:
-      '@tinacms/bridge': 0.3.0
+      '@tinacms/bridge': 0.3.1
       astro: 7.2.8(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@netlify/blobs@10.7.9)(@types/node@25.9.5)(@vercel/functions@3.7.5(ws@8.21.0))(jiti@1.21.7)(yaml@2.9.0)
-
-  '@tinacms/bridge@0.3.0': {}
 
   '@tinacms/bridge@0.3.1': {}
 
