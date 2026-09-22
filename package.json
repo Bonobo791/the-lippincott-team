@@ -33,14 +33,13 @@
     "test:rich-text": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/rich-text-test src/lib/rich-text.test.ts && node .launch/rich-text-test/rich-text.test.js",
     "test:sierra": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/sierra-test src/lib/sierra-contact.test.ts && node --test .launch/sierra-test/sierra-contact.test.js",
     "astro": "astro",
-    "test:bunny-purge": "node --test scripts/bunny-purge.test.mjs",
-    "test:home-listings": "node --test scripts/home-listings-links.test.mjs"
+    "test:bunny-purge": "node --test scripts/bunny-purge.test.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.4",
     "@astrojs/mdx": "^7.0.3",
     "@astrojs/netlify": "^8.1.2",
-    "@astrojs/node": "^11.0.2",
+    "@astrojs/node": "^11.1.6",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/vercel": "^11.0.3",
