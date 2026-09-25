@@ -46,7 +46,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 							</div>
 						)}
 						{linkHref && data.action?.label && (
-							<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
+							<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
 								{data.action.label} <span aria-hidden="true">→</span>
 							</a>
 						)}
@@ -71,7 +71,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 						</>
 					);
 					return metricHref ? (
-						<a href={metricHref} data-tina-field={tinaField(metric)} {...(metric.link && isExternal(metric.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class={tileClass}>{tileInner}</a>
+						<a href={metricHref} data-tina-field={tinaField(metric)} {...(metric.link && isExternal(metric.link) ? { target: '_blank', rel: 'noopener' } : {})} class={tileClass}>{tileInner}</a>
 					) : (
 						<div data-tina-field={tinaField(metric)} class={tileClass}>{tileInner}</div>
 					);

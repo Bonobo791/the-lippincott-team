@@ -95,7 +95,7 @@ const columns = [
 							<a
 								href={safeHref(item.link)}
 								class="transition-colors hover:text-white"
-								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener' } : {})}
 							>
 								{item.title}
 							</a>
@@ -110,7 +110,7 @@ const columns = [
 			<a
 				href="https://www.google.com/preferences/source?q=thelippincottteam.com"
 				target="_blank"
-				rel="noopener noreferrer"
+				rel="noopener"
 				class="inline-flex max-w-full items-center justify-center whitespace-normal break-words rounded-full border border-[rgba(246,242,234,0.3)] bg-transparent px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:border-[rgba(246,242,234,0.55)] hover:bg-[rgba(246,242,234,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 			>
 				Add to Preferred Sources

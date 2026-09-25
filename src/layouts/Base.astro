@@ -203,8 +203,13 @@ if (!window.__gaLoaderBound) {
 			if (window.__externalLinkPolicyBound) return;
 			window.__externalLinkPolicyBound = true;
 			const originalAttrs = new WeakMap();
+			const referrerPolicyToken = 'noreferrer';
 			const processAnchor = (anchor) => {
 				if (!(anchor instanceof HTMLAnchorElement)) return;
+				if (anchor.relList.contains(referrerPolicyToken)) {
+					anchor.relList.remove(referrerPolicyToken);
+					if (anchor.relList.length === 0) anchor.removeAttribute('rel');
+				}
 				const href = anchor.getAttribute('href');
 				let url;
 				if (href) {
@@ -224,7 +229,7 @@ if (!window.__gaLoaderBound) {
 					}
 					return;
 				}
-				if (anchor.getAttribute('target') === '_blank' && anchor.relList.contains('noopener') && anchor.relList.contains('noreferrer')) return;
+				if (anchor.getAttribute('target') === '_blank' && anchor.relList.contains('noopener')) return;
 				if (!originalAttrs.has(anchor)) {
 					originalAttrs.set(anchor, {
 						target: anchor.getAttribute('target'),
@@ -232,7 +237,7 @@ if (!window.__gaLoaderBound) {
 					});
 				}
 				anchor.target = '_blank';
-				anchor.relList.add('noopener', 'noreferrer');
+				anchor.relList.add('noopener');
 			};
 			const processNode = (node) => {
 				if (!(node instanceof Element)) return;
@@ -251,7 +256,7 @@ if (!window.__gaLoaderBound) {
 					mutation.addedNodes.forEach(processNode);
 				});
 			});
-			observer.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['href'] });
+			observer.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['href', 'rel'] });
 		})();
 	</script>
 	</body>

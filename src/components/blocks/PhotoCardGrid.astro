@@ -46,7 +46,7 @@ const footerHref = safeHref(data.footerAction?.link);
 						</>
 					);
 					return href ? (
-						<a href={href} data-tina-field={tinaField(card)} {...(isExternal(card.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-tile no-underline">
+						<a href={href} data-tina-field={tinaField(card)} {...(isExternal(card.link) ? { target: '_blank', rel: 'noopener' } : {})} class="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-tile no-underline">
 							{inner}
 						</a>
 					) : (
@@ -64,7 +64,7 @@ const footerHref = safeHref(data.footerAction?.link);
 		)}
 		{footerHref && data.footerAction?.label && (
 			<div class="mt-10" data-tina-field={tinaField(data, 'footerAction')}>
-				<a href={footerHref} {...(isExternal(data.footerAction.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="inline-flex items-center gap-2 text-[15px] font-semibold text-primary no-underline transition-[gap] duration-200 hover:gap-3.5">
+				<a href={footerHref} {...(isExternal(data.footerAction.link) ? { target: '_blank', rel: 'noopener' } : {})} class="inline-flex items-center gap-2 text-[15px] font-semibold text-primary no-underline transition-[gap] duration-200 hover:gap-3.5">
 					{data.footerAction.label} <span aria-hidden="true">→</span>
 				</a>
 			</div>

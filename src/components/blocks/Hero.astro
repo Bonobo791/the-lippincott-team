@@ -77,7 +77,7 @@ const headlineLines = (data.headline ?? '').split('\n').map((l) => l.trim()).fil
 						<a
 							href={safeHref(action.link) ?? '#'}
 							data-tina-field={tinaField(action)}
-							{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 							class={i === 0
 								? 'btn-magnetic inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-[#9e1e2c] active:scale-95'
 								: 'inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-white/12 active:scale-95'}

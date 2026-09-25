@@ -13,7 +13,7 @@ const { data } = Astro.props;
 const items = (data.items ?? []).filter(i => i !== null);
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
-	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+	isExternal(href) ? { target: '_blank', rel: 'noopener' } : {};
 // Title doubles as the lead cell: plain segments render as the small label,
 // **accented** segments as the big figure ("Trusted by **1,000+ families**").
 const titleSegments = data.title ? splitHeading(data.title) : [];

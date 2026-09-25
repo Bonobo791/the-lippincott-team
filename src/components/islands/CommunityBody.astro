@@ -42,7 +42,7 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 					<h1 data-tina-field={tinaField(data, 'title')} class="text-balance text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">{data.title}</h1>
 					{data.intro && <p data-tina-field={tinaField(data, 'intro')} class="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/80">{data.intro}</p>}
 					{sierraUrl && (
-						<Button href={sierraUrl} target="_blank" rel="noopener noreferrer" size="lg" class="mt-10 px-8">View Listings</Button>
+						<Button href={sierraUrl} target="_blank" rel="noopener" size="lg" class="mt-10 px-8">View Listings</Button>
 					)}
 				</div>
 			</section>
