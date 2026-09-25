@@ -34,7 +34,6 @@ const includeAnalytics =
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} image={image} />
-		<script is:inline async preferred-sources-control="manual" src="https://news.google.com/swg/js/v1/publisher.js"></script>
 		{/* Per-page head additions (e.g. the homepage's LCP poster preload). */}
 		<slot name="head" />
 		{/* .home-v2 pages hide .reveal sections until their motion JS runs;
@@ -201,33 +200,58 @@ if (!window.__gaLoaderBound) {
 		}
 	<script is:inline>
 		(function () {
-			if (window.__preferredSourceButtonIntegrationBound) return;
-			window.__preferredSourceButtonIntegrationBound = true;
-			let preferredSourceClient = null;
-			let preferredSourceReady = false;
-			const updateButtons = () => {
-				document.querySelectorAll('[data-preferred-source-button]').forEach((button) => {
-					button.disabled = !preferredSourceReady;
-				});
-			};
-			document.addEventListener('astro:page-load', updateButtons);
-			document.addEventListener('click', (event) => {
-				if (!(event.target instanceof Element)) return;
-				const button = event.target.closest('[data-preferred-source-button]');
-				if (!button || button.disabled || !preferredSourceClient) return;
-				preferredSourceClient.addPreferredSource();
-			});
-			(self.PREFERRED_SOURCE = self.PREFERRED_SOURCE || []).push((preferredSource) => {
-				try {
-					Promise.resolve(preferredSource.init({ theme: 'light' })).then(() => {
-						preferredSourceClient = preferredSource;
-						preferredSourceReady = true;
-						updateButtons();
-					}, updateButtons);
-				} catch {
-					updateButtons();
+			if (window.__externalLinkPolicyBound) return;
+			window.__externalLinkPolicyBound = true;
+			const originalAttrs = new WeakMap();
+			const processAnchor = (anchor) => {
+				if (!(anchor instanceof HTMLAnchorElement)) return;
+				const href = anchor.getAttribute('href');
+				let url;
+				if (href) {
+					try {
+						url = new URL(href, window.location.href);
+					} catch {}
 				}
+				const isExternal = url && (url.protocol === 'http:' || url.protocol === 'https:') && url.origin !== window.location.origin;
+				if (!isExternal) {
+					const original = originalAttrs.get(anchor);
+					if (original) {
+						if (original.target === null) anchor.removeAttribute('target');
+						else anchor.setAttribute('target', original.target);
+						if (original.rel === null) anchor.removeAttribute('rel');
+						else anchor.setAttribute('rel', original.rel);
+						originalAttrs.delete(anchor);
+					}
+					return;
+				}
+				if (anchor.getAttribute('target') === '_blank' && anchor.relList.contains('noopener') && anchor.relList.contains('noreferrer')) return;
+				if (!originalAttrs.has(anchor)) {
+					originalAttrs.set(anchor, {
+						target: anchor.getAttribute('target'),
+						rel: anchor.getAttribute('rel'),
+					});
+				}
+				anchor.target = '_blank';
+				anchor.relList.add('noopener', 'noreferrer');
+			};
+			const processNode = (node) => {
+				if (!(node instanceof Element)) return;
+				if (node instanceof HTMLAnchorElement) processAnchor(node);
+				node.querySelectorAll('a[href]').forEach(processAnchor);
+			};
+			const scanAnchors = () => document.querySelectorAll('a[href]').forEach(processAnchor);
+			scanAnchors();
+			document.addEventListener('astro:page-load', scanAnchors);
+			const observer = new MutationObserver((mutations) => {
+				mutations.forEach((mutation) => {
+					if (mutation.type === 'attributes') {
+						if (mutation.target instanceof HTMLAnchorElement) processAnchor(mutation.target);
+						return;
+					}
+					mutation.addedNodes.forEach(processNode);
+				});
 			});
+			observer.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['href'] });
 		})();
 	</script>
 	</body>
