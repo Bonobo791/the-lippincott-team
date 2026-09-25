@@ -64,7 +64,7 @@ const reviews = (data.testimonials ?? []).filter(r => r !== null);
 						<a
 							href={safeHref(data.action.link)}
 							data-tina-field={tinaField(data.action)}
-							{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 							class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-primary bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-primary transition-all hover:bg-primary/[0.06] active:scale-95"
 						>
 							{data.action.label ?? 'See All Reviews'}

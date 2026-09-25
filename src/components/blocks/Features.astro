@@ -17,7 +17,7 @@ const tileColors = ['bg-primary', 'bg-black', 'bg-secondary'];
 const isEditorial = data.variant === 'editorial';
 const isServices = data.variant === 'services';
 const externalAttrs = (href?: string | null) =>
-	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+	isExternal(href) ? { target: '_blank', rel: 'noopener' } : {};
 ---
 {isServices ? (
 	<section class="font-apple border-t border-hairline bg-background py-16 md:py-24">

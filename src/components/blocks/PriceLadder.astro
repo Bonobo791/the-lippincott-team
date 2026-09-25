@@ -50,7 +50,7 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 								</>
 							);
 							return href ? (
-								<a href={href} data-tina-field={tinaField(row)} {...(isExternal(row.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="group block border-b border-hairline py-5 no-underline">
+								<a href={href} data-tina-field={tinaField(row)} {...(isExternal(row.link) ? { target: '_blank', rel: 'noopener' } : {})} class="group block border-b border-hairline py-5 no-underline">
 									{inner}
 								</a>
 							) : (

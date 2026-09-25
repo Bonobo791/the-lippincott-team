@@ -15,7 +15,7 @@ const nav = (config?.nav ?? []).filter(item => item !== null);
 const contact = config?.contact ?? null;
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
-	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+	isExternal(href) ? { target: '_blank', rel: 'noopener' } : {};
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const isCurrent = (href?: string | null) =>
 	!isExternal(href) && ((href ?? '/').replace(/\/+$/, '') || '/') === currentPath;

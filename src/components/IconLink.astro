@@ -15,7 +15,7 @@ const safeTitle = title ?? '';
 const safeLink = safeHref(link) ?? '#';
 ---
 
-<a href={safeLink} target="_blank" aria-label={`Go to ${safeTitle}`} {...rest}>
+<a href={safeLink} target="_blank" aria-label={`Go to ${safeTitle}`} {...rest} rel="noopener">
 	<span class="sr-only">{safeTitle}</span>
 	{icon && <Icon name={icon} size={32} />}
 </a>
