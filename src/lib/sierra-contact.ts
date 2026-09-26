@@ -87,23 +87,6 @@ function errorDetail(result: SierraResponse) {
 	return values.join('; ').replace(/\b\S+@\S+\.\S+\b/g, '[redacted-email]').slice(0, 500);
 }
 
-function nonJsonResponseError(response: Response) {
-	const contentType = response.headers.get('content-type');
-	const cfRay = response.headers.get('cf-ray');
-	const isHtmlForbiddenResponse = response.status === 403 && contentType?.split(';', 1)[0].trim().toLowerCase() === 'text/html';
-	const details = [`HTTP status ${response.status}`];
-	if (contentType) details.push(`content-type: ${contentType}`);
-	if (cfRay) details.push(`cf-ray: ${cfRay}${isHtmlForbiddenResponse ? ' (investigate with Sierra support)' : ''}`);
-	const diagnostics = details.join(', ');
-
-	if (isHtmlForbiddenResponse) {
-		return `Sierra lead creation failed with ${diagnostics}: non-JSON response (possible gateway/edge block).`;
-	}
-	return response.ok
-		? `Sierra returned a non-JSON response (${diagnostics}).`
-		: `Sierra lead creation failed with ${diagnostics}: non-JSON response.`;
-}
-
 export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher: typeof fetch = fetch) {
 	const leadsUrl = process.env.SIERRA_API_URL ?? DEFAULT_SIERRA_LEADS_URL;
 	let response: Response;
@@ -111,9 +94,7 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 		response = await fetcher(leadsUrl, {
 			method: 'POST',
 			headers: {
-				'Accept': 'application/json',
 				'Content-Type': 'application/json',
-				'User-Agent': 'LippincottTeam-Contact/1.0',
 				'Sierra-ApiKey': apiKey,
 				'Sierra-OriginatingSystemName': 'thelippincottteamlistings.com',
 			},
@@ -129,8 +110,12 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 	let result: SierraResponse;
 	try {
 		result = await response.json();
-	} catch {
-		throw new Error(nonJsonResponseError(response));
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+		console.error('[sierra-contact] JSON parse failed:', errorMsg);
+		throw new Error(response.ok
+			? `Sierra returned a non-JSON response: ${errorMsg}`
+			: `Sierra lead creation failed with HTTP status ${response.status}.`);
 	}
 
 	const detail = errorDetail(result);

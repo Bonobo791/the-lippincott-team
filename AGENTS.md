@@ -390,12 +390,3 @@ on Coolify keep the Build Variable flag **off** (runtime-only).
 - `BUNNY_PURGE_SECRET` — shared secret authorizing `/api/bunny-purge` (per-page purges between
   deploys). Generate with `openssl rand -hex 32`. Optional (the endpoint answers 503 without it).
 - `DEPLOY_ADAPTER` — optional adapter override.
-
-### Sierra API request headers
-
-Keep `Accept: application/json` and `User-Agent: LippincottTeam-Contact/1.0` on the
-outbound request in `src/lib/sierra-contact.ts`. A controlled empty POST with an
-invalid key from the Coolify Node 22 runtime returned an HTML 403 with the default
-fetch headers, but Sierra's expected JSON 403 with both explicit headers. This
-isolated a header-dependent rejection, not a confirmed blanket IP block. The
-headers identify the integration honestly; do not substitute browser impersonation.
