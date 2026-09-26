@@ -111,7 +111,9 @@ export async function createSierraLead(lead: SierraLead, apiKey: string, fetcher
 		response = await fetcher(leadsUrl, {
 			method: 'POST',
 			headers: {
+				'Accept': 'application/json',
 				'Content-Type': 'application/json',
+				'User-Agent': 'LippincottTeam-Contact/1.0',
 				'Sierra-ApiKey': apiKey,
 				'Sierra-OriginatingSystemName': 'thelippincottteamlistings.com',
 			},

@@ -44,6 +44,8 @@ test('createSierraLead posts the lead to Sierra and returns its ids', async () =
 	assert.deepEqual(created, { leadId: 345678, agentUserId: 234567 });
 	assert.equal(request?.url, 'https://api.sierrainteractivedev.com/leads');
 	assert.equal(request?.method, 'POST');
+	assert.equal(request?.headers.get('Accept'), 'application/json');
+	assert.equal(request?.headers.get('User-Agent'), 'LippincottTeam-Contact/1.0');
 	assert.equal(request?.headers.get('Sierra-ApiKey'), 'api-key');
 	assert.equal(request?.headers.get('Sierra-OriginatingSystemName'), 'thelippincottteamlistings.com');
 	assert.deepEqual(await request?.json(), buyerLead);
