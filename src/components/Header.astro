@@ -38,7 +38,7 @@ const logoSrcset =
 			) : null}
 			<span class="text-[15px] font-bold leading-[1.1] max-sm:whitespace-nowrap max-sm:text-[13px]">
 				{seo?.title ?? 'The Lippincott Team'}
-				<small class="block text-[10.5px] font-normal uppercase tracking-[0.18em] text-[rgba(246,242,234,0.42)]">eXp Realty</small>
+				<small data-tina-field={tinaField(seo, "brandSubtitle")} class="block text-[10.5px] font-normal uppercase tracking-[0.18em] text-[rgba(246,242,234,0.42)]">{seo?.brandSubtitle ?? 'eXp Realty'}</small>
 			</span>
 		</a>
 		<nav aria-label="Main navigation" class="hidden items-center gap-4 min-[1320px]:flex">
@@ -119,10 +119,11 @@ const logoSrcset =
 				</a>
 			)}
 			<a
-				href="/contact-us/"
+				href={safeHref(config?.headerCta?.link) ?? '/contact-us/'}
+				data-tina-field={config?.headerCta ? tinaField(config.headerCta) : undefined}
 				class="inline-flex items-center whitespace-nowrap rounded-full bg-[#d6323c] px-5 py-[11px] text-[13px] font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 max-sm:hidden"
 			>
-				Schedule a Consultation
+				{config?.headerCta?.label ?? 'Schedule a Consultation'}
 			</a>
 		</nav>
 		<button
@@ -190,10 +191,10 @@ const logoSrcset =
 			)}
 		</nav>
 		<a
-			href="/contact-us/"
+			href={safeHref(config?.headerCta?.link) ?? '/contact-us/'}
 			class="mt-[18px] inline-flex items-center justify-center rounded-full bg-[#d6323c] px-7 py-4 text-center text-sm font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
 		>
-			Schedule a Consultation
+			{config?.headerCta?.label ?? 'Schedule a Consultation'}
 		</a>
 	</div>
 </header>

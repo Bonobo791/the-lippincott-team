@@ -19,6 +19,8 @@ const contact = config?.contact ?? null;
 const today = new Date();
 // CMS-provided URL — only allow http(s)/root-relative before rendering.
 const logoSrc = safeHref(seo?.logo);
+const legalLinks = (config?.legalLinks ?? []).filter((l) => l !== null);
+const preferredSources = config?.preferredSources ?? null;
 
 const childrenOf = (item: CmsConfigNav | null) =>
 	(item?.children ?? []).filter((child): child is CmsConfigNavChild => child !== null);
@@ -33,15 +35,7 @@ const columns = [
 	{ heading: 'Neighborhoods', href: null, links: neighborhoods },
 	{ heading: 'Schools', href: schoolsNav?.link ?? null, links: childrenOf(schoolsNav) },
 	{ heading: 'Company', href: null, links: companyNav },
-	{
-		heading: 'Resources',
-		href: null,
-		links: [
-			{ title: 'Privacy Policy', link: '/privacy-policy/' },
-			{ title: 'Cookie Preferences', link: '/opt-out-preferences/' },
-			{ title: 'Terms and Conditions', link: '/terms-and-conditions/' },
-		],
-	},
+	{ heading: 'Resources', href: null, links: legalLinks },
 ].filter((column) => column.links.length > 0);
 ---
 
@@ -54,7 +48,7 @@ const columns = [
 				) : null}
 				<div>
 					<p class="text-[15px] font-bold leading-[1.1]">{seo?.title ?? 'The Lippincott Team'}</p>
-					<p class="text-[11px] uppercase tracking-[0.18em] text-[rgba(246,242,234,0.62)]">eXp Realty</p>
+					<p class="text-[11px] uppercase tracking-[0.18em] text-[rgba(246,242,234,0.62)]">{seo?.brandSubtitle ?? 'eXp Realty'}</p>
 				</div>
 			</div>
 			{config?.footerBlurb && (
@@ -106,26 +100,31 @@ const columns = [
 		))}
 	</div>
 	<div class="mx-auto max-w-[1200px] px-6 pb-10">
-		<div class="mt-14 flex w-full">
-			<a
-				href="https://www.google.com/preferences/source?q=thelippincottteam.com"
-				target="_blank"
-				rel="noopener"
-				class="inline-flex max-w-full items-center justify-center whitespace-normal break-words rounded-full border border-[rgba(246,242,234,0.3)] bg-transparent px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:border-[rgba(246,242,234,0.55)] hover:bg-[rgba(246,242,234,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-			>
-				Add to Preferred Sources
-			</a>
-		</div>
+		{preferredSources?.link && (
+			<div class="mt-14 flex w-full">
+				<a
+					href={preferredSources.link}
+					target="_blank"
+					rel="noopener"
+					data-tina-field={tinaField(preferredSources)}
+					class="inline-flex max-w-full items-center justify-center whitespace-normal break-words rounded-full border border-[rgba(246,242,234,0.3)] bg-transparent px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:border-[rgba(246,242,234,0.55)] hover:bg-[rgba(246,242,234,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+				>
+					{preferredSources.label ?? 'Add to Preferred Sources'}
+				</a>
+			</div>
+		)}
 		<div class="mt-14 flex flex-col items-center justify-between gap-3.5 border-t border-[rgba(246,242,234,0.12)] pt-[26px] text-[12.5px] sm:flex-row">
 			<p>
 				&copy; {today.getFullYear()}{' '}
 				<span data-tina-field={seo ? tinaField(seo, "siteOwner") : undefined}>{seo?.siteOwner}</span>. All rights reserved.
 			</p>
-			<p class="flex gap-[22px]">
-				<a href="/privacy-policy/" class="transition-colors hover:text-white">Privacy Policy</a>
-				<a href="/opt-out-preferences/" class="transition-colors hover:text-white">Cookie Preferences</a>
-				<a href="/terms-and-conditions/" class="transition-colors hover:text-white">Terms &amp; Conditions</a>
-			</p>
+			{legalLinks.length > 0 && (
+				<p class="flex gap-[22px]" data-tina-field={tinaField(config, 'legalLinks')}>
+					{legalLinks.map((link) => (
+						<a href={safeHref(link.link)} class="transition-colors hover:text-white" {...(isExternal(link.link) ? { target: '_blank', rel: 'noopener' } : {})}>{link.title}</a>
+					))}
+				</p>
+			)}
 		</div>
 	</div>
 </footer>

@@ -52,6 +52,14 @@ export const BlogCollection: Collection = {
       type: "datetime",
     },
     {
+      name: "author",
+      label: "Author",
+      type: "reference",
+      collections: ["team"],
+      description:
+        "Team member shown in the byline and the author box at the end of the article. Defaults to Amy Lippincott when unset.",
+    },
+    {
       name: "heroImage",
       label: "Hero Image",
       type: "image",

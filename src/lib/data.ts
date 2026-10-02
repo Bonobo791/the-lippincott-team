@@ -92,12 +92,18 @@ export async function listCommunities() {
 /** Public URL path of a community doc, e.g. "northwest-houston-real-estate/cypress-tx-real-estate". */
 export const communityPath = (node: { _sys: { breadcrumbs: string[] } }) => node._sys.breadcrumbs.join('/');
 
+export const getStandalone = (slug: string) => {
+	assertSafePath(slug);
+	return requestWithMetadata(client.queries.standalone({ relativePath: `${slug}.mdx` }), { priority: 'primary' });
+};
+
 export type CmsConfig = Awaited<ReturnType<typeof getConfig>>['data']['config'];
 export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsBlog = Awaited<ReturnType<typeof getBlog>>['data']['blog'];
 export type CmsTeam = Awaited<ReturnType<typeof getTeamMember>>['data']['team'];
 
 export type CmsCommunity = Awaited<ReturnType<typeof getCommunity>>['data']['community'];
+export type CmsStandalone = Awaited<ReturnType<typeof getStandalone>>['data']['standalone'];
 export type CommunityFaq = NonNullable<NonNullable<CmsCommunity['faqs']>[number]>;
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;

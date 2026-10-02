@@ -36,6 +36,16 @@ function requiredFormValue(data: Record<string, string>, key: string, label: str
 	return value;
 }
 
+// CMS-managed options submit "<leadType>|<label>" so editors can add options
+// without a code change; bare labels fall back to the built-in map.
+function parseInterest(raw: string): { interest: string; leadType: SierraLead['leadType'] } {
+	const typed = /^([123])\|(.+)$/.exec(raw);
+	if (typed && typed[2].trim()) {
+		return { interest: typed[2].trim(), leadType: Number(typed[1]) as SierraLead['leadType'] };
+	}
+	return { interest: raw, leadType: leadTypeForInterest(raw) };
+}
+
 function leadTypeForInterest(interest: string): SierraLead['leadType'] {
 	switch (interest) {
 		case 'Buy a home':
@@ -58,7 +68,7 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 	if (!password) throw new Error('Sierra lead password is required.');
 
 	const [firstName, ...lastName] = name.split(/\s+/);
-	const interest = requiredFormValue(data, 'interest', 'interest');
+	const { interest, leadType } = parseInterest(requiredFormValue(data, 'interest', 'interest'));
 	const phone = formValue(data, 'phone');
 	const message = formValue(data, 'message').replace(/\r\n?/g, '\n');
 
@@ -72,7 +82,7 @@ export function toSierraLead(data: Record<string, string>, password: string): Si
 		sendRegistrationEmail: true,
 		sourceType: 'SierraApi',
 		source: 'thelippincottteamlistings.com contact form',
-		leadType: leadTypeForInterest(interest),
+		leadType,
 		note: ['Website consultation request', `Interest: ${interest}`, ...(message ? [`Message:\n${message}`] : [])].join('\n\n'),
 	};
 }

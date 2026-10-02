@@ -30,7 +30,27 @@ const defaultSteps = [
 const editedSteps = (data.steps ?? []).flatMap((s) => (s?.title ? [{ title: s.title, body: s.body ?? '' }] : []));
 const steps = (editedSteps.length > 0 ? editedSteps : defaultSteps)
 	.map((step, i) => ({ ...step, n: String(i + 1).padStart(2, '0') }));
-const assurances = [
+
+// Form labels/microcopy: editor-overridable via the block's form object.
+const form = data.form ?? null;
+const rail = data.rail ?? null;
+
+// "I want to" options carry their Sierra lead type in the submitted value
+// ("<type>|<label>"); /api/contact splits it before forwarding. The defaults
+// match the historically hardcoded list.
+const defaultInterestOptions = [
+	{ label: 'Sell my home', leadType: '2' },
+	{ label: 'Buy a home', leadType: '1' },
+	{ label: 'Buy and sell at once', leadType: '3' },
+	{ label: 'Relocate to Northwest Houston', leadType: '1' },
+	{ label: 'Get a home valuation', leadType: '2' },
+];
+const editedInterests = (data.interestOptions ?? []).flatMap((o) =>
+	o?.label && o.leadType ? [{ label: o.label, leadType: o.leadType }] : []);
+const interestOptions = editedInterests.length > 0 ? editedInterests : defaultInterestOptions;
+
+const editedAssurances = (data.assurances ?? []).flatMap((a) => (a?.title ? [{ title: a.title, body: a.body ?? '' }] : []));
+const assurances = editedAssurances.length > 0 ? editedAssurances : [
 	{ title: 'Free consultation', body: 'Pricing analysis and neighborhood comparisons cost nothing.' },
 	{ title: 'One business day', body: 'A named specialist responds, not an autoresponder.' },
 	{ title: '4.9 rated, verified', body: '750+ five-star reviews across Google and HAR.com.' },
@@ -52,61 +72,59 @@ const assurances = [
 			{/* Submissions POST to /api/contact, which forwards the lead to Sierra on
 		   every host (Netlify, Coolify, the standalone Node server). The hidden
 		   bot-field is a honeypot the endpoint silently drops. */}
-			<form name="contact" method="POST" action="/api/contact" class="rounded-2xl border border-border bg-background p-6 sm:p-10">
+			<form name="contact" method="POST" action="/api/contact" class="rounded-2xl border border-border bg-background p-6 sm:p-10" data-tina-field={tinaField(data, 'form')}>
 				<input type="hidden" name="form-name" value="contact" />
 				<p class="hidden" aria-hidden="true">
 					<label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
 				</p>
 				<div class="grid gap-5 sm:grid-cols-2">
 					<div>
-						<label for="contact-name" class={labelClasses}>Full name <span aria-hidden="true" class="text-primary">*</span></label>
-						<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder="Jordan Meyers" class={fieldClasses} />
+						<label for="contact-name" class={labelClasses}>{form?.nameLabel ?? 'Full name'} <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder={form?.namePlaceholder ?? 'Jordan Meyers'} class={fieldClasses} />
 					</div>
 					<div>
-						<label for="contact-phone" class={labelClasses}>Phone</label>
-						<input id="contact-phone" name="phone" type="tel" autocomplete="tel" placeholder="(713) 555-0142" class={fieldClasses} />
-						<span class="mt-1.5 block text-xs text-muted-foreground">Optional, but fastest for scheduling.</span>
+						<label for="contact-phone" class={labelClasses}>{form?.phoneLabel ?? 'Phone'}</label>
+						<input id="contact-phone" name="phone" type="tel" autocomplete="tel" placeholder={form?.phonePlaceholder ?? '(713) 555-0142'} class={fieldClasses} />
+						{form?.phoneHint !== '' && <span class="mt-1.5 block text-xs text-muted-foreground">{form?.phoneHint ?? 'Optional, but fastest for scheduling.'}</span>}
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-email" class={labelClasses}>Email <span aria-hidden="true" class="text-primary">*</span></label>
-						<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" class={fieldClasses} />
+						<label for="contact-email" class={labelClasses}>{form?.emailLabel ?? 'Email'} <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder={form?.emailPlaceholder ?? 'you@example.com'} class={fieldClasses} />
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-interest" class={labelClasses}>I want to</label>
-						<select id="contact-interest" name="interest" class={fieldClasses}>
-							<option value="Sell my home">Sell my home</option>
-							<option value="Buy a home">Buy a home</option>
-							<option value="Buy and sell at once">Buy and sell at once</option>
-							<option value="Relocate to Northwest Houston">Relocate to Northwest Houston</option>
-							<option value="Get a home valuation">Get a home valuation</option>
+						<label for="contact-interest" class={labelClasses}>{form?.interestLabel ?? 'I want to'}</label>
+						<select id="contact-interest" name="interest" class={fieldClasses} data-tina-field={tinaField(data, 'interestOptions')}>
+							{interestOptions.map((opt) => (
+								<option value={`${opt.leadType}|${opt.label}`}>{opt.label}</option>
+							))}
 						</select>
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-message" class={labelClasses}>Anything we should know?</label>
-						<textarea id="contact-message" name="message" rows={5} placeholder="Timeline, neighborhoods on your list, must-haves." class={fieldClasses}></textarea>
+						<label for="contact-message" class={labelClasses}>{form?.messageLabel ?? 'Anything we should know?'}</label>
+						<textarea id="contact-message" name="message" rows={5} placeholder={form?.messagePlaceholder ?? 'Timeline, neighborhoods on your list, must-haves.'} class={fieldClasses}></textarea>
 					</div>
 				</div>
 				<button type="submit" class="btn-magnetic mt-7 inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95 motion-reduce:active:scale-100 motion-reduce:transition-none disabled:opacity-60">
-					Request my consultation <span aria-hidden="true">→</span>
+					{form?.submitLabel ?? 'Request my consultation'} <span aria-hidden="true">→</span>
 				</button>
 				<p id="contact-error" class="mt-4 hidden text-sm font-medium text-primary" role="alert"></p>
-				<p class="mt-4 text-xs text-muted-foreground">Free and without obligation. Your details go straight to our team through a secure client-management system and are never sold.</p>
+				<p class="mt-4 text-xs text-muted-foreground">{form?.disclaimer ?? 'Free and without obligation. Your details go straight to our team through a secure client-management system and are never sold.'}</p>
 			</form>
-			<aside>
+			<aside data-tina-field={tinaField(data, 'rail')}>
 				{phoneDisplay && contact?.phone && (
 					<div class="border-t border-border py-7 first:border-t-0 first:pt-0">
-						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Call or text</span>
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{rail?.phoneLabel ?? 'Call or text'}</span>
 						<a href={telHref(contact.phone)} class="mt-2.5 block font-serif text-[clamp(1.5rem,2.4vw,1.9rem)] font-light tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{phoneDisplay}</a>
 					</div>
 				)}
 				{contact?.email && (
 					<div class="border-t border-border py-7">
-						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Email</span>
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{rail?.emailLabel ?? 'Email'}</span>
 						<a href={`mailto:${contact.email}`} class="mt-2.5 block break-all font-serif text-xl font-light tracking-[-0.01em] text-ink no-underline transition-colors hover:text-primary">{contact.email}</a>
 					</div>
 				)}
 				<div class="border-t border-border pt-7">
-					<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">What happens next</span>
+					<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{rail?.stepsLabel ?? 'What happens next'}</span>
 					<ol class="mt-2 list-none p-0" data-tina-field={tinaField(data, 'steps')}>
 						{steps.map((step) => (
 							<li class="flex gap-5 border-t border-border py-5 first:border-t-0">
@@ -123,7 +141,7 @@ const assurances = [
 		</div>
 	</section>
 	<section class="bg-section py-16 md:py-24">
-		<div class="mx-auto grid max-w-[1200px] gap-10 px-6 md:grid-cols-3 md:gap-8 md:px-12">
+		<div class="mx-auto grid max-w-[1200px] gap-10 px-6 md:grid-cols-3 md:gap-8 md:px-12" data-tina-field={tinaField(data, 'assurances')}>
 			{assurances.map((item) => (
 				<div>
 					<b class="text-[15px] font-semibold text-ink">{item.title}</b>

@@ -13,6 +13,7 @@ import { BlogCollection } from "./collections/blog";
 import { CommunityCollection } from "./collections/community";
 import { GlobalConfigCollection } from "./collections/global-config";
 import { PageCollection } from "./collections/page";
+import { StandaloneCollection } from "./collections/standalone";
 import { TeamCollection } from "./collections/team";
 
 // Your hosting provider likely exposes this as an environment variable
@@ -50,6 +51,7 @@ export default defineConfig({
       PageCollection,
       TeamCollection,
       CommunityCollection,
+      StandaloneCollection,
       GlobalConfigCollection,
     ],
   },

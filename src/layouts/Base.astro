@@ -33,7 +33,7 @@ const includeAnalytics =
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} image={image} />
+		<BaseHead title={title} description={description} image={image ?? config?.seo?.socialImage ?? undefined} />
 		{/* Per-page head additions (e.g. the homepage's LCP poster preload). */}
 		<slot name="head" />
 		{/* .home-v2 pages hide .reveal sections until their motion JS runs;

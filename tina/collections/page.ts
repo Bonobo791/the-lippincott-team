@@ -58,6 +58,12 @@ export const PageCollection: Collection = {
 			description: 'Shown in search results under the meta title. Leave empty to fall back to the site-wide description from Global Config.',
 		},
 		{
+			name: 'socialImage',
+			label: 'Social Share Image',
+			type: 'image',
+			description: 'Open Graph/Twitter card image. Falls back to the site default from Global Config.',
+		},
+		{
 			type: 'object',
 			list: true,
 			name: 'blocks',

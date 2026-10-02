@@ -36,10 +36,23 @@ export const CommunityCollection: Collection = {
   fields: [
     { type: "string", name: "title", label: "Title", isTitle: true, required: true },
     {
+      type: "string", name: "seoTitle", label: "Meta Title (SEO)",
+      description: 'Overrides the browser/search title. Falls back to "Title | The Lippincott Team".',
+    },
+    {
       type: "string", name: "description", label: "Meta Description (SEO)",
       ui: { component: "textarea" },
     },
     { type: "image", name: "heroImage", label: "Hero Image" },
+    {
+      type: "image", name: "socialImage", label: "Social Share Image",
+      description: "Open Graph/Twitter card image. Falls back to the Hero Image, then the site default.",
+    },
+    {
+      type: "string", name: "listingUrl", label: "Listings URL",
+      description:
+        'External "View Listings" link (e.g. a Sierra property-search URL). Community cards and the hero button point here; leave empty to link to the community page itself.',
+    },
     {
       type: "string", name: "intro", label: "Intro",
       ui: { component: "textarea" },
