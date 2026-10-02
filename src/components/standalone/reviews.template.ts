@@ -19,7 +19,7 @@ export const reviewsTemplate: Template = {
 			type: 'object',
 			name: 'head',
 			label: 'Page Head',
-			fields: bandHeadFields(),
+			fields: bandHeadFields(true),
 		},
 		{
 			type: 'object',
@@ -45,7 +45,7 @@ export const reviewsTemplate: Template = {
 			name: 'featured',
 			label: 'Featured Reviews Carousel',
 			fields: [
-				...bandHeadFields(),
+				...bandHeadFields(true),
 				list('reviews', 'Reviews', [
 					{ type: 'string', name: 'quote', label: 'Quote', ui: { component: 'textarea' }, required: true },
 					{ type: 'string', name: 'src', label: 'Source Line' },
@@ -58,7 +58,7 @@ export const reviewsTemplate: Template = {
 			name: 'feed',
 			label: 'Live HAR.com Feed',
 			fields: [
-				...bandHeadFields(),
+				...bandHeadFields(true),
 				{ type: 'string', name: 'memberNumber', label: 'HAR Member Number', description: 'Powers the embedded ratings widget.' },
 				{ type: 'string', name: 'profileUrl', label: 'HAR Profile URL' },
 				{ type: 'string', name: 'feedNote', label: 'Feed Note', description: 'Line under the widget; {profile} renders the HAR.com link.' },
@@ -71,7 +71,7 @@ export const reviewsTemplate: Template = {
 			name: 'verify',
 			label: 'Verification Band',
 			fields: [
-				...bandHeadFields(),
+				...bandHeadFields(true),
 				list('cards', 'Verification Cards', [
 					{ type: 'string', name: 'tag', label: 'Tag' },
 					{ type: 'string', name: 'title', label: 'Title' },
@@ -91,7 +91,7 @@ export const reviewsTemplate: Template = {
 			fields: [
 				{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
 				list('items', 'Questions', [
-					{ type: 'string', name: 'question', label: 'Question' },
+					{ type: 'string', name: 'question', label: 'Question', required: true },
 					{ type: 'rich-text', name: 'answer', label: 'Answer' },
 				], 'question'),
 				actionField('cta', 'Section Link'),

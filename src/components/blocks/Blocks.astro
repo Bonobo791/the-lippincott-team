@@ -57,6 +57,10 @@ const guideDownload = (() => {
 	);
 	return action ? { label: action.label, link: action.link } : null;
 })();
+// Community docs carry a doc-level `listingUrl` (Sierra property search)
+// whose "View Listings" CTA must reach the block-driven hero — guideHero
+// blocks don't repeat it in their own actions list.
+const listingUrl = data && 'listingUrl' in data ? data.listingUrl : null;
 ---
 {blocks.map((block, i) => {
 	const rendered = (() => {
@@ -82,7 +86,7 @@ const guideDownload = (() => {
 			case 'TestimonialShowcase': return <TestimonialShowcase data={block as never} />;
 			case 'Awards': return <Awards data={block as never} />;
 			case 'TeamBanner': return <TeamBanner data={block as never} />;
-			case 'GuideHero': return <GuideHero data={block as never} stacked={block.__typename.startsWith('PageBlocks')} />;
+			case 'GuideHero': return <GuideHero data={block as never} stacked={block.__typename.startsWith('PageBlocks')} listingUrl={listingUrl} />;
 			case 'StatLedger': return <StatLedger data={block as never} />;
 			case 'PriceLadder': return <PriceLadder data={block as never} />;
 			case 'CalloutRail': return <CalloutRail data={block as never} />;

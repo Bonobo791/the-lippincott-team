@@ -26,6 +26,9 @@ export const StandaloneCollection: Collection = {
 	format: 'mdx',
 	ui: {
 		router: ({ document }) => ROUTES[document._sys.filename] ?? '/',
+		// Seven fixed singletons — each ROUTES key must keep an existing doc.
+		// Creating extras adds pages nothing renders; deleting one 404s a route.
+		allowedActions: { create: false, delete: false, createFolder: false, createNestedFolder: false },
 	},
 	templates: [
 		homeTemplate,

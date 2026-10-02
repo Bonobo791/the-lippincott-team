@@ -36,8 +36,13 @@ export const actionField = (name: string, label: string): TinaField => ({
 	],
 });
 
-/** A section heading + eyebrow + lede trio shared by v2 bands. */
-export const bandHeadFields = (): TinaField[] => [
+/**
+ * A section heading + eyebrow (+ optional lede) trio shared by v2 bands.
+ * `withLede` only where the band's renderer actually outputs the paragraph —
+ * an editable field that renders nothing is the exact bug class this
+ * collection exists to remove.
+ */
+export const bandHeadFields = (withLede = false): TinaField[] => [
 	{ type: 'string', name: 'eyebrow', label: 'Eyebrow' },
 	{
 		type: 'string',
@@ -45,10 +50,10 @@ export const bandHeadFields = (): TinaField[] => [
 		label: 'Heading',
 		description: 'Wrap the italic accent phrase in **…**.',
 	},
-	{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' },
+	...(withLede ? [{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' } as TinaField] : []),
 ];
 
-const statTileField = (name: string, label: string): TinaField => ({
+const statTileField = (name: string, label: string, countUp = true): TinaField => ({
 	type: 'object',
 	name,
 	label,
@@ -61,14 +66,18 @@ const statTileField = (name: string, label: string): TinaField => ({
 		{ type: 'string', name: 'source', label: 'Source Note' },
 		{ type: 'string', name: 'link', label: 'Link', description: 'Optional — wraps the number.' },
 		{ type: 'boolean', name: 'accent', label: 'Dark Tile', description: 'Render this tile with the dark accent style.' },
-		{
-			type: 'number',
-			name: 'count',
-			label: 'Count-Up To',
-			description: 'If set, the number animates from 0 up to this value and the Number field is its formatted display.',
-		},
-		{ type: 'string', name: 'prefix', label: 'Count-Up Prefix', description: 'e.g. "$"' },
-		{ type: 'string', name: 'suffix', label: 'Count-Up Suffix', description: 'Appended to the counted number, e.g. "M".' },
+		...(countUp
+			? ([
+					{
+						type: 'number',
+						name: 'count',
+						label: 'Count-Up To',
+						description: 'If set, the number animates from 0 up to this value and the Number field is its formatted display.',
+					},
+					{ type: 'string', name: 'prefix', label: 'Count-Up Prefix', description: 'e.g. "$"' },
+					{ type: 'string', name: 'suffix', label: 'Count-Up Suffix', description: 'Appended to the counted number, e.g. "M".' },
+				] as TinaField[])
+			: []),
 	],
 });
 
@@ -107,8 +116,8 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		name: 'market',
 		label: 'Market Reality Band',
 		fields: [
-			...bandHeadFields(),
-			statTileField('tiles', 'Market Tiles'),
+			...bandHeadFields(true),
+			statTileField('tiles', 'Market Tiles', false),
 			{
 				type: 'object',
 				name: 'jobs',
@@ -149,7 +158,7 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		name: 'comparison',
 		label: 'Solo vs Represented Band',
 		fields: [
-			...bandHeadFields(),
+			...bandHeadFields(true),
 			{
 				type: 'object',
 				name: 'vsTiles',
@@ -262,7 +271,7 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 				list: true,
 				ui: { itemProps: (item: Record<string, string>) => ({ label: item.question ?? '' }) },
 				fields: [
-					{ type: 'string', name: 'question', label: 'Question' },
+					{ type: 'string', name: 'question', label: 'Question', required: true },
 					{ type: 'rich-text', name: 'answer', label: 'Answer' },
 				],
 			},

@@ -100,10 +100,10 @@ const columns = [
 		))}
 	</div>
 	<div class="mx-auto max-w-[1200px] px-6 pb-10">
-		{preferredSources?.link && (
+		{preferredSources?.link && safeHref(preferredSources.link) && (
 			<div class="mt-14 flex w-full">
 				<a
-					href={preferredSources.link}
+					href={safeHref(preferredSources.link)}
 					target="_blank"
 					rel="noopener"
 					data-tina-field={tinaField(preferredSources)}

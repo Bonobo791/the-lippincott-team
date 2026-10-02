@@ -5,7 +5,7 @@ import StandaloneBody from '../components/standalone/StandaloneBody.astro';
 import V2Motion from '../components/v2/V2Motion.astro';
 import { getConfig, getStandalone } from '../lib/data';
 import { islands } from '../lib/islands';
-import { richTextToPlainText } from '../lib/rich-text';
+import { hasRichText, richTextToPlainText } from '../lib/rich-text';
 import { telHref } from '../lib/url';
 import '../styles/v2.css';
 
@@ -16,7 +16,7 @@ const config = (await getConfig()).data?.config ?? null;
 
 const phone = config?.contact?.phone ?? null;
 const agent = data.agentSchema;
-const faqItems = (data.faq?.items ?? []).filter((q) => q !== null);
+const faqItems = (data.faq?.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer));
 const jsonld = {
 	'@context': 'https://schema.org',
 	'@graph': [
@@ -52,7 +52,7 @@ const jsonld = {
 	description={data.description?.trim() || config?.seo?.description || ''}
 	image={data.socialImage ?? undefined}
 >
-	<script type="application/ld+json" set:html={JSON.stringify(jsonld)} />
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonld).replace(/</g, '\\u003c')} />
 
 	<TinaIsland name="standalone" wrapper={islands.standalone.wrapper} params={{ slug: 'reviews' }} primary>
 		<StandaloneBody data={data} />
@@ -62,85 +62,103 @@ const jsonld = {
 		// Auto-rotating featured-reviews carousel. Static slides in the DOM;
 		// this only manages which slide is visible. Auto-advance pauses on
 		// hover/focus and never runs under prefers-reduced-motion.
-		(() => {
-			const root = document.querySelector('[data-reviews-carousel]');
-			if (!root) return;
-			const slides = Array.from(root.querySelectorAll('[data-car-slide]'));
-			if (slides.length < 2) return;
-			const track = root.querySelector('[data-car-track]');
-			const dotsWrap = root.querySelector('[data-car-dots]');
-			const prev = root.querySelector('[data-car-prev]');
-			const next = root.querySelector('[data-car-next]');
-			let current = 0;
-			let timer = 0;
-			const INTERVAL = 6000;
+		const w = window as { __reviewsCarouselBound?: boolean };
+		if (!w.__reviewsCarouselBound) {
+			w.__reviewsCarouselBound = true;
+			// Tina island swaps replace the slides wholesale — the timer and
+			// media-query listener must release the detached DOM before the
+			// re-dispatched astro:page-load rebinds the new subtree.
+			let teardown: (() => void) | null = null;
+			const initCarousel = () => {
+				teardown?.();
+				teardown = null;
+				const root = document.querySelector('[data-reviews-carousel]');
+				if (!root) return;
+				const slides = Array.from(root.querySelectorAll('[data-car-slide]'));
+				if (slides.length < 2) return;
+				const track = root.querySelector('[data-car-track]') as HTMLElement | null;
+				const dotsWrap = root.querySelector('[data-car-dots]');
+				const prev = root.querySelector('[data-car-prev]');
+				const next = root.querySelector('[data-car-next]');
+				if (!track || !dotsWrap || !prev || !next) return;
+				let current = 0;
+				let timer = 0;
+				const INTERVAL = 6000;
 
-			const dots = slides.map((_, i) => {
-				const dot = document.createElement('button');
-				dot.type = 'button';
-				dot.className = 'car-dot';
-				dot.setAttribute('aria-label', `Review ${i + 1} of ${slides.length}`);
-				dot.addEventListener('click', () => { go(i); restart(); });
-				dotsWrap.appendChild(dot);
-				return dot;
-			});
-
-			const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-			function go(i) {
-				current = (i + slides.length) % slides.length;
-				slides.forEach((slide, idx) => {
-					slide.classList.toggle('is-active', idx === current);
-					slide.setAttribute('aria-hidden', String(idx !== current));
+				dotsWrap.replaceChildren();
+				const dots = slides.map((_, i) => {
+					const dot = document.createElement('button');
+					dot.type = 'button';
+					dot.className = 'car-dot';
+					dot.setAttribute('aria-label', `Review ${i + 1} of ${slides.length}`);
+					dot.addEventListener('click', () => { go(i); restart(); });
+					dotsWrap.appendChild(dot);
+					return dot;
 				});
-				dots.forEach((dot, idx) => {
-					dot.classList.toggle('is-active', idx === current);
-					if (idx === current) dot.setAttribute('aria-current', 'true');
-					else dot.removeAttribute('aria-current');
+
+				const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+				function go(i: number) {
+					current = (i + slides.length) % slides.length;
+					slides.forEach((slide, idx) => {
+						slide.classList.toggle('is-active', idx === current);
+						slide.setAttribute('aria-hidden', String(idx !== current));
+					});
+					dots.forEach((dot, idx) => {
+						dot.classList.toggle('is-active', idx === current);
+						if (idx === current) dot.setAttribute('aria-current', 'true');
+						else dot.removeAttribute('aria-current');
+					});
+					// Function decls are hoisted, so the null-guard above
+					// doesn't narrow `track` inside the closure — assert it.
+					track!.style.transform = `translateX(-${current * 100}%)`;
+				}
+
+				function restart() {
+					// Clear first: if reduced motion was enabled after the interval
+					// started, the early return below must not leave it running.
+					window.clearInterval(timer);
+					if (reduced()) return;
+					timer = window.setInterval(() => go(current + 1), INTERVAL);
+				}
+				function stop() {
+					window.clearInterval(timer);
+				}
+
+				prev.addEventListener('click', () => { go(current - 1); restart(); });
+				next.addEventListener('click', () => { go(current + 1); restart(); });
+				root.addEventListener('mouseenter', stop);
+				root.addEventListener('mouseleave', restart);
+				root.addEventListener('focusin', stop);
+				root.addEventListener('focusout', restart);
+				// Keyboard: left/right to move between reviews when focused.
+				root.addEventListener('keydown', (e) => {
+					const key = (e as KeyboardEvent).key;
+					if (key === 'ArrowLeft') { go(current - 1); restart(); }
+					if (key === 'ArrowRight') { go(current + 1); restart(); }
 				});
-				track.style.transform = `translateX(-${current * 100}%)`;
-			}
 
-			function restart() {
-				// Clear first: if reduced motion was enabled after the interval
-				// started, the early return below must not leave it running.
-				window.clearInterval(timer);
-				if (reduced()) return;
-				timer = window.setInterval(() => go(current + 1), INTERVAL);
-			}
-			function stop() {
-				window.clearInterval(timer);
-			}
+				// Track the OS preference live: if reduced motion turns on mid-visit
+				// the running interval must stop (restart()'s early return alone
+				// would leave the old timer alive), and turning it off resumes
+				// autoplay from a clean timer.
+				const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+				const onMotionChange = (e: MediaQueryListEvent) => { if (e.matches) stop(); else restart(); };
+				motionQuery.addEventListener('change', onMotionChange);
 
-			prev.addEventListener('click', () => { go(current - 1); restart(); });
-			next.addEventListener('click', () => { go(current + 1); restart(); });
-			root.addEventListener('mouseenter', stop);
-			root.addEventListener('mouseleave', restart);
-			root.addEventListener('focusin', stop);
-			root.addEventListener('focusout', restart);
-			// Keyboard: left/right to move between reviews when focused.
-			root.addEventListener('keydown', (e) => {
-				if (e.key === 'ArrowLeft') { go(current - 1); restart(); }
-				if (e.key === 'ArrowRight') { go(current + 1); restart(); }
-			});
-
-			// Track the OS preference live: if reduced motion turns on mid-visit
-			// the running interval must stop (restart()'s early return alone
-			// would leave the old timer alive), and turning it off resumes
-			// autoplay from a clean timer.
-			window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-				if (e.matches) stop();
-				else restart();
-			});
-
+				go(0);
+				restart();
+				teardown = () => {
+					stop();
+					motionQuery.removeEventListener('change', onMotionChange);
+				};
+			};
+			document.addEventListener('astro:page-load', initCarousel);
 			// ClientRouter swaps away from this page keep the autoplay timer
 			// alive otherwise (it keeps firing on detached slides and holds the
 			// whole carousel closure); tear it down on the next page swap.
-			document.addEventListener('astro:before-swap', stop, { once: true });
-
-			go(0);
-			restart();
-		})();
+			document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = null; });
+		}
 	</script>
 
 	<V2Motion />

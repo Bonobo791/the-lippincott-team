@@ -20,7 +20,7 @@ export const contactFormBlockSchema: Template = {
 		},
 		{
 			type: 'object', label: 'Form Labels', name: 'form',
-			description: 'Labels, placeholders, and microcopy inside the contact form. Empty fields fall back to the defaults.',
+			description: 'Labels, placeholders, and microcopy inside the contact form. Blank fields fall back to the defaults — except Phone Hint, which an empty value hides intentionally.',
 			fields: [
 				{ type: 'string', label: 'Name Label', name: 'nameLabel' },
 				{ type: 'string', label: 'Name Placeholder', name: 'namePlaceholder' },

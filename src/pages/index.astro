@@ -4,7 +4,7 @@ import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import StandaloneBody from '../components/standalone/StandaloneBody.astro';
 import { getConfig, getStandalone } from '../lib/data';
 import { islands } from '../lib/islands';
-import { richTextToPlainText } from '../lib/rich-text';
+import { hasRichText, richTextToPlainText } from '../lib/rich-text';
 import { telHref } from '../lib/url';
 // Shared "Verified Record" (.home-v2) design system — also used by buy/sell.
 import '../styles/v2.css';
@@ -15,9 +15,9 @@ if (!data || data.__typename !== 'StandaloneHome') return new Response('Not Foun
 const config = (await getConfig()).data?.config ?? null;
 
 const phone = config?.contact?.phone ?? null;
-const email = data.finalCta?.email ?? config?.contact?.email ?? null;
+const email = data.finalCta?.email?.trim() ? data.finalCta.email : (config?.contact?.email ?? null);
 const agent = data.agentSchema;
-const faqItems = (data.faq?.items ?? []).filter((q) => q !== null);
+const faqItems = (data.faq?.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer));
 const jsonld = [
 	agent && {
 		'@context': 'https://schema.org',
@@ -65,14 +65,18 @@ const jsonld = [
 	{/* The hero video's poster is the LCP image — discover it from the HTML head
 	    instead of waiting for the <video> element to be parsed. */}
 	{data.hero?.poster && <link slot="head" rel="preload" as="image" href={data.hero.poster} fetchpriority="high" />}
-	{jsonld.map((entry) => <script type="application/ld+json" is:inline set:html={JSON.stringify(entry)} />)}
+	{jsonld.map((entry) => <script type="application/ld+json" is:inline set:html={JSON.stringify(entry).replace(/</g, '\\u003c')} />)}
 
 	<TinaIsland name="standalone" wrapper={islands.standalone.wrapper} params={{ slug: 'home' }} primary>
 		<StandaloneBody data={data} />
 	</TinaIsland>
 
 	<script is:inline data-astro-rerun>
-	(function () {
+	// Bound once: astro:page-load fires on first load, ClientRouter swaps, and
+	// the island-reinit dispatch after a Tina edit swaps the island's DOM.
+	if (!window.__homeMotionBound) {
+		window.__homeMotionBound = true;
+		document.addEventListener('astro:page-load', function initHomeMotion() {
 		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		// count-up helper
@@ -130,6 +134,7 @@ const jsonld = [
 				if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
 			});
 		}, 1600);
-	})();
+		});
+	}
 	</script>
 </Base>

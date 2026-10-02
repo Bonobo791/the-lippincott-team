@@ -4,6 +4,7 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsCommunity } from '../../lib/data';
 import { mdxComponents } from '../mdx/components';
 import { hasRichText } from '../../lib/rich-text';
+import { safeHref } from '../../lib/url';
 import Blocks from '../blocks/Blocks.astro';
 import Button from '../ui/Button.astro';
 import CommunityFaqHeading from '../mdx/CommunityFaqHeading.astro';
@@ -17,7 +18,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
 // Red "View Listings" hero CTA links to the doc's external listings URL
 // (Sierra property search) when one is set; unset docs get none.
-const sierraUrl = data?.listingUrl ?? null;
+const sierraUrl = safeHref(data?.listingUrl) ?? null;
 // Community FAQs are static Q&A inside the rich-text body (no doc uses the
 // faqs frontmatter), so h2/h3 overrides restyle that section to the
 // accordion pattern. Docs that do use frontmatter FAQs get FaqAccordion.

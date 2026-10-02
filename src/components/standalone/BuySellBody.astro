@@ -230,7 +230,7 @@ const extAttrs = (link?: string | null) => linkTargetAttrs(link);
 					{(record.tiles ?? []).filter((t) => t !== null).map((t) => {
 						const num = (
 							<span class="num" data-count={t.count ?? undefined} data-prefix={t.prefix ?? undefined} data-suffix={t.suffix ?? undefined}>
-								{t.count != null ? '0' : t.num}{t.tail && <span>{t.tail}</span>}
+								{t.count != null ? `${t.prefix ?? ''}${t.count.toLocaleString('en-US')}${t.suffix ?? ''}` : t.num}{t.tail && <span>{t.tail}</span>}
 							</span>
 						);
 						return (
@@ -252,7 +252,7 @@ const extAttrs = (link?: string | null) => linkTargetAttrs(link);
 			<div class="wrap">
 				{faq.heading && <V2Heading text={faq.heading} class="display sec reveal" data-tina-field={tinaField(faq, 'heading')} />}
 				<div class="faq-list" data-tina-field={tinaField(faq, 'items')}>
-					{(faq.items ?? []).filter((q) => q !== null).map((q) => (
+					{(faq.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer)).map((q) => (
 						<details class="reveal" data-tina-field={tinaField(q)}>
 							<summary>{q.question} <span class="plus">+</span></summary>
 							<TinaMarkdown content={q.answer} components={mdxComponents} />
@@ -270,7 +270,9 @@ const extAttrs = (link?: string | null) => linkTargetAttrs(link);
 				{related.heading && <V2Heading text={related.heading} class="display sec reveal" data-tina-field={tinaField(related, 'heading')} />}
 				<div class="chiprow reveal" data-tina-field={tinaField(related, 'chips')}>
 					{(related.chips ?? []).filter((c) => c !== null).map((chip) => (
-						<a class="chip" href={safeHref(chip.link)} {...extAttrs(chip.link)} data-tina-field={tinaField(chip)}>{chip.label}</a>
+						safeHref(chip.link)
+							? <a class="chip" href={safeHref(chip.link)} {...extAttrs(chip.link)} data-tina-field={tinaField(chip)}>{chip.label}</a>
+							: <span class="chip" data-tina-field={tinaField(chip)}>{chip.label}</span>
 					))}
 				</div>
 			</div>

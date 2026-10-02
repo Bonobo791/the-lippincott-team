@@ -36,39 +36,57 @@ function requiredFormValue(data: Record<string, string>, key: string, label: str
 	return value;
 }
 
+export interface InterestOption {
+	label: string;
+	leadType: '1' | '2' | '3';
+}
+
+/** Fallback "I want to" options — the rendered form's set when the CMS block lists none. */
+export const DEFAULT_INTEREST_OPTIONS: readonly InterestOption[] = [
+	{ label: 'Sell my home', leadType: '2' },
+	{ label: 'Buy a home', leadType: '1' },
+	{ label: 'Buy and sell at once', leadType: '3' },
+	{ label: 'Relocate to Northwest Houston', leadType: '1' },
+	{ label: 'Get a home valuation', leadType: '2' },
+];
+
+const INTEREST_LEAD_TYPES = new Map<string, SierraLead['leadType']>(
+	DEFAULT_INTEREST_OPTIONS.map((o) => [o.label, Number(o.leadType) as SierraLead['leadType']]),
+);
+
+/** Submitted values the form actually renders ("<leadType>|<label>"). */
+export const interestOptionValues = (options: readonly { label: string; leadType: string }[]) =>
+	new Set(options.map((o) => `${o.leadType}|${o.label}`));
+
 // CMS-managed options submit "<leadType>|<label>" so editors can add options
-// without a code change; bare labels fall back to the built-in map.
-function parseInterest(raw: string): { interest: string; leadType: SierraLead['leadType'] } {
+// without a code change; bare labels fall back to the built-in map. When the
+// endpoint knows the configured option set, typed values must match it —
+// otherwise a crafted "2|spam" writes arbitrary labels with a valid lead type.
+function parseInterest(raw: string, allowedValues?: ReadonlySet<string>): { interest: string; leadType: SierraLead['leadType'] } {
 	const typed = /^([123])\|(.+)$/.exec(raw);
 	if (typed && typed[2].trim()) {
+		if (allowedValues && !allowedValues.has(raw)) {
+			throw new Error('Contact form submission has an unsupported interest.');
+		}
 		return { interest: typed[2].trim(), leadType: Number(typed[1]) as SierraLead['leadType'] };
 	}
 	return { interest: raw, leadType: leadTypeForInterest(raw) };
 }
 
 function leadTypeForInterest(interest: string): SierraLead['leadType'] {
-	switch (interest) {
-		case 'Buy a home':
-		case 'Relocate to Northwest Houston':
-			return 1;
-		case 'Sell my home':
-		case 'Get a home valuation':
-			return 2;
-		case 'Buy and sell at once':
-			return 3;
-		default:
-			throw new Error('Contact form submission has an unsupported interest.');
-	}
+	const leadType = INTEREST_LEAD_TYPES.get(interest);
+	if (!leadType) throw new Error('Contact form submission has an unsupported interest.');
+	return leadType;
 }
 
-export function toSierraLead(data: Record<string, string>, password: string): SierraLead {
+export function toSierraLead(data: Record<string, string>, password: string, allowedInterests?: ReadonlySet<string>): SierraLead {
 	const name = requiredFormValue(data, 'name', 'name');
 	const email = requiredFormValue(data, 'email', 'email address');
 	if (!EMAIL_PATTERN.test(email)) throw new Error('Contact form submission has an invalid email address.');
 	if (!password) throw new Error('Sierra lead password is required.');
 
 	const [firstName, ...lastName] = name.split(/\s+/);
-	const { interest, leadType } = parseInterest(requiredFormValue(data, 'interest', 'interest'));
+	const { interest, leadType } = parseInterest(requiredFormValue(data, 'interest', 'interest'), allowedInterests);
 	const phone = formValue(data, 'phone');
 	const message = formValue(data, 'message').replace(/\r\n?/g, '\n');
 
@@ -162,7 +180,12 @@ export type ContactForwardResult = { forwarded: true; leadId: number } | { forwa
  * mints the Sierra password, and creates the lead. Ignores submissions whose
  * `form-name` is not "contact" (like the old Netlify formSubmitted handler).
  */
-export async function forwardContactLead(data: Record<string, string>, apiKey: string, fetcher: typeof fetch = fetch): Promise<ContactForwardResult> {
+export async function forwardContactLead(
+	data: Record<string, string>,
+	apiKey: string,
+	fetcher: typeof fetch = fetch,
+	allowedInterests?: ReadonlySet<string>,
+): Promise<ContactForwardResult> {
 	if (data['form-name'] !== 'contact') return { forwarded: false };
 
 	if (!apiKey) throw new Error('SIERRA_API_KEY is not configured.');
@@ -176,7 +199,7 @@ export async function forwardContactLead(data: Record<string, string>, apiKey: s
 	).join('');
 	let lead: SierraLead;
 	try {
-		lead = toSierraLead(data, password);
+		lead = toSierraLead(data, password, allowedInterests);
 	} catch (error) {
 		throw new ContactValidationError(error instanceof Error ? error.message : 'Invalid contact form submission.');
 	}

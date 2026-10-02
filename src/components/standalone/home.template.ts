@@ -109,7 +109,8 @@ export const homeTemplate: Template = {
 				{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
 				{ type: 'string', name: 'lede', label: 'Intro Paragraph', ui: { component: 'textarea' } },
 				cardsList('items', 'Stats', [
-					{ type: 'number', name: 'count', label: 'Count-Up To' },
+					{ type: 'number', name: 'count', label: 'Count-Up To', description: 'If set, the number animates from 0 up to this value.' },
+					{ type: 'string', name: 'num', label: 'Static Number', description: 'Shown when Count-Up To is empty, e.g. "$345M+".' },
 					{ type: 'string', name: 'prefix', label: 'Count-Up Prefix', description: 'Prepended to the counted number, e.g. "$".' },
 					{ type: 'string', name: 'suffix', label: 'Count-Up Suffix', description: 'Appended to the counted number, e.g. "M".' },
 					{ type: 'string', name: 'tail', label: 'Static Suffix', description: 'Styled suffix shown after the number, e.g. "+".' },
@@ -243,7 +244,7 @@ export const homeTemplate: Template = {
 			fields: [
 				{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
 				cardsList('items', 'Questions', [
-					{ type: 'string', name: 'question', label: 'Question' },
+					{ type: 'string', name: 'question', label: 'Question', required: true },
 					{ type: 'rich-text', name: 'answer', label: 'Answer' },
 				], 'question'),
 				actionField('cta', 'Section Link'),

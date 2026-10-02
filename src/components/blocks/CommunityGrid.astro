@@ -3,6 +3,7 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { communityPath, listCommunities } from '../../lib/data';
+import { safeHref } from '../../lib/url';
 import type { CommunityGridBlock } from '../../lib/data';
 
 interface Props { data: CommunityGridBlock }
@@ -29,7 +30,7 @@ const entries = (await listCommunities())
 					{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 				</div>
 				{entries.map(({ node, path }, i) => {
-					const sierraUrl = node.listingUrl ?? null;
+					const sierraUrl = safeHref(node.listingUrl) ?? null;
 					return (
 						<a
 							href={sierraUrl ?? `/${path}/`}
@@ -59,7 +60,7 @@ const entries = (await listCommunities())
 		{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 		<div class="mt-10 grid gap-6 md:grid-cols-2">
 			{entries.map(({ node, path }) => {
-				const sierraUrl = node.listingUrl ?? null;
+				const sierraUrl = safeHref(node.listingUrl) ?? null;
 				return (
 					<a
 						href={sierraUrl ?? `/${path}/`}

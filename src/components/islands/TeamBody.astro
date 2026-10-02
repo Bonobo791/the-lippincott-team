@@ -4,7 +4,7 @@ import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsTeam } from '../../lib/data';
 import { getConfig, listTeam } from '../../lib/data';
-import { telHref } from '../../lib/url';
+import { linkTargetAttrs, safeHref, telHref } from '../../lib/url';
 import { mdxComponents } from '../mdx/components';
 import ProofStage from '../blocks/ProofStage.astro';
 import GuideActions from '../ui/GuideActions.astro';
@@ -146,13 +146,13 @@ const jsonLd = data && {
 				</div>
 				<div class="flex flex-wrap gap-3">
 					{leadChips.map((chip) => (
-						<a href={chip.link ?? '#'} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+						safeHref(chip.link) && <a href={safeHref(chip.link)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
 					))}
 					{teammates.map((m) => (
 						<a href={`/about/${m._sys.filename}/`} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{m.name}</a>
 					))}
 					{extraChips.map((chip) => (
-						<a href={chip.link ?? '#'} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+						safeHref(chip.link) && <a href={safeHref(chip.link)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
 					))}
 				</div>
 			</div>
@@ -179,6 +179,6 @@ const jsonLd = data && {
 				pointer-events: none;
 			}
 		</style>
-		{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+		{jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
 	</>
 )}

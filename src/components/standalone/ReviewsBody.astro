@@ -24,6 +24,10 @@ const finalCta = data?.finalCta;
 
 const extAttrs = (link?: string | null) => linkTargetAttrs(link);
 const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
+const feedProfileHref = safeHref(feed?.profileUrl) ?? null;
+// Fewer than two slides renders a static figure — the arrows/dots script
+// early-returns at the same threshold, so the controls must not render.
+const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 ---
 
 {data && (
@@ -51,7 +55,7 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 					{(record.tiles ?? []).filter((t) => t !== null).map((t) => {
 						const num = (
 							<span class:list={['num', { gold: t.gold }]} data-count={t.count ?? undefined} data-suffix={t.suffix ?? undefined}>
-								{t.count != null ? '0' : t.num}{t.tail && <span>{t.tail}</span>}
+								{t.count != null ? `${t.count.toLocaleString('en-US')}${t.suffix ?? ''}` : t.num}{t.tail && <span>{t.tail}</span>}
 							</span>
 						);
 						return (
@@ -78,10 +82,11 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 						<TinaMarkdown content={featured.lede} components={mdxComponents} />
 					</div>
 				)}
+				{featuredReviews.length > 0 && (
 				<div class="carousel reveal" data-reviews-carousel aria-roledescription="carousel" aria-label="Featured client reviews">
 					<div class="car-viewport">
 						<div class="car-track" data-car-track data-tina-field={tinaField(featured, 'reviews')}>
-							{(featured.reviews ?? []).filter((r) => r !== null).map((review, i) => (
+							{featuredReviews.map((review, i) => (
 								<figure class="car-slide" data-car-slide aria-hidden={i !== 0} data-tina-field={tinaField(review)}>
 									<blockquote>&ldquo;{review.quote}&rdquo;</blockquote>
 									<figcaption>
@@ -92,10 +97,15 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 							))}
 						</div>
 					</div>
-					<button type="button" class="car-arrow prev" data-car-prev aria-label="Previous review">&#8592;</button>
-					<button type="button" class="car-arrow next" data-car-next aria-label="Next review">&#8594;</button>
-					<div class="car-dots" data-car-dots aria-label="Choose review"></div>
+					{featuredReviews.length > 1 && (
+						<>
+							<button type="button" class="car-arrow prev" data-car-prev aria-label="Previous review">&#8592;</button>
+							<button type="button" class="car-arrow next" data-car-next aria-label="Next review">&#8594;</button>
+							<div class="car-dots" data-car-dots aria-label="Choose review"></div>
+						</>
+					)}
 				</div>
+				)}
 				{featured.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={safeHref(featured.cta.link)} {...extAttrs(featured.cta.link)} data-tina-field={tinaField(featured.cta)}>{featured.cta.label}</a></p>}
 			</div>
 		</section>
@@ -132,8 +142,8 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 							></script>
 						)}
 					</div>
-					{feed.profileUrl && (
-						<script is:inline define:vars={{ profileUrl: feed.profileUrl }}>
+					{feedProfileHref && (
+						<script is:inline define:vars={{ profileUrl: feedProfileHref }}>
 							(() => {
 								if (window.__harWidgetOriginalWrite) {
 									document.write = window.__harWidgetOriginalWrite;
@@ -152,7 +162,7 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 					{feedNoteParts && (
 						<p class="feed-note" data-tina-field={tinaField(feed, 'feedNote')}>
 							{feedNoteParts[0]}
-							<a href={safeHref(feed.profileUrl)} {...extAttrs(feed.profileUrl)}>{feed.feedNoteLabel ?? feed.profileUrl}</a>
+							{feedNoteParts.length > 1 && feedProfileHref && <a href={feedProfileHref} {...extAttrs(feed.profileUrl)}>{feed.feedNoteLabel ?? feed.profileUrl}</a>}
 							{feedNoteParts.slice(1).join('{profile}')}
 						</p>
 					)}
@@ -202,7 +212,7 @@ const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
 			<div class="wrap">
 				{faq.heading && <V2Heading text={faq.heading} class="display sec reveal" data-tina-field={tinaField(faq, 'heading')} />}
 				<div class="faq-list" data-tina-field={tinaField(faq, 'items')}>
-					{(faq.items ?? []).filter((q) => q !== null).map((q) => (
+					{(faq.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer)).map((q) => (
 						<details class="reveal" data-tina-field={tinaField(q)}>
 							<summary>{q.question} <span class="plus">+</span></summary>
 							<TinaMarkdown content={q.answer} components={mdxComponents} />

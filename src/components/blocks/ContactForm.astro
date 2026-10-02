@@ -2,6 +2,7 @@
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { getConfig, type ContactFormBlock } from '../../lib/data';
+import { DEFAULT_INTEREST_OPTIONS } from '../../lib/sierra-contact';
 import { telHref } from '../../lib/url';
 
 interface Props { data: ContactFormBlock }
@@ -32,22 +33,21 @@ const steps = (editedSteps.length > 0 ? editedSteps : defaultSteps)
 	.map((step, i) => ({ ...step, n: String(i + 1).padStart(2, '0') }));
 
 // Form labels/microcopy: editor-overridable via the block's form object.
+// Tina returns '' for cleared fields — treat blank as unset so the
+// documented defaults still apply.
+const nb = (v: string | null | undefined, d: string) => (v && v.trim() ? v : d);
 const form = data.form ?? null;
 const rail = data.rail ?? null;
+// phoneHint is the exception: an explicitly empty hint hides the line.
+const phoneHint = form?.phoneHint ?? null;
+const showPhoneHint = phoneHint === null || !!phoneHint.trim();
 
 // "I want to" options carry their Sierra lead type in the submitted value
-// ("<type>|<label>"); /api/contact splits it before forwarding. The defaults
-// match the historically hardcoded list.
-const defaultInterestOptions = [
-	{ label: 'Sell my home', leadType: '2' },
-	{ label: 'Buy a home', leadType: '1' },
-	{ label: 'Buy and sell at once', leadType: '3' },
-	{ label: 'Relocate to Northwest Houston', leadType: '1' },
-	{ label: 'Get a home valuation', leadType: '2' },
-];
+// ("<type>|<label>"); /api/contact validates that pair against this same set
+// before forwarding. The defaults live in sierra-contact so both sides agree.
 const editedInterests = (data.interestOptions ?? []).flatMap((o) =>
-	o?.label && o.leadType ? [{ label: o.label, leadType: o.leadType }] : []);
-const interestOptions = editedInterests.length > 0 ? editedInterests : defaultInterestOptions;
+	o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []);
+const interestOptions = editedInterests.length > 0 ? editedInterests : DEFAULT_INTEREST_OPTIONS;
 
 const editedAssurances = (data.assurances ?? []).flatMap((a) => (a?.title ? [{ title: a.title, body: a.body ?? '' }] : []));
 const assurances = editedAssurances.length > 0 ? editedAssurances : [
@@ -79,20 +79,20 @@ const assurances = editedAssurances.length > 0 ? editedAssurances : [
 				</p>
 				<div class="grid gap-5 sm:grid-cols-2">
 					<div>
-						<label for="contact-name" class={labelClasses}>{form?.nameLabel ?? 'Full name'} <span aria-hidden="true" class="text-primary">*</span></label>
-						<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder={form?.namePlaceholder ?? 'Jordan Meyers'} class={fieldClasses} />
+						<label for="contact-name" class={labelClasses}>{nb(form?.nameLabel, 'Full name')} <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder={nb(form?.namePlaceholder, 'Jordan Meyers')} class={fieldClasses} />
 					</div>
 					<div>
-						<label for="contact-phone" class={labelClasses}>{form?.phoneLabel ?? 'Phone'}</label>
-						<input id="contact-phone" name="phone" type="tel" autocomplete="tel" placeholder={form?.phonePlaceholder ?? '(713) 555-0142'} class={fieldClasses} />
-						{form?.phoneHint !== '' && <span class="mt-1.5 block text-xs text-muted-foreground">{form?.phoneHint ?? 'Optional, but fastest for scheduling.'}</span>}
+						<label for="contact-phone" class={labelClasses}>{nb(form?.phoneLabel, 'Phone')}</label>
+						<input id="contact-phone" name="phone" type="tel" autocomplete="tel" placeholder={nb(form?.phonePlaceholder, '(713) 555-0142')} class={fieldClasses} />
+						{showPhoneHint && <span class="mt-1.5 block text-xs text-muted-foreground">{nb(phoneHint, 'Optional, but fastest for scheduling.')}</span>}
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-email" class={labelClasses}>{form?.emailLabel ?? 'Email'} <span aria-hidden="true" class="text-primary">*</span></label>
-						<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder={form?.emailPlaceholder ?? 'you@example.com'} class={fieldClasses} />
+						<label for="contact-email" class={labelClasses}>{nb(form?.emailLabel, 'Email')} <span aria-hidden="true" class="text-primary">*</span></label>
+						<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder={nb(form?.emailPlaceholder, 'you@example.com')} class={fieldClasses} />
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-interest" class={labelClasses}>{form?.interestLabel ?? 'I want to'}</label>
+						<label for="contact-interest" class={labelClasses}>{nb(form?.interestLabel, 'I want to')}</label>
 						<select id="contact-interest" name="interest" class={fieldClasses} data-tina-field={tinaField(data, 'interestOptions')}>
 							{interestOptions.map((opt) => (
 								<option value={`${opt.leadType}|${opt.label}`}>{opt.label}</option>
@@ -100,15 +100,15 @@ const assurances = editedAssurances.length > 0 ? editedAssurances : [
 						</select>
 					</div>
 					<div class="sm:col-span-2">
-						<label for="contact-message" class={labelClasses}>{form?.messageLabel ?? 'Anything we should know?'}</label>
-						<textarea id="contact-message" name="message" rows={5} placeholder={form?.messagePlaceholder ?? 'Timeline, neighborhoods on your list, must-haves.'} class={fieldClasses}></textarea>
+						<label for="contact-message" class={labelClasses}>{nb(form?.messageLabel, 'Anything we should know?')}</label>
+						<textarea id="contact-message" name="message" rows={5} placeholder={nb(form?.messagePlaceholder, 'Timeline, neighborhoods on your list, must-haves.')} class={fieldClasses}></textarea>
 					</div>
 				</div>
 				<button type="submit" class="btn-magnetic mt-7 inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95 motion-reduce:active:scale-100 motion-reduce:transition-none disabled:opacity-60">
-					{form?.submitLabel ?? 'Request my consultation'} <span aria-hidden="true">→</span>
+					{nb(form?.submitLabel, 'Request my consultation')} <span aria-hidden="true">→</span>
 				</button>
 				<p id="contact-error" class="mt-4 hidden text-sm font-medium text-primary" role="alert"></p>
-				<p class="mt-4 text-xs text-muted-foreground">{form?.disclaimer ?? 'Free and without obligation. Your details go straight to our team through a secure client-management system and are never sold.'}</p>
+				<p class="mt-4 text-xs text-muted-foreground">{nb(form?.disclaimer, 'Free and without obligation. Your details go straight to our team through a secure client-management system and are never sold.')}</p>
 			</form>
 			<aside data-tina-field={tinaField(data, 'rail')}>
 				{phoneDisplay && contact?.phone && (
