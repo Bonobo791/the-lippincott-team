@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { clientIp, createRateLimiter, jsonError, readBody, type BodyResult } from '../../lib/api-guards';
-import { getPage } from '../../lib/data';
+import { listPages, type ContactFormBlock } from '../../lib/data';
 import {
 	ContactValidationError,
 	DEFAULT_INTEREST_OPTIONS,
@@ -33,25 +33,40 @@ function thankYou() {
 }
 
 // The "I want to" select submits "<leadType>|<label>" pairs. Validate them
-// against the options the form actually renders (page/contact-us.mdx →
-// contactForm block) so a crafted "2|anything" can't write arbitrary labels
-// with a valid lead type. Resolved once per process — a Tina query per POST
-// would be pointless; a failed lookup falls back to the built-in set.
+// against the options the forms actually render — contactForm blocks can be
+// placed on any page, so the allowed set is the union across every page doc
+// (the built-in defaults when none are configured). Results are cached
+// briefly so each POST doesn't re-query Tina; a failed lookup is NOT cached,
+// so a transient error can't permanently reject valid CMS options.
+const INTERESTS_CACHE_MS = 5 * 60 * 1000;
+let allowedInterestsValues: ReadonlySet<string> | null = null;
+let allowedInterestsAt = 0;
 let allowedInterestsPromise: Promise<ReadonlySet<string>> | null = null;
+
+async function loadInterestOptions() {
+	const options = (await listPages())
+		.flatMap((page) => page.blocks ?? [])
+		.filter((block): block is ContactFormBlock => block?.__typename === 'PageBlocksContactForm')
+		.flatMap((block) => block.interestOptions ?? [])
+		.flatMap((o) => (o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []));
+	return interestOptionValues(options.length > 0 ? options : DEFAULT_INTEREST_OPTIONS);
+}
+
 function allowedInterests() {
-	return (allowedInterestsPromise ??= (async () => {
-		try {
-			const page = (await getPage('contact-us')).data?.page;
-			const formBlock = page?.blocks?.find((b) => b?.__typename.endsWith('ContactForm')) as
-				| { interestOptions?: ({ label?: string | null; leadType?: string | null } | null)[] | null }
-				| undefined;
-			const options = (formBlock?.interestOptions ?? []).flatMap((o) =>
-				o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []);
-			return interestOptionValues(options.length > 0 ? options : DEFAULT_INTEREST_OPTIONS);
-		} catch {
-			return interestOptionValues(DEFAULT_INTEREST_OPTIONS);
-		}
-	})());
+	if (allowedInterestsValues && Date.now() - allowedInterestsAt < INTERESTS_CACHE_MS) {
+		return Promise.resolve(allowedInterestsValues);
+	}
+	allowedInterestsPromise ??= loadInterestOptions()
+		.then((values) => {
+			allowedInterestsValues = values;
+			allowedInterestsAt = Date.now();
+			return values;
+		})
+		.catch(() => interestOptionValues(DEFAULT_INTEREST_OPTIONS))
+		.finally(() => {
+			allowedInterestsPromise = null;
+		});
+	return allowedInterestsPromise;
 }
 
 // Origins allowed to POST the contact form from a browser. SITE_URL is the

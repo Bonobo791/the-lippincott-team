@@ -157,25 +157,31 @@ const includeAnalytics =
 		   [data-tina-island] node's innerHTML after a CMS edit — no scripts
 		   rerun and no astro:* events fire, so scroll-bound bindings (.reveal,
 		   count-ups, .h2-mask, magnetic CTAs) would stay dead in the swapped
-		   DOM. Re-dispatch astro:page-load on island mutations so every init
-		   re-observes the new subtree (all inits are idempotent). */}
+		   DOM. Watching only the island's direct children catches the bridge
+		   swap (it replaces them all) while nested writes from the re-fired
+		   inits themselves — carousel dots, count-up textContent — can't
+		   retrigger the observer. Debounced so a rapid second swap still
+		   reinitializes instead of being dropped by a cooldown. */}
 		<script is:inline>
 			if (!window.__tinaIslandReinitBound) {
 				window.__tinaIslandReinitBound = true;
-				// Inits re-fired by the dispatch mutate island DOM themselves
-				// (e.g. the reviews carousel rebuilding its dots) — without a
-				// cooldown those mutations retrigger the observer forever.
-				let islandCooldownUntil = 0;
+				let islandReinitTimer = null;
 				const islandMo = new MutationObserver((muts) => {
 					if (!muts.some((m) => m.addedNodes.length > 0 || m.removedNodes.length > 0)) return;
-					if (Date.now() < islandCooldownUntil) return;
-					islandCooldownUntil = Date.now() + 1000;
-					document.dispatchEvent(new Event('astro:page-load'));
+					// The reviews HAR feed only works through parser-time
+					// document.writeln — scripts inside swapped island HTML never
+					// execute, so a full reload is the only way to restore it.
+					if (muts.some((m) => m.target instanceof Element && m.target.querySelector('#har-feed'))) {
+						location.reload();
+						return;
+					}
+					clearTimeout(islandReinitTimer);
+					islandReinitTimer = setTimeout(() => document.dispatchEvent(new Event('astro:page-load')), 250);
 				});
 				document.addEventListener('astro:page-load', () => {
 					islandMo.disconnect();
 					document.querySelectorAll('[data-tina-island]').forEach((el) =>
-						islandMo.observe(el, { childList: true, subtree: true })
+						islandMo.observe(el, { childList: true })
 					);
 				});
 			}

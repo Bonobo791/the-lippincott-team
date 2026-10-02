@@ -142,23 +142,27 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 							></script>
 						)}
 					</div>
-					{feedProfileHref && (
-						<script is:inline define:vars={{ profileUrl: feedProfileHref }}>
-							(() => {
-								if (window.__harWidgetOriginalWrite) {
-									document.write = window.__harWidgetOriginalWrite;
-									document.writeln = window.__harWidgetOriginalWriteln;
-									delete window.__harWidgetOriginalWrite;
-									delete window.__harWidgetOriginalWriteln;
-								}
+					<script is:inline define:vars={{ profileUrl: feedProfileHref }}>
+						(() => {
+							// The override script above always replaces document.write/
+							// writeln — restore them unconditionally or the wrappers
+							// persist across ClientRouter navigations. Only the
+							// profile-link rewrite needs profileUrl.
+							if (window.__harWidgetOriginalWrite) {
+								document.write = window.__harWidgetOriginalWrite;
+								document.writeln = window.__harWidgetOriginalWriteln;
+								delete window.__harWidgetOriginalWrite;
+								delete window.__harWidgetOriginalWriteln;
+							}
+							if (profileUrl) {
 								document.querySelectorAll('#har-feed a[href*="/Realtor-Agent-Rating/"]').forEach((link) => {
 									link.setAttribute('href', profileUrl);
 									link.setAttribute('target', '_blank');
 									link.setAttribute('rel', 'noopener');
 								});
-							})();
-						</script>
-					)}
+							}
+						})();
+					</script>
 					{feedNoteParts && (
 						<p class="feed-note" data-tina-field={tinaField(feed, 'feedNote')}>
 							{feedNoteParts[0]}
