@@ -35,25 +35,29 @@ test('the complete team section follows the hero before any other homepage conte
 });
 
 test('the order check detects an unconditional section inserted before the team', () => {
-	const source = `<div class="home-v2">
-		{hero && <section class="hero" />}
-		<section class="unexpected" />
-		{team && <section class="team dark" />}
-	</div>`;
+	const source = [
+		'<div class="home-v2">',
+		'{hero && <section class="hero" />}',
+		'<section class="unexpected" />',
+		'{team && <section class="team dark" />}',
+		'</div>',
+	].join('\n');
 	assert.deepEqual(sectionOrder(source), ['hero', 'unexpected', 'team']);
 });
 
 test('the order check detects a differently formatted conditional section before the team', () => {
-	const source = `<div class="home-v2">
-		{hero && <section class="hero" />}
-		{data.banner && <section class="unexpected" />}
-		{team && <section class="team dark" />}
-	</div>`;
+	const source = [
+		'<div class="home-v2">',
+		'{hero && <section class="hero" />}',
+		'{data.banner && <section class="unexpected" />}',
+		'{team && <section class="team dark" />}',
+		'</div>',
+	].join('\n');
 	assert.deepEqual(sectionOrder(source), ['hero', 'unexpected', 'team']);
 });
 
 test('section order is independent of indentation and line endings', () => {
-	assert.deepEqual(sectionOrder(home.replaceAll('\t', '  ').replaceAll('\n', '\r\n')), sections);
+	assert.deepEqual(sectionOrder(home.replace(/\t/g, '  ').replace(/\n/g, '\r\n')), sections);
 });
 
 test('the other homepage sections retain their existing order', () => {
