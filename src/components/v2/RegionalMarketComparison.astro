@@ -11,11 +11,17 @@ const comparison = blocks.find(
 		block.__typename === 'PageBlocksDataTable' && normalizedAnchor(block.anchorId) === 'communities',
 );
 
+const hasExpectedColumns =
+	comparison?.headers?.[1]?.heading?.trim().toLowerCase() === 'median list' &&
+	comparison?.headers?.[3]?.heading?.trim().toLowerCase() === 'days on market';
+let validationError: string | undefined;
 if (!comparison) {
-	throw new Error('Regional market comparison requires the Northwest Houston #communities data table.');
+	validationError = 'Regional market comparison requires the Northwest Houston #communities data table.';
+} else if (!hasExpectedColumns) {
+	validationError = 'Regional market comparison requires Median list and Days on market in columns 2 and 4.';
 }
 
-const markets = (comparison.rows ?? [])
+const markets = (hasExpectedColumns ? comparison?.rows ?? [] : [])
 	.filter((row) => row !== null)
 	.map((row) => {
 		const cells = row.cells ?? [];
@@ -31,20 +37,26 @@ const markets = (comparison.rows ?? [])
 const requiredMarkets = ['Cypress', 'Bridgeland'];
 const hasMarket = (name: string) => markets.some(({ market }) => market?.toLowerCase() === name.toLowerCase());
 
-if (
+if (comparison && hasExpectedColumns && (
 	markets.length !== 7 ||
 	!requiredMarkets.every(hasMarket) ||
 	markets.some(({ market, median, days }) => !market || !median || !days)
-) {
-	throw new Error('Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.');
+)) {
+	validationError = 'Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.';
 }
 
-const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';
+// Keep publication strict, but let the rest of the editor preview render while
+// the shared table is incomplete. Restoring valid data restores the comparison.
+if (validationError && Astro.isPrerendered) {
+	throw new Error(validationError);
+}
+
+const source = comparison?.headers?.[0]?.heading ?? 'Realtor.com';
 const labels = (await getConfig()).data?.config?.marketTable;
 const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#communities';
 ---
 
-<section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
+{!validationError && <section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
 	<h3 id="regional-market-heading">{labels?.heading ?? 'Northwest Houston at a Glance'}</h3>
 	<table>
 		<caption class="sr-only">{labels?.caption ?? 'Northwest Houston market and community comparison'}</caption>
@@ -66,4 +78,4 @@ const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#comm
 		</tbody>
 	</table>
 	<p>{source} · <a href={linkHref}>{labels?.linkLabel ?? 'Sources & full comparison'}</a></p>
-</section>
+</section>}
