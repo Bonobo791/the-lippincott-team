@@ -3,9 +3,8 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+import { createComponent } from 'astro/runtime/server/index.js';
 import { parse } from 'node-html-parser';
-import ts from 'typescript';
-import { safeHref } from '../src/lib/url.ts';
 
 const require = createRequire(import.meta.resolve('astro/package.json'));
 const { transform } = require('@astrojs/compiler-rs');
@@ -26,20 +25,20 @@ const code = compiled.code
 const { default: RegionalMarketComparison } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
 const container = await AstroContainer.create();
 
-// AstroContainer always creates on-demand routes. Exercise the same frontmatter
-// separately with the build flag to prove publication still rejects invalid data.
-const frontmatter = ts.transpileModule(source.split('---')[1].replace(/^import[^\n]*\n/gm, ''), {
-	compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-}).outputText;
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-const prerender = new AsyncFunction('getPage', 'getConfig', 'safeHref', 'Astro', frontmatter);
-const getConfig = async () => ({ data: { config: {} } });
-const getPage = (page) => async () => ({ data: { page } });
-const render = (page) => container.renderToString(RegionalMarketComparison, {
-	props: { getPage: getPage(page), getConfig },
+/** Override the container's route flag while preserving its real Astro context and component markup. */
+const PrerenderedComparison = createComponent((result, props, slots) => {
+	const createAstro = result.createAstro;
+	result.createAstro = (...args) => Object.assign(createAstro(...args), { isPrerendered: true });
+	return RegionalMarketComparison(result, props, slots);
 });
-const build = (page) => prerender(getPage(page), getConfig, safeHref, { isPrerendered: true });
+const getPage = (page) => async () => ({ data: { page } });
+/** Render the compiled comparison with injected CMS data in either route mode. */
+const render = (page, { isPrerendered = false, marketTable } = {}) => container.renderToString(
+	isPrerendered ? PrerenderedComparison : RegionalMarketComparison,
+	{ props: { getPage: getPage(page), getConfig: async () => ({ data: { config: { marketTable } } }) } },
+);
 
+/** Create a complete, independently editable regional table matching the CMS shape. */
 function fixture() {
 	return { blocks: [{
 		__typename: 'PageBlocksDataTable', anchorId: 'communities',
@@ -80,11 +79,11 @@ for (const [name, change, message] of invalidCases) {
 	test(`prerendering rejects ${name} with the expected validation error`, async () => {
 		const page = fixture();
 		change(page);
-		await assert.rejects(build(page), { message });
+		await assert.rejects(render(page, { isPrerendered: true }), { message });
 	});
 }
 
-test('valid data and ordinary edits render the complete comparison in row order', async () => {
+test('valid data and ordinary edits emit complete comparison HTML in both render modes', async () => {
 	const page = fixture();
 	for (const edit of [false, true]) {
 		if (edit) {
@@ -95,13 +94,30 @@ test('valid data and ordinary edits render the complete comparison in row order'
 			page.blocks[0].headers[1].heading = ' MEDIAN LIST ';
 			page.blocks[0].headers[3].heading = ' days on MARKET ';
 		}
-		await build(page);
-		const html = parse(await render(page));
-		const rows = html.querySelectorAll('tbody tr').map((row) => row.querySelectorAll('th, td').map((cell) => cell.text));
-		assert.deepEqual(rows, page.blocks[0].rows.map(({ cells }) => [cells[0].text, cells[1].text, cells[3].text]));
-		assert.equal(html.querySelector('h3').text, 'Northwest Houston at a Glance');
-		assert.equal(html.querySelector('a').getAttribute('href'), '/northwest-houston-real-estate/#communities');
-		assert.ok(html.querySelector('p').text.startsWith(page.blocks[0].headers[0].heading));
+		const labels = edit ? {
+			heading: 'Current regional markets', caption: 'Compare communities',
+			areaLabel: 'Market', medianLabel: 'Asking price', daysLabel: 'Time on market',
+			link: '/updated-market-sources/', linkLabel: 'Full data',
+		} : {
+			heading: 'Northwest Houston at a Glance', caption: 'Northwest Houston market and community comparison',
+			areaLabel: 'Area', medianLabel: 'Median list', daysLabel: 'Days on market',
+			link: '/northwest-houston-real-estate/#communities', linkLabel: 'Sources & full comparison',
+		};
+		const outputs = [];
+		for (const isPrerendered of [false, true]) {
+			const output = await render(page, { isPrerendered, marketTable: edit ? labels : undefined });
+			outputs.push(output);
+			const html = parse(output);
+			const rows = html.querySelectorAll('tbody tr').map((row) => row.querySelectorAll('th, td').map((cell) => cell.text));
+			assert.deepEqual(rows, page.blocks[0].rows.map(({ cells }) => [cells[0].text, cells[1].text, cells[3].text]), `rows with isPrerendered=${isPrerendered}`);
+			assert.equal(html.querySelector('h3').text, labels.heading);
+			assert.equal(html.querySelector('caption').text, labels.caption);
+			assert.deepEqual(html.querySelectorAll('thead th').map((cell) => cell.text), [labels.areaLabel, labels.medianLabel, labels.daysLabel]);
+			assert.equal(html.querySelector('a').getAttribute('href'), labels.link);
+			assert.equal(html.querySelector('a').text, labels.linkLabel);
+			assert.ok(html.querySelector('p').text.startsWith(page.blocks[0].headers[0].heading));
+		}
+		assert.equal(outputs[1], outputs[0], 'valid published and editor HTML must match');
 	}
 });
 

@@ -29,6 +29,7 @@ const code = compiled.code
 const { default: HeaderCtas } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
 const container = await AstroContainer.create();
 
+/** Render both real CTA templates without relying on browser link repair. */
 async function renderCtas(link) {
 	const html = await container.renderToString(HeaderCtas, {
 		props: { config: { headerCta: { label: 'Contact us', link } } },
