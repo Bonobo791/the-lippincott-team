@@ -41,7 +41,8 @@ export function withFreshConfig<T>(render: () => T): T {
 /** Deduplicate config per island request, or across a static build outside that scope. */
 export function getConfig() {
 	const cache = requestConfigCache.getStore() ?? buildConfigCache;
-	return (cache.value ??= fetchConfig());
+	cache.value ??= fetchConfig();
+	return cache.value;
 }
 
 export const getPage = (slug: string) => {

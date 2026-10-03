@@ -2,7 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig } from '../lib/data';
-import { safeHref, telHref } from '../lib/url';
+import { safeHref, telHref, linkTargetAttrs } from '../lib/url';
 import { cn } from '../lib/cn';
 
 interface Props {
@@ -120,6 +120,7 @@ const logoSrcset =
 			)}
 			<a
 				href={safeHref(config?.headerCta?.link) ?? '/contact-us/'}
+				{...linkTargetAttrs(safeHref(config?.headerCta?.link) ?? '/contact-us/')}
 				data-tina-field={config?.headerCta ? tinaField(config.headerCta) : undefined}
 				class="inline-flex items-center whitespace-nowrap rounded-full bg-[#d6323c] px-5 py-[11px] text-[13px] font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 max-sm:hidden"
 			>
@@ -192,6 +193,7 @@ const logoSrcset =
 		</nav>
 		<a
 			href={safeHref(config?.headerCta?.link) ?? '/contact-us/'}
+			{...linkTargetAttrs(safeHref(config?.headerCta?.link) ?? '/contact-us/')}
 			class="mt-[18px] inline-flex items-center justify-center rounded-full bg-[#d6323c] px-7 py-4 text-center text-sm font-semibold leading-none text-white shadow-[0_10px_26px_rgba(23,21,26,0.28)] transition-[transform,box-shadow] duration-250 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(23,21,26,0.34)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
 		>
 			{config?.headerCta?.label ?? 'Schedule a Consultation'}

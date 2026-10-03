@@ -13,19 +13,20 @@ let testId = 0;
 
 // Keep the real endpoint, registry, data loaders, Astro rendering, and Tina
 // request/overlay handling. Substitute only the CMS network and page templates.
+const aliases = new Map([
+	['../../lib/islands', [routeURL, islandsURL]],
+	['../../lib/data', [routeURL, dataURL]],
+	['./data', [islandsURL, dataURL]],
+	['../../src/lib/data.ts', [componentURL, dataURL]],
+	['../../tina/__generated__/client', [dataURL, clientURL]],
+]);
 registerHooks({
 	resolve(specifier, context, nextResolve) {
 		const parent = context.parentURL ?? '';
-		if (parent.startsWith(routeURL) && specifier === '../../lib/islands') {
-			return nextResolve(`${islandsURL}?test=${testId}`, context);
-		}
-		if ((parent.startsWith(routeURL) && specifier === '../../lib/data') ||
-			(parent.startsWith(islandsURL) && specifier === './data') ||
-			(parent.startsWith(componentURL) && specifier === '../../src/lib/data.ts')) {
-			return nextResolve(`${dataURL}?test=${testId}`, context);
-		}
-		if (parent.startsWith(dataURL) && specifier === '../../tina/__generated__/client') {
-			return nextResolve(clientURL, context);
+		const [expectedParent, target] = aliases.get(specifier) ?? [];
+		if (expectedParent && parent.startsWith(expectedParent)) {
+			const suffix = target === clientURL ? '' : `?test=${testId}`;
+			return nextResolve(target + suffix, context);
 		}
 		if (parent.startsWith(islandsURL) && specifier.endsWith('.astro')) {
 			return nextResolve(`${componentURL}?test=${testId}`, context);
