@@ -33,7 +33,7 @@ const includeAnalytics =
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} image={image ?? config?.seo?.socialImage ?? undefined} />
+		<BaseHead title={title} description={description} image={image?.trim() || config?.seo?.socialImage?.trim() || undefined} />
 		{/* Per-page head additions (e.g. the homepage's LCP poster preload). */}
 		<slot name="head" />
 		{/* .home-v2 pages hide .reveal sections until their motion JS runs;
@@ -168,13 +168,6 @@ const includeAnalytics =
 				let islandReinitTimer = null;
 				const islandMo = new MutationObserver((muts) => {
 					if (!muts.some((m) => m.addedNodes.length > 0 || m.removedNodes.length > 0)) return;
-					// The reviews HAR feed only works through parser-time
-					// document.writeln — scripts inside swapped island HTML never
-					// execute, so a full reload is the only way to restore it.
-					if (muts.some((m) => m.target instanceof Element && m.target.querySelector('#har-feed'))) {
-						location.reload();
-						return;
-					}
 					clearTimeout(islandReinitTimer);
 					islandReinitTimer = setTimeout(() => document.dispatchEvent(new Event('astro:page-load')), 250);
 				});
@@ -183,6 +176,10 @@ const includeAnalytics =
 					document.querySelectorAll('[data-tina-island]').forEach((el) =>
 						islandMo.observe(el, { childList: true })
 					);
+				});
+				document.addEventListener('astro:before-swap', () => {
+					clearTimeout(islandReinitTimer);
+					islandMo.disconnect();
 				});
 			}
 		</script>

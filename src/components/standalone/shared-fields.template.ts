@@ -1,4 +1,5 @@
 import type { TinaField } from 'tinacms';
+import { headingField, labelLinkFields, objectListField, textField, titleBodyFields } from '../../../tina/schema-fields';
 
 /** Fields every standalone page shares: search/social metadata. */
 export const seoFields = (): TinaField[] => [
@@ -31,8 +32,33 @@ export const actionField = (name: string, label: string): TinaField => ({
 	name,
 	label,
 	fields: [
-		{ type: 'string', name: 'label', label: 'Label' },
-		{ type: 'string', name: 'link', label: 'Link', description: 'e.g. /contact-us/ or a full URL' },
+		textField('label', 'Label'),
+		textField('link', 'Link', { description: 'e.g. /contact-us/ or a full URL' }),
+	],
+});
+
+/** Shared FAQ schema; return fresh nested objects for each page template. */
+export const faqField = (): TinaField => ({
+	type: 'object', name: 'faq', label: 'FAQ Band',
+	description: 'Also emitted as FAQPage structured data.',
+	fields: [
+		headingField(),
+		objectListField('items', 'Questions', [
+			textField('question', 'Question', { required: true }),
+			{ type: 'rich-text', name: 'answer', label: 'Answer' },
+		], 'question'),
+		actionField('cta', 'Section Link'),
+	],
+});
+
+/** Common CTA content followed by the page's own contact/secondary-action fields. */
+export const finalCtaField = (extraFields: TinaField[] = []): TinaField => ({
+	type: 'object', name: 'finalCta', label: 'Final CTA Band',
+	fields: [
+		headingField(),
+		textField('body', 'Body', { ui: { component: 'textarea' } }),
+		actionField('primary', 'Primary Button'),
+		...extraFields,
 	],
 });
 
@@ -43,13 +69,8 @@ export const actionField = (name: string, label: string): TinaField => ({
  * collection exists to remove.
  */
 export const bandHeadFields = (withLede = false): TinaField[] => [
-	{ type: 'string', name: 'eyebrow', label: 'Eyebrow' },
-	{
-		type: 'string',
-		name: 'heading',
-		label: 'Heading',
-		description: 'Wrap the italic accent phrase in **…**.',
-	},
+	textField('eyebrow', 'Eyebrow'),
+	headingField(),
 	...(withLede ? [{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' } as TinaField] : []),
 ];
 
@@ -60,11 +81,11 @@ const statTileField = (name: string, label: string, countUp = true): TinaField =
 	list: true,
 	ui: { itemProps: (item: Record<string, string>) => ({ label: item.label ?? item.slabel ?? item.num ?? '' }) },
 	fields: [
-		{ type: 'string', name: 'num', label: 'Number', description: 'Shown as the big figure, e.g. "$345,000" or "52".' },
-		{ type: 'string', name: 'tail', label: 'Number Suffix', description: 'Styled suffix after the number, e.g. "+", "%".' },
-		{ type: 'string', name: 'label', label: 'Label' },
-		{ type: 'string', name: 'source', label: 'Source Note' },
-		{ type: 'string', name: 'link', label: 'Link', description: 'Optional — wraps the number.' },
+		textField('num', 'Number', { description: 'Shown as the big figure, e.g. "$345,000" or "52".' }),
+		textField('tail', 'Number Suffix', { description: 'Styled suffix after the number, e.g. "+", "%".' }),
+		textField('label', 'Label'),
+		textField('source', 'Source Note'),
+		textField('link', 'Link', { description: 'Optional — wraps the number.' }),
 		{ type: 'boolean', name: 'accent', label: 'Dark Tile', description: 'Render this tile with the dark accent style.' },
 		...(countUp
 			? ([
@@ -74,8 +95,8 @@ const statTileField = (name: string, label: string, countUp = true): TinaField =
 						label: 'Count-Up To',
 						description: 'If set, the number animates from 0 up to this value and the Number field is its formatted display.',
 					},
-					{ type: 'string', name: 'prefix', label: 'Count-Up Prefix', description: 'e.g. "$"' },
-					{ type: 'string', name: 'suffix', label: 'Count-Up Suffix', description: 'Appended to the counted number, e.g. "M".' },
+					textField('prefix', 'Count-Up Prefix', { description: 'e.g. "$"' }),
+					textField('suffix', 'Count-Up Suffix', { description: 'Appended to the counted number, e.g. "M".' }),
 				] as TinaField[])
 			: []),
 	],
@@ -92,21 +113,14 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		name: 'hero',
 		label: 'Hero',
 		fields: [
-			{ type: 'string', name: 'eyebrow', label: 'Eyebrow' },
-			{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
+			textField('eyebrow', 'Eyebrow'),
+			headingField(),
 			{ type: 'image', name: 'image', label: 'Background Image' },
-			{ type: 'string', name: 'imageAlt', label: 'Image Alt Text' },
-			{
-				type: 'object',
-				name: 'chips',
-				label: 'Stat Chips',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.bold ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'bold', label: 'Bold Part', description: 'e.g. "1,463+"' },
-					{ type: 'string', name: 'text', label: 'Rest of Line', description: 'Rendered directly after the bold part — include the leading space or punctuation.' },
-				],
-			},
+			textField('imageAlt', 'Image Alt Text'),
+			objectListField('chips', 'Stat Chips', [
+				textField('bold', 'Bold Part', { description: 'e.g. "1,463+"' }),
+				textField('text', 'Rest of Line', { description: 'Rendered directly after the bold part — include the leading space or punctuation.' }),
+			], 'bold'),
 			actionField('primary', 'Primary Button'),
 			actionField('secondary', 'Secondary Link'),
 		],
@@ -118,17 +132,10 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		fields: [
 			...bandHeadFields(true),
 			statTileField('tiles', 'Market Tiles', false),
-			{
-				type: 'object',
-				name: 'jobs',
-				label: 'Analysis Columns',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.tag ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'tag', label: 'Tag' },
-					{ type: 'rich-text', name: 'body', label: 'Body' },
-				],
-			},
+			objectListField('jobs', 'Analysis Columns', [
+				textField('tag', 'Tag'),
+				{ type: 'rich-text', name: 'body', label: 'Body' },
+			], 'tag'),
 			actionField('cta', 'Section Link'),
 		],
 	},
@@ -138,18 +145,10 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		label: 'Four Factors Band',
 		fields: [
 			...bandHeadFields(),
-			{
-				type: 'object',
-				name: 'jobs',
-				label: 'Factors',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.tag ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'tag', label: 'Tag', description: 'e.g. "01 · Price it right"' },
-					{ type: 'string', name: 'title', label: 'Title' },
-					{ type: 'rich-text', name: 'body', label: 'Body' },
-				],
-			},
+			objectListField('jobs', 'Factors', [
+				textField('tag', 'Tag', { description: 'e.g. "01 · Price it right"' }),
+				...titleBodyFields(true),
+			], 'tag'),
 			actionField('cta', 'Section Link'),
 		],
 	},
@@ -159,32 +158,18 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		label: 'Solo vs Represented Band',
 		fields: [
 			...bandHeadFields(true),
-			{
-				type: 'object',
-				name: 'vsTiles',
-				label: 'Comparison Tiles',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.slabel ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'slabel', label: 'Top Label' },
-					{ type: 'string', name: 'num', label: 'Number' },
-					{ type: 'string', name: 'cap', label: 'Caption' },
-					{ type: 'boolean', name: 'gold', label: 'Gold Number' },
-				],
-			},
+			objectListField('vsTiles', 'Comparison Tiles', [
+				textField('slabel', 'Top Label'),
+				textField('num', 'Number'),
+				textField('cap', 'Caption'),
+				{ type: 'boolean', name: 'gold', label: 'Gold Number' },
+			], 'slabel'),
 			{ type: 'rich-text', name: 'body', label: 'Body Paragraph' },
-			{
-				type: 'object',
-				name: 'stats',
-				label: 'Stat Tiles',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.slabel ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'num', label: 'Number' },
-					{ type: 'string', name: 'slabel', label: 'Label' },
-					{ type: 'string', name: 'ssrc', label: 'Source Note' },
-				],
-			},
+			objectListField('stats', 'Stat Tiles', [
+				textField('num', 'Number'),
+				textField('slabel', 'Label'),
+				textField('ssrc', 'Source Note'),
+			], 'slabel'),
 			{ type: 'rich-text', name: 'note', label: 'Closing Note' },
 			actionField('cta', 'Section Link'),
 		],
@@ -195,30 +180,22 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		label: `What the Team Does Band (${audience})`,
 		fields: [
 			...bandHeadFields(),
-			{ type: 'string', name: 'intro', label: 'List Intro', ui: { component: 'textarea' } },
-			{
-				type: 'object',
-				name: 'items',
-				label: 'Checklist Items',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.bold ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'bold', label: 'Bold Part' },
-					{ type: 'string', name: 'text', label: 'Rest of Line', description: 'Rendered directly after the bold part — include the leading space or punctuation.' },
-				],
-			},
+			textField('intro', 'List Intro', { ui: { component: 'textarea' } }),
+			objectListField('items', 'Checklist Items', [
+				textField('bold', 'Bold Part'),
+				textField('text', 'Rest of Line', { description: 'Rendered directly after the bold part — include the leading space or punctuation.' }),
+			], 'bold'),
 			{ type: 'rich-text', name: 'outro', label: 'Closing Paragraph' },
 			{
 				type: 'object',
 				name: 'ctaCard',
 				label: 'CTA Card',
 				fields: [
-					{ type: 'string', name: 'tag', label: 'Tag' },
-					{ type: 'string', name: 'title', label: 'Title' },
-					{ type: 'string', name: 'body', label: 'Body', ui: { component: 'textarea' } },
-					{ type: 'string', name: 'ctaLabel', label: 'Button Label' },
-					{ type: 'string', name: 'ctaLink', label: 'Button Link' },
-					{ type: 'string', name: 'phoneNote', label: 'Phone Note', description: 'Text before the phone link, e.g. "Prefer to talk first?"' },
+					textField('tag', 'Tag'),
+					...titleBodyFields(),
+					textField('ctaLabel', 'Button Label'),
+					textField('ctaLink', 'Button Link'),
+					textField('phoneNote', 'Phone Note', { description: 'Text before the phone link, e.g. "Prefer to talk first?"' }),
 				],
 			},
 		],
@@ -229,17 +206,7 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		label: 'Process Band',
 		fields: [
 			...bandHeadFields(),
-			{
-				type: 'object',
-				name: 'steps',
-				label: 'Steps',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.title ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'title', label: 'Title' },
-					{ type: 'rich-text', name: 'body', label: 'Body' },
-				],
-			},
+			objectListField('steps', 'Steps', titleBodyFields(true)),
 			actionField('cta', 'Section Link'),
 		],
 	},
@@ -249,72 +216,34 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 		label: 'Record Band',
 		fields: [
 			...bandHeadFields(),
-			{ type: 'string', name: 'quote', label: 'Quote', ui: { component: 'textarea' } },
-			{ type: 'string', name: 'quoteSource', label: 'Quote Source' },
+			textField('quote', 'Quote', { ui: { component: 'textarea' } }),
+			textField('quoteSource', 'Quote Source'),
 			{ type: 'rich-text', name: 'ratingText', label: 'Rating Line' },
 			actionField('ratingLink', 'Rating Link'),
 			statTileField('tiles', 'Stat Tiles'),
 			actionField('cta', 'Section Link'),
 		],
 	},
-	{
-		type: 'object',
-		name: 'faq',
-		label: 'FAQ Band',
-		description: 'Also emitted as FAQPage structured data.',
-		fields: [
-			{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
-			{
-				type: 'object',
-				name: 'items',
-				label: 'Questions',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.question ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'question', label: 'Question', required: true },
-					{ type: 'rich-text', name: 'answer', label: 'Answer' },
-				],
-			},
-			actionField('cta', 'Section Link'),
-		],
-	},
+	faqField(),
 	{
 		type: 'object',
 		name: 'related',
 		label: 'Keep Researching Band',
 		fields: [
-			{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
-			{
-				type: 'object',
-				name: 'chips',
-				label: 'Chips',
-				list: true,
-				ui: { itemProps: (item: Record<string, string>) => ({ label: item.label ?? '' }) },
-				fields: [
-					{ type: 'string', name: 'label', label: 'Label' },
-					{ type: 'string', name: 'link', label: 'Link' },
-				],
-			},
+			headingField(),
+			objectListField('chips', 'Chips', labelLinkFields(), 'label'),
 		],
 	},
-	{
-		type: 'object',
-		name: 'finalCta',
-		label: 'Final CTA Band',
-		fields: [
-			{ type: 'string', name: 'heading', label: 'Heading', description: 'Wrap the italic accent phrase in **…**.' },
-			{ type: 'string', name: 'body', label: 'Body', ui: { component: 'textarea' } },
-			actionField('primary', 'Primary Button'),
-			{ type: 'boolean', name: 'showPhone', label: 'Show Phone Link', description: 'Adds a "Call <number>" link using the phone from Global Config.' },
-		],
-	},
+	finalCtaField([
+		{ type: 'boolean', name: 'showPhone', label: 'Show Phone Link', description: 'Adds a "Call <number>" link using the phone from Global Config.' },
+	]),
 ];
 
 /** Minimal utility-page fields (404, thank-you). */
 export const utilityFields = (): TinaField[] => [
 	...seoFields(),
-	{ type: 'string', name: 'eyebrow', label: 'Eyebrow' },
-	{ type: 'string', name: 'heading', label: 'Heading' },
-	{ type: 'string', name: 'body', label: 'Body', ui: { component: 'textarea' } },
+	textField('eyebrow', 'Eyebrow'),
+	textField('heading', 'Heading'),
+	textField('body', 'Body', { ui: { component: 'textarea' } }),
 	actionField('action', 'Button'),
 ];

@@ -47,8 +47,11 @@ async function loadInterestOptions() {
 	const options = (await listPages())
 		.flatMap((page) => page.blocks ?? [])
 		.filter((block): block is ContactFormBlock => block?.__typename === 'PageBlocksContactForm')
-		.flatMap((block) => block.interestOptions ?? [])
-		.flatMap((o) => (o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []));
+		.flatMap<{ label: string; leadType: string }>((block) => {
+			const edited = (block.interestOptions ?? []).flatMap((o) =>
+				o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []);
+			return edited.length > 0 ? edited : DEFAULT_INTEREST_OPTIONS;
+		});
 	return interestOptionValues(options.length > 0 ? options : DEFAULT_INTEREST_OPTIONS);
 }
 
@@ -62,7 +65,7 @@ function allowedInterests() {
 			allowedInterestsAt = Date.now();
 			return values;
 		})
-		.catch(() => interestOptionValues(DEFAULT_INTEREST_OPTIONS))
+		.catch(() => allowedInterestsValues ?? interestOptionValues(DEFAULT_INTEREST_OPTIONS))
 		.finally(() => {
 			allowedInterestsPromise = null;
 		});

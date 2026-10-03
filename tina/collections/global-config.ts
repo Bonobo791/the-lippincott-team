@@ -1,4 +1,11 @@
-import type { Collection } from "tinacms";
+import type { Collection, TinaField } from "tinacms";
+import { labelLinkFields } from "../schema-fields";
+
+const agentChipList = (name: string, label: string, description: string): TinaField => ({
+  name, label, type: "object", list: true, description,
+  ui: { itemProps: (item) => ({ label: item.label }) },
+  fields: labelLinkFields(true),
+});
 
 export const GlobalConfigCollection: Collection = {
   name: "config",
@@ -107,24 +114,10 @@ export const GlobalConfigCollection: Collection = {
         { name: "eyebrow", label: "Eyebrow", type: "string", description: 'Small label above the agent\'s name (e.g. "Meet your local expert").' },
         { name: "workHeading", label: "Contact Section Heading", type: "string", description: 'Heading above the contact ledger, e.g. "Work with **{name} directly.**"' },
         { name: "teamHeading", label: "Teammates Section Heading", type: "string" },
-        {
-          name: "leadChips", label: "Leading Team Chips", type: "object", list: true,
-          description: "Fixed links shown before the teammate chips (e.g. \"Full roster\").",
-          ui: { itemProps: (item) => ({ label: item.label }) },
-          fields: [
-            { name: "label", label: "Label", type: "string", required: true },
-            { name: "link", label: "Link", type: "string", required: true },
-          ],
-        },
-        {
-          name: "chips", label: "Extra Team Chips", type: "object", list: true,
-          description: "Fixed links in the teammates chips row (the current agent's teammates are added automatically before these).",
-          ui: { itemProps: (item) => ({ label: item.label }) },
-          fields: [
-            { name: "label", label: "Label", type: "string", required: true },
-            { name: "link", label: "Link", type: "string", required: true },
-          ],
-        },
+        agentChipList("leadChips", "Leading Team Chips",
+          "Fixed links shown before the teammate chips (e.g. \"Full roster\")."),
+        agentChipList("chips", "Extra Team Chips",
+          "Fixed links in the teammates chips row (the current agent's teammates are added automatically before these)."),
         { name: "ctaHeading", label: "Bottom CTA Heading", type: "string" },
         { name: "ctaBody", label: "Bottom CTA Text", type: "string", ui: { component: "textarea" } },
         {

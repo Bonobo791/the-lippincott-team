@@ -4,6 +4,7 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import { Icon } from 'astro-icon/components';
 import { mdxComponents } from '../mdx/components';
 import V2Heading from '../v2/V2Heading.astro';
+import HarReviewFeed from './HarReviewFeed.astro';
 import { getConfig, type CmsStandalone } from '../../lib/data';
 import { linkTargetAttrs, safeHref, telHref } from '../../lib/url';
 import { hasRichText } from '../../lib/rich-text';
@@ -122,47 +123,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 					</div>
 				)}
 				<div class="feed reveal">
-					<div id="har-feed" class="har-widget" aria-live="polite">
-						<script is:inline>
-							(() => {
-								const normalizeMarkup = (markup) => String(markup).replace(
-									/((?:src|href)=["']|url\(["']?)\/Realtor-Agent-Rating\//gi,
-									'$1https://members.har.com/Realtor-Agent-Rating/',
-								);
-								window.__harWidgetOriginalWrite = document.write;
-								window.__harWidgetOriginalWriteln = document.writeln;
-								document.write = (markup) => window.__harWidgetOriginalWrite.call(document, normalizeMarkup(markup));
-								document.writeln = (markup) => window.__harWidgetOriginalWriteln.call(document, normalizeMarkup(markup));
-							})();
-						</script>
-						{feed.memberNumber && (
-							<script
-								is:inline
-								src={`https://members.har.com/realtor-agent-rating/api/default.cfm?member_number=${feed.memberNumber}&bg=e8e3d9&showcat=y&showcomments=y`}
-							></script>
-						)}
-					</div>
-					<script is:inline define:vars={{ profileUrl: feedProfileHref }}>
-						(() => {
-							// The override script above always replaces document.write/
-							// writeln — restore them unconditionally or the wrappers
-							// persist across ClientRouter navigations. Only the
-							// profile-link rewrite needs profileUrl.
-							if (window.__harWidgetOriginalWrite) {
-								document.write = window.__harWidgetOriginalWrite;
-								document.writeln = window.__harWidgetOriginalWriteln;
-								delete window.__harWidgetOriginalWrite;
-								delete window.__harWidgetOriginalWriteln;
-							}
-							if (profileUrl) {
-								document.querySelectorAll('#har-feed a[href*="/Realtor-Agent-Rating/"]').forEach((link) => {
-									link.setAttribute('href', profileUrl);
-									link.setAttribute('target', '_blank');
-									link.setAttribute('rel', 'noopener');
-								});
-							}
-						})();
-					</script>
+					<HarReviewFeed memberNumber={feed.memberNumber} profileUrl={feedProfileHref} />
 					{feedNoteParts && (
 						<p class="feed-note" data-tina-field={tinaField(feed, 'feedNote')}>
 							{feedNoteParts[0]}

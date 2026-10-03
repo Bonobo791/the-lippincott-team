@@ -48,7 +48,7 @@ const jsonld = {
 ---
 
 <Base
-	title={data.seoTitle || config?.seo?.title || 'The Lippincott Team'}
+	title={data.seoTitle?.trim() || config?.seo?.title?.trim() || 'The Lippincott Team'}
 	description={data.description?.trim() || config?.seo?.description || ''}
 	image={data.socialImage ?? undefined}
 >
@@ -65,8 +65,8 @@ const jsonld = {
 		const w = window as { __reviewsCarouselBound?: boolean };
 		if (!w.__reviewsCarouselBound) {
 			w.__reviewsCarouselBound = true;
-			// Tina island swaps replace the slides wholesale — the timer and
-			// media-query listener must release the detached DOM before the
+			// Tina island swaps replace the slides wholesale — every listener
+			// and timer must release the detached DOM before the
 			// re-dispatched astro:page-load rebinds the new subtree.
 			let teardown: (() => void) | null = null;
 			const initCarousel = () => {
@@ -81,6 +81,8 @@ const jsonld = {
 				const prev = root.querySelector('[data-car-prev]');
 				const next = root.querySelector('[data-car-next]');
 				if (!track || !dotsWrap || !prev || !next) return;
+				const listeners = new AbortController();
+				const { signal } = listeners;
 				let current = 0;
 				let timer = 0;
 				const INTERVAL = 6000;
@@ -91,7 +93,7 @@ const jsonld = {
 					dot.type = 'button';
 					dot.className = 'car-dot';
 					dot.setAttribute('aria-label', `Review ${i + 1} of ${slides.length}`);
-					dot.addEventListener('click', () => { go(i); restart(); });
+					dot.addEventListener('click', () => { go(i); restart(); }, { signal });
 					dotsWrap.appendChild(dot);
 					return dot;
 				});
@@ -125,18 +127,18 @@ const jsonld = {
 					window.clearInterval(timer);
 				}
 
-				prev.addEventListener('click', () => { go(current - 1); restart(); });
-				next.addEventListener('click', () => { go(current + 1); restart(); });
-				root.addEventListener('mouseenter', stop);
-				root.addEventListener('mouseleave', restart);
-				root.addEventListener('focusin', stop);
-				root.addEventListener('focusout', restart);
+				prev.addEventListener('click', () => { go(current - 1); restart(); }, { signal });
+				next.addEventListener('click', () => { go(current + 1); restart(); }, { signal });
+				root.addEventListener('mouseenter', stop, { signal });
+				root.addEventListener('mouseleave', restart, { signal });
+				root.addEventListener('focusin', stop, { signal });
+				root.addEventListener('focusout', restart, { signal });
 				// Keyboard: left/right to move between reviews when focused.
 				root.addEventListener('keydown', (e) => {
 					const key = (e as KeyboardEvent).key;
 					if (key === 'ArrowLeft') { go(current - 1); restart(); }
 					if (key === 'ArrowRight') { go(current + 1); restart(); }
-				});
+				}, { signal });
 
 				// Track the OS preference live: if reduced motion turns on mid-visit
 				// the running interval must stop (restart()'s early return alone
@@ -149,6 +151,7 @@ const jsonld = {
 				go(0);
 				restart();
 				teardown = () => {
+					listeners.abort();
 					stop();
 					motionQuery.removeEventListener('change', onMotionChange);
 				};

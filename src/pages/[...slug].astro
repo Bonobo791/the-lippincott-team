@@ -21,7 +21,7 @@ const config = (await getConfig()).data?.config ?? null;
 ---
 
 <Base
-	title={data.seoTitle || config?.seo?.title || 'The Lippincott Team | Northwest Houston Realtors'}
+	title={data.seoTitle?.trim() || config?.seo?.title?.trim() || 'The Lippincott Team | Northwest Houston Realtors'}
 	description={data.description?.trim() || config?.seo?.description || 'The Lippincott Team — Northwest Houston real estate experts at eXp Realty.'}
 	image={data.socialImage ?? undefined}
 >

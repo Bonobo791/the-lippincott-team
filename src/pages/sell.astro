@@ -26,7 +26,7 @@ const faqLd = faqItems.length > 0 && {
 ---
 
 <Base
-	title={data.seoTitle || config?.seo?.title || 'The Lippincott Team'}
+	title={data.seoTitle?.trim() || config?.seo?.title?.trim() || 'The Lippincott Team'}
 	description={data.description?.trim() || config?.seo?.description || ''}
 	image={data.socialImage ?? undefined}
 >

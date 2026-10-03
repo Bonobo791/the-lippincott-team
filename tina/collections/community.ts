@@ -51,7 +51,7 @@ export const CommunityCollection: Collection = {
     {
       type: "string", name: "listingUrl", label: "Listings URL",
       description:
-        'External "View Listings" link (e.g. a Sierra property-search URL). Community cards and the hero button point here; leave empty to link to the community page itself.',
+        'External "View Listings" link (e.g. a Sierra property-search URL). Community cards and the hero button point here. When empty, cards link to the community page and the hero listings button is hidden.',
     },
     {
       type: "string", name: "intro", label: "Intro",

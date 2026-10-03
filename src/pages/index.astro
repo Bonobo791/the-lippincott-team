@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import StandaloneBody from '../components/standalone/StandaloneBody.astro';
+import V2Motion from '../components/v2/V2Motion.astro';
 import { getConfig, getStandalone } from '../lib/data';
 import { islands } from '../lib/islands';
 import { hasRichText, richTextToPlainText } from '../lib/rich-text';
@@ -58,7 +59,7 @@ const jsonld = [
 ---
 
 <Base
-	title={data.seoTitle || config?.seo?.title || 'The Lippincott Team'}
+	title={data.seoTitle?.trim() || config?.seo?.title?.trim() || 'The Lippincott Team'}
 	description={data.description?.trim() || config?.seo?.description || ''}
 	image={data.socialImage ?? undefined}
 >
@@ -71,70 +72,5 @@ const jsonld = [
 		<StandaloneBody data={data} />
 	</TinaIsland>
 
-	<script is:inline data-astro-rerun>
-	// Bound once: astro:page-load fires on first load, ClientRouter swaps, and
-	// the island-reinit dispatch after a Tina edit swaps the island's DOM.
-	if (!window.__homeMotionBound) {
-		window.__homeMotionBound = true;
-		document.addEventListener('astro:page-load', function initHomeMotion() {
-		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		// count-up helper
-		function countUp(el, target, opts) {
-			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
-			if (!el.firstChild) return;
-			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
-			var t0 = performance.now();
-			(function tick(t) {
-				var p = Math.min((t - t0) / dur, 1);
-				var e = 1 - Math.pow(1 - p, 3);
-				if (el.firstChild) el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
-				if (p < 1) requestAnimationFrame(tick);
-			})(t0);
-		}
-
-		// awards numeral — target and suffix come from the CMS-driven data attrs.
-		var awardDone = false;
-		function awardCount() {
-			if (awardDone) return; awardDone = true;
-			var el = document.getElementById('awardCount');
-			if (!el) return;
-			var target = +(el.dataset.count || 0), sfx = el.dataset.suffix || '';
-			if (reduced) { el.textContent = target + sfx; return; }
-			var t0 = performance.now();
-			(function tick(t) {
-				var p = Math.min((t - t0) / 1100, 1);
-				var e = 1 - Math.pow(1 - p, 3);
-				el.textContent = Math.round(e * target) + sfx;
-				if (p < 1) requestAnimationFrame(tick);
-			})(t0);
-		}
-
-		// reveal on scroll + triggers
-		var statsDone = new WeakSet();
-		var awardEl = document.getElementById('awardCount');
-		var io = new IntersectionObserver(function (entries) {
-			entries.forEach(function (en) {
-				if (!en.isIntersecting) return;
-				var el = en.target;
-				el.classList.add('in');
-				if (awardEl && el.contains(awardEl)) awardCount();
-				el.querySelectorAll('.num[data-count]').forEach(function (n) {
-					if (statsDone.has(n)) return; statsDone.add(n);
-					countUp(n, +n.dataset.count, { prefix: n.dataset.prefix || '', suffix: n.dataset.suffix || '' });
-				});
-				io.unobserve(el);
-			});
-		}, { threshold: 0.2 });
-		document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { io.observe(el); });
-
-		// fail-safe: never leave above-fold content hidden
-		setTimeout(function () {
-			document.querySelectorAll('.home-v2 .reveal:not(.in)').forEach(function (el) {
-				if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
-			});
-		}, 1600);
-		});
-	}
-	</script>
+	<V2Motion />
 </Base>
