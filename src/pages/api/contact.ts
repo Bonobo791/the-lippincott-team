@@ -1,6 +1,12 @@
 import type { APIRoute } from 'astro';
 import { clientIp, createRateLimiter, jsonError, readBody, type BodyResult } from '../../lib/api-guards';
-import { ContactValidationError, forwardContactLead } from '../../lib/sierra-contact';
+import { listPages, type ContactFormBlock } from '../../lib/data';
+import {
+	ContactValidationError,
+	DEFAULT_INTEREST_OPTIONS,
+	forwardContactLead,
+	interestOptionValues,
+} from '../../lib/sierra-contact';
 
 // Host-neutral contact endpoint: the contact form POSTs here and the lead is
 // forwarded to Sierra directly, identically on every host (Netlify, Coolify/
@@ -24,6 +30,48 @@ const isRateLimited = createRateLimiter(RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS, RA
 
 function thankYou() {
 	return new Response(null, { status: 303, headers: { Location: THANK_YOU_URL } });
+}
+
+// The "I want to" select submits "<leadType>|<label>" pairs. Validate them
+// against the options the forms actually render — contactForm blocks can be
+// placed on any page, so the allowed set is the union across every page doc
+// (the built-in defaults when none are configured). Results are cached
+// briefly so each POST doesn't re-query Tina; a failed lookup is NOT cached,
+// so a transient error can't permanently reject valid CMS options.
+const INTERESTS_CACHE_MS = 5 * 60 * 1000;
+let allowedInterestsValues: ReadonlySet<string> | null = null;
+let allowedInterestsAt = 0;
+let allowedInterestsPromise: Promise<ReadonlySet<string>> | null = null;
+
+/** Load the union of choices rendered by every form, including per-form defaults. */
+async function loadInterestOptions() {
+	const options = (await listPages())
+		.flatMap((page) => page.blocks ?? [])
+		.filter((block): block is ContactFormBlock => block?.__typename === 'PageBlocksContactForm')
+		.flatMap<{ label: string; leadType: string }>((block) => {
+			const edited = (block.interestOptions ?? []).flatMap((o) =>
+				o?.label?.trim() && o.leadType ? [{ label: o.label.trim(), leadType: o.leadType }] : []);
+			return edited.length > 0 ? edited : DEFAULT_INTEREST_OPTIONS;
+		});
+	return interestOptionValues(options.length > 0 ? options : DEFAULT_INTEREST_OPTIONS);
+}
+
+/** Deduplicate refreshes and preserve last-good choices when Tina is temporarily unavailable. */
+function allowedInterests() {
+	if (allowedInterestsValues && Date.now() - allowedInterestsAt < INTERESTS_CACHE_MS) {
+		return Promise.resolve(allowedInterestsValues);
+	}
+	allowedInterestsPromise ??= loadInterestOptions()
+		.then((values) => {
+			allowedInterestsValues = values;
+			allowedInterestsAt = Date.now();
+			return values;
+		})
+		.catch(() => allowedInterestsValues ?? interestOptionValues(DEFAULT_INTEREST_OPTIONS))
+		.finally(() => {
+			allowedInterestsPromise = null;
+		});
+	return allowedInterestsPromise;
 }
 
 // Origins allowed to POST the contact form from a browser. SITE_URL is the
@@ -82,9 +130,10 @@ function originAllowed(request: Request) {
 // Parses the POST body into string fields and enforces the character cap.
 // formData() rejects malformed multipart bodies and unsupported content
 // types — treated as a client error (400) rather than a 500.
-async function parseContactForm(request: Request, body: BodyResult):
-	| { kind: 'error'; response: Response }
-	| { kind: 'ok'; data: Record<string, string> } {
+async function parseContactForm(
+	request: Request,
+	body: BodyResult,
+): Promise<{ kind: 'error'; response: Response } | { kind: 'ok'; data: Record<string, string> }> {
 	if (body.kind === 'error') return body;
 	const contentType = request.headers.get('content-type') ?? 'application/x-www-form-urlencoded';
 	let formData: FormData;
@@ -146,7 +195,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	}
 
 	try {
-		await forwardContactLead(data, apiKey);
+		await forwardContactLead(data, apiKey, fetch, await allowedInterests());
 	} catch (error) {
 		if (error instanceof ContactValidationError) {
 			return jsonError(400, error.message);

@@ -59,9 +59,13 @@ const parsed = stats.map((s) => {
 <script is:inline>
 	if (!window.__statsCountBound) {
 		window.__statsCountBound = true;
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let reduced = false;
 		let obs = null;
+		const counted = new WeakSet();
+		const countCancels = new Set();
 		const animateCount = (el) => {
+			if (counted.has(el)) return;
+			counted.add(el);
 			const target = parseInt(el.dataset.target, 10);
 			const prefix = el.dataset.prefix || '';
 			const suffix = el.dataset.suffix || '';
@@ -69,36 +73,50 @@ const parsed = stats.map((s) => {
 			const render = (v) => { el.textContent = prefix + (comma ? v.toLocaleString('en-US') : v) + suffix; };
 			if (reduced) { render(target); return; }
 			let start = null;
+			let raf = null;
 			const dur = 1700;
+			const cancel = () => {
+				if (raf !== null) cancelAnimationFrame(raf);
+				render(target);
+			};
 			const step = (ts) => {
-				if (!start) start = ts;
+				if (!countCancels.has(cancel)) return;
+				if (start === null) start = ts;
 				const p = Math.min((ts - start) / dur, 1);
 				const eased = 1 - Math.pow(1 - p, 3);
 				render(Math.round(target * eased));
-				if (p < 1) requestAnimationFrame(step);
+				if (p < 1) raf = requestAnimationFrame(step);
+				else countCancels.delete(cancel);
 			};
-			requestAnimationFrame(step);
+			countCancels.add(cancel);
+			raf = requestAnimationFrame(step);
+		};
+		const teardownStatsCount = () => {
+			if (obs) { obs.disconnect(); obs = null; }
+			countCancels.forEach((cancel) => cancel());
+			countCancels.clear();
 		};
 		const initStatsCount = () => {
-			obs = new IntersectionObserver((entries) => {
+			// A Tina refresh can replace sections without a before-swap event.
+			teardownStatsCount();
+			reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window);
+			if (reduced) { document.querySelectorAll('.stat-count').forEach(animateCount); return; }
+			obs = new IntersectionObserver((entries, observer) => {
+				if (observer !== obs) return;
 				entries.forEach((e) => {
 					if (e.isIntersecting) {
 						e.target.querySelectorAll('.stat-count').forEach(animateCount);
-						obs.unobserve(e.target);
+						observer.unobserve(e.target);
 					}
 				});
 			}, { threshold: 0.3 });
 			document.querySelectorAll('[data-stats-section]').forEach((s) => {
-				if (s.dataset.statsCountBound) return;
-				s.dataset.statsCountBound = '1';
 				obs.observe(s);
 			});
 		};
 		// astro:page-load fires on first load and after each ClientRouter swap;
 		// before-swap drops the observer tied to the outgoing DOM.
 		document.addEventListener('astro:page-load', initStatsCount);
-		document.addEventListener('astro:before-swap', () => {
-			if (obs) { obs.disconnect(); obs = null; }
-		});
+		document.addEventListener('astro:before-swap', teardownStatsCount);
 	}
 </script>

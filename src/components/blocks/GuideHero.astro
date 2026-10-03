@@ -14,9 +14,13 @@ interface Props {
 	    every other guide hero. Only applies when the doc also sets
 	    `mobileImage` — backgroundImage-only heroes render full-bleed. */
 	stacked?: boolean;
+	/** Doc-level Sierra listings URL (community collection) — rendered as a
+	    trailing "View Listings" action since guideHero blocks don't repeat
+	    it in their own actions list. */
+	listingUrl?: string | null;
 }
 
-const { data, stacked: stackProp = false } = Astro.props;
+const { data, stacked: stackProp = false, listingUrl } = Astro.props;
 const chips = (data.chips ?? []).filter(c => c !== null);
 const stackedImage = data.mobileImage ?? data.backgroundImage;
 // Only an explicit `mobileImage` opts a page-collection hero into the
@@ -28,7 +32,11 @@ const focalStyle = `--focal-x:${data.focalX ?? 50}%;--focal-y:${data.focalY ?? 4
 // desktop copy stays inside the panel). Same safeHref/linkTargetAttrs
 // filtering as GuideActions, but NO tina bindings on the duplicate — duplicate
 // data-tina-field attributes break visual editing.
-const mobileActions = (data.actions ?? []).flatMap((action) => {
+const listingAction = safeHref(listingUrl)
+	? [{ type: 'button', label: 'View Listings', link: listingUrl }]
+	: [];
+const allActions = [...(data.actions ?? []), ...listingAction];
+const mobileActions = allActions.flatMap((action) => {
 	if (!action) return [];
 	const href = safeHref(action.link);
 	if (!href) return [];
@@ -87,7 +95,7 @@ const stackedTinaField = tinaField(data, data.mobileImage ? 'mobileImage' : 'bac
 				))}
 			</div>
 		)}
-		<GuideActions actions={data.actions} class="mt-10 max-[820px]:hidden" />
+		<GuideActions actions={allActions} class="mt-10 max-[820px]:hidden" />
 	</div>
 	{/* Editorial Masthead stat strip: the desktop chips grown up into the
 	    site's hairline tile language (no tina bindings — see frontmatter). */}

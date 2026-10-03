@@ -1,608 +1,76 @@
 ---
-import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import RegionalMarketComparison from '../components/v2/RegionalMarketComparison.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import StandaloneBody from '../components/standalone/StandaloneBody.astro';
+import V2Motion from '../components/v2/V2Motion.astro';
+import { getConfig, getStandalone } from '../lib/data';
+import { islands } from '../lib/islands';
+import { hasRichText, richTextToPlainText } from '../lib/rich-text';
+import { telHref } from '../lib/url';
 // Shared "Verified Record" (.home-v2) design system — also used by buy/sell.
 import '../styles/v2.css';
 
-// Community-grid card slots (v2.css .comm-grid): the lead card spans 2×2,
-// the second card 1×2, the rest 1×1 across 4/2/1-column breakpoints.
-const commLeadSizes =
-	'(min-width: 1200px) 568px, (min-width: 901px) calc((100vw - 96px) / 2 + 16px), calc(100vw - 48px)';
-const commCardSizes =
-	'(min-width: 1200px) 276px, (min-width: 901px) calc((100vw - 96px) / 4), (min-width: 541px) calc((100vw - 64px) / 2), calc(100vw - 48px)';
+const result = await getStandalone('home');
+const data = result.data?.standalone;
+if (!data || data.__typename !== 'StandaloneHome') return new Response('Not Found', { status: 404 });
+const config = (await getConfig()).data?.config ?? null;
+
+const phone = config?.contact?.phone ?? null;
+const email = data.finalCta?.email?.trim() ? data.finalCta.email : (config?.contact?.email ?? null);
+const agent = data.agentSchema;
+const faqItems = (data.faq?.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer));
+const jsonld = [
+	agent && {
+		'@context': 'https://schema.org',
+		'@type': 'RealEstateAgent',
+		name: config?.seo?.title ?? undefined,
+		description: agent.description ?? undefined,
+		url: Astro.site?.href,
+		...(phone ? { telephone: telHref(phone)?.replace(/^tel:/, '') } : {}),
+		...(email ? { email } : {}),
+		...(config?.seo?.brandSubtitle
+			? { parentOrganization: { '@type': 'Organization', name: config.seo.brandSubtitle } }
+			: {}),
+		areaServed: (agent.areasServed ?? [])
+			.filter((a) => a !== null)
+			.map((a) => ({ '@type': a.kind ?? 'Place', name: a.name })),
+		...(agent.award ? { award: agent.award } : {}),
+		...(agent.rating
+			? {
+					aggregateRating: {
+						'@type': 'AggregateRating',
+						ratingValue: agent.rating,
+						bestRating: '5',
+						reviewCount: agent.reviewCount ?? undefined,
+					},
+				}
+			: {}),
+	},
+	faqItems.length > 0 && {
+		'@context': 'https://schema.org',
+		'@type': 'FAQPage',
+		mainEntity: faqItems.map((q) => ({
+			'@type': 'Question',
+			name: q.question,
+			acceptedAnswer: { '@type': 'Answer', text: richTextToPlainText(q.answer) },
+		})),
+	},
+].filter(Boolean);
 ---
 
 <Base
-	title="Northwest Houston Realtors | The Lippincott Team"
-	description="The Lippincott Team helps Northwest Houston sellers price, stage and sell, and buyers find the right home. 1,463+ sold, rated 4.9. Free consultation."
-	image="/uploads/2026/03/header-houston.jpeg"
+	title={data.seoTitle?.trim() || config?.seo?.title?.trim() || 'The Lippincott Team'}
+	description={data.description?.trim() || config?.seo?.description || ''}
+	image={data.socialImage ?? undefined}
 >
 	{/* The hero video's poster is the LCP image — discover it from the HTML head
 	    instead of waiting for the <video> element to be parsed. */}
-	<link slot="head" rel="preload" as="image" href="/uploads/2026/06/hero-poster.webp" fetchpriority="high" />
-	<script type="application/ld+json" is:inline>
-	{
-	  "@context": "https://schema.org",
-	  "@type": "RealEstateAgent",
-	  "name": "The Lippincott Team",
-	  "description": "Residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Magnolia, Waller and Hockley, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities.",
-	  "url": "https://thelippincottteam.com/",
-	  "telephone": "+1-713-494-1818",
-	  "email": "info@lippincottteam.com",
-	  "parentOrganization": {"@type": "Organization", "name": "eXp Realty"},
-	  "areaServed": [
-	    {"@type": "City", "name": "Cypress, TX"},
-	    {"@type": "City", "name": "Tomball, TX"},
-	    {"@type": "City", "name": "Katy, TX"},
-	    {"@type": "City", "name": "Magnolia, TX"},
-	    {"@type": "City", "name": "Waller, TX"},
-	    {"@type": "City", "name": "Hockley, TX"},
-	    {"@type": "Place", "name": "Bridgeland, TX"},
-	    {"@type": "Place", "name": "Towne Lake, TX"},
-	    {"@type": "Place", "name": "Elyson, TX"},
-	    {"@type": "Place", "name": "Fairfield, TX"},
-	    {"@type": "Place", "name": "Coles Crossing, TX"}
-	  ],
-	  "award": "Houston Business Journal Residential Real Estate Award (2017-2025), GHBA Prism Award Realtor of the Year, eXp Icon Award",
-	  "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.9", "bestRating": "5", "reviewCount": "750"}
-	}
-	</script>
-	<script type="application/ld+json" is:inline>
-	{
-	  "@context": "https://schema.org",
-	  "@type": "FAQPage",
-	  "mainEntity": [
-	    {"@type": "Question", "name": "What areas does the Lippincott Team serve?",
-	     "acceptedAnswer": {"@type": "Answer", "text": "Cypress, Tomball, Katy, Magnolia, Waller and Hockley, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities: the greater Northwest Houston market, from first showing to final signature."}},
-	    {"@type": "Question", "name": "How much is my home worth in Cypress, TX?",
-	     "acceptedAnswer": {"@type": "Answer", "text": "Cypress's median listing price was $435,535 in May 2026 (Realtor.com). Your value depends on subdivision, condition and recent comparable sales. Request a free data-backed valuation."}},
-	    {"@type": "Question", "name": "How long does it take to sell a home in Cypress?",
-	     "acceptedAnswer": {"@type": "Answer", "text": "The Cypress median was 35 days on market in May 2026; Houston overall averaged 52 days in June 2026. Accurately priced, well-presented homes sell fastest."}},
-	    {"@type": "Question", "name": "Do I need a realtor to buy new construction in Bridgeland?",
-	     "acceptedAnswer": {"@type": "Answer", "text": "The builder's rep works for the builder. A buyer's agent costs you nothing out of pocket and negotiates incentives, upgrades and inspection terms on your side."}},
-	    {"@type": "Question", "name": "Why choose the Lippincott Team over other Northwest Houston realtors?",
-	     "acceptedAnswer": {"@type": "Answer", "text": "Nine verified HBJ awards (2017-2025), 1,463+ homes sold, and 750+ five-star reviews at 4.9 on Google and HAR.com. Documented results, not claims."}}
-	  ]
-	}
-	</script>
+	{data.hero?.poster && <link slot="head" rel="preload" as="image" href={data.hero.poster} fetchpriority="high" />}
+	{jsonld.map((entry) => <script type="application/ld+json" is:inline set:html={JSON.stringify(entry).replace(/</g, '\\u003c')} />)}
 
-	<div class="home-v2">
-		<!-- ============ HERO ============ -->
-		<section class="hero">
-			<video autoplay muted loop playsinline poster="/uploads/2026/06/hero-poster.webp">
-				<source src="/uploads/2026/06/Lippincott-Hero-no-pool.mp4" type="video/mp4" />
-			</video>
-			<div class="hero-inner">
-				<span class="kicker">#1 Team in Northwest Houston</span>
-				<h1>The team that <em>lives it and sells it.</em></h1>
-				<p>1,463+ homes sold. <a href="/reviews/">750+ five-star reviews on Google and HAR.com</a>. Nine Houston Business Journal awards, each one verified against MLS data, not voted on.</p>
-				<div class="hero-actions">
-					<a class="btn" href="/contact-us/">Schedule a Consultation</a>
-					<a class="text-link" href="https://www.thelippincottteamlistings.com/featured-listings/" target="_blank" rel="noopener">or browse live listings →</a>
-				</div>
-			</div>
-		</section>
+	<TinaIsland name="standalone" wrapper={islands.standalone.wrapper} params={{ slug: 'home' }} primary>
+		<StandaloneBody data={data} />
+	</TinaIsland>
 
-		<!-- ============ ANSWER CAPSULE (machine-readable only, visually hidden) ============ -->
-		<div class="capsule" aria-hidden="true">
-			<div class="capsule-inner">
-				<p><strong>Quick answer:</strong> The Lippincott Team is a residential real estate team with eXp Realty serving Northwest Houston: Cypress, Tomball, Katy, Magnolia, Waller and Hockley, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities. The team reports 1,463+ homes sold and 750+ five-star reviews across Google and HAR.com, and has won the Houston Business Journal's Residential Real Estate Award nine times, 2017 through 2025. Phone: <span style="font-weight:600;color:var(--ink)">713-494-1818</span>.</p>
-			</div>
-		</div>
-
-		<!-- ============ TRUST BAR ============ -->
-		<div class="trust">
-			<div class="trust-inner">
-				<span class="lead">Serving All of Northwest Houston</span>
-				<div class="t-item">
-					<span class="stars">★★★★★</span>
-					<span><span class="name">Google</span><br /><span class="sub">4.9 rating</span></span>
-				</div>
-				<div class="t-item">
-					<span class="stars">★★★★★</span>
-					<span><span class="name">HAR.com</span><br /><span class="sub">4.9 rating · Houston's MLS</span></span>
-				</div>
-			</div>
-		</div>
-
-		<!-- ============ WHY CHOOSE ============ -->
-		<section class="svc">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">Why do Northwest Houston sellers and buyers choose the <em>Lippincott Team?</em></h2>
-				<p class="lede reveal">Because results here are documented, not claimed. The Houston Business Journal's
-					Residential Real Estate Award is not a popularity contest. It ranks teams on verified MLS closed
-					volume and transaction counts, and the Lippincott Team has won it nine separate years: 2017 through
-					2025, consecutively.</p>
-				<p class="lede reveal" style="margin-top:14px;font-weight:600;color:var(--ink)">That track record covers every side of your move:</p>
-				<div class="svc-grid" style="margin-top:40px">
-					<div class="svc-card reveal">
-						<div class="n">01</div>
-						<h3>Buy</h3>
-						<p>Live MLS search across Cypress, Tomball, Katy and Bridgeland with real-time updates
-							and a full team behind your offer.</p>
-						<a class="link-arrow" href="https://www.thelippincottteamlistings.com/property-search/results/" target="_blank" rel="noopener">Search homes →</a>
-					</div>
-					<div class="svc-card reveal">
-						<div class="n">02</div>
-						<h3>Sell</h3>
-						<p>Professional photography, staging guidance and SEO-optimized exposure, all backed by a
-							comparative market analysis.</p>
-						<a class="link-arrow" href="/sell/">Sell with us →</a>
-					</div>
-					<div class="svc-card reveal">
-						<div class="n">03</div>
-						<h3>Relocate</h3>
-						<p>Out-of-state movers get neighborhood, school and commute comparisons before they fly in.</p>
-						<a class="link-arrow" href="/contact-us/">Plan my move →</a>
-					</div>
-				</div>
-				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-			</div>
-		</section>
-
-		<!-- ============ TESTIMONIALS ============ -->
-		<section class="testi">
-			<div class="wrap">
-				<div class="testi-grid">
-					<div class="testi-left reveal">
-						<video controls playsinline preload="none" poster="/uploads/2026/03/testimonial-poster.webp">
-							<source src="/uploads/2026/03/testimonial-Edwards-horizontal.mp4" type="video/mp4" />
-						</video>
-						<div class="who">George and Deborah Edwards, Lippincott Team clients, on camera</div>
-						<div class="review-card">
-							<div class="big">750<span>+</span></div>
-							<div class="rc-text">
-								<span class="stars">★★★★★</span>
-								<strong>five-star reviews</strong> across Google and HAR.com.<br />Rated 4.9 on both.
-							</div>
-						</div>
-
-						<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-					</div>
-					<div class="testi-right">
-						<h2 class="display reveal">Every home sold has a story. <em>Hear theirs.</em></h2>
-						<div class="quotes" style="margin-top:36px">
-							<div class="quote reveal">
-								<p>"They stage it well and then our home sold in one weekend. We have now bought and sold 3 homes with the Lippincott Team, they are truly the best in the business."</p>
-								<div class="src">Verified HAR.com client survey</div>
-							</div>
-							<div class="quote reveal">
-								<p>"Amy's team was wonderful in every way. All our expectations were exceeded."</p>
-								<div class="src">Verified client review · Lismore Lake Dr, Cypress</div>
-							</div>
-							<div class="quote reveal">
-								<p>"Amiee was very helpful as well as knowledgeable. We are so thankful that she was our realtor!"</p>
-								<div class="src">Verified client review · Maple Meadows Dr</div>
-							</div>
-						</div>
-						<a class="link-arrow reveal" href="/reviews/" style="margin-top:24px">See All Reviews →</a>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ SELLER HELP ============ -->
-		<section class="help-sell">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">What does the Lippincott Team do for <em>sellers?</em></h2>
-				<div class="help-sell-grid">
-					<div class="reveal">
-						<p class="lede">Four factors, all handled for you.</p>
-						<div class="help-quote">
-							<p>"Working with Amy and her team was an absolute pleasure from start to finish.
-								No wonder they are #1 in Cypress."</p>
-							<div class="src">Verified HAR.com client survey</div>
-						</div>
-
-						<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-					</div>
-					<div class="jobs reveal">
-						<div class="job">
-							<h3><span>01</span>Pricing</h3>
-							<p>Your list price comes from a comparative market analysis of recent sales in your
-								subdivision.</p>
-						</div>
-						<div class="job">
-							<h3><span>02</span>Preparation</h3>
-							<p>Staging guidance that performs: one client's staged home sold in a single weekend
-								(verified HAR.com client survey).</p>
-						</div>
-						<div class="job">
-							<h3><span>03</span>Exposure</h3>
-							<p>Professional photography, social campaigns and SEO-optimized listing pages that reach
-								the buyers already searching your neighborhood.</p>
-						</div>
-						<div class="job">
-							<h3><span>04</span>Negotiation and closing</h3>
-							<p>A dedicated listing specialist negotiates your offers; a transaction coordinator manages
-								inspection, appraisal and closing timelines. You always know what happens next.</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ STATS ============ -->
-		<section class="stats dark">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(28px,3.4vw,44px);max-width:24ch">How many homes has the <em>Lippincott Team</em> sold?</h2>
-				<p class="lede reveal">The Lippincott Team reports more than 1,463 homes sold and 750+ five-star
-					reviews across Google and HAR.com, rated 4.9 on both. On HAR.com, broker Amy Lippincott holds
-					a 4.92 out of 5 rating across 687+ completed client surveys.</p>
-				<div class="stats-grid">
-					<div class="stat reveal"><div class="num" data-count="1463">0<span>+</span></div><div class="lbl">Homes sold</div></div>
-					<div class="stat reveal"><div class="num" data-count="400" data-prefix="$" data-suffix="M">0<span>+</span></div><div class="lbl">Volume sold</div></div>
-					<div class="stat reveal"><div class="num" data-count="750">0<span>+</span></div><div class="lbl">Five-star reviews</div></div>
-				</div>
-				<p class="sec-cta gold center reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-			</div>
-		</section>
-
-		<!-- ============ COMMUNITIES ============ -->
-		<section class="comm">
-			<div class="wrap">
-				<div class="eyebrow red reveal">Community guides</div>
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">Northwest Houston, <em>guide by guide.</em></h2>
-				<p class="lede reveal">Eight Northwest Houston communities, each with its own guide: schools, prices,
-					commutes and the honest trade-offs — not just a listing feed. Towne Lake listed at a $685,000 median
-					in May 2026, the area's premium tier, while Cypress overall listed at $435,535 (Realtor.com).</p>
-				<div class="comm-grid">
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/cypress-tx-real-estate/">
-						<Image src="/uploads/2026/03/cypress-1536x863.jpg" alt="Cypress, TX" width={1536} height={863} sizes={commLeadSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Cypress</span><span class="char">Master-planned lakes, Cy-Fair ISD, the 290 corridor</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/tomball-tx-real-estate/">
-						<Image src="/uploads/2026/08/tomball-sign-card.jpg" alt="Tomball, TX" width={1200} height={900} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Tomball</span><span class="char">Small-town main street, acreage lots, Tomball ISD</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/katy-tx-real-estate/">
-						<Image src="/uploads/2026/04/katy2.jpg" alt="Katy, TX" width={1600} height={1200} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Katy</span><span class="char">West-side growth, Katy ISD, Energy Corridor access</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/cypress-tx-real-estate/bridgeland-real-estate/">
-						<Image src="/uploads/2026/03/bridgeland.jpg" alt="Bridgeland, TX" width={2130} height={1596} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Bridgeland</span><span class="char">11,500-acre master-planned community; its developer ranks it Greater Houston's top-selling MPC</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/cypress-tx-real-estate/towne-lake-real-estate/">
-						<Image src="/uploads/2026/03/townelake.jpg" alt="Towne Lake, TX" width={1024} height={721} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Towne Lake</span><span class="char">Waterfront living and the boardwalk, $685K median tier</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/magnolia-tx-real-estate/">
-						<Image src="/uploads/2026/08/magnolia-hero.jpeg" alt="Magnolia, TX" width={1024} height={768} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Magnolia</span><span class="char">Wooded acreage on the west corridor</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/waller-tx-real-estate/">
-						<Image src="/uploads/2026/08/waller-ranch-horses.jpg" alt="Waller, TX" width={1600} height={1067} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Waller</span><span class="char">Acreage and new-construction value</span><span class="go">Read the guide →</span></span>
-					</a>
-					<a class="comm-card reveal" href="/northwest-houston-real-estate/hockley-tx-real-estate/">
-						<Image src="/uploads/2026/08/hockley-new.jpg" alt="Hockley, TX" width={960} height={540} sizes={commCardSizes} format="webp" quality={75} loading="lazy" decoding="async" /><span class="meta"><span class="city">Hockley</span><span class="char">Rural-fringe lots and custom-build land</span><span class="go">Read the guide →</span></span>
-					</a>
-				</div>
-				<div class="guides-dl reveal">
-					<span class="guides-dl-label">Free download guides:</span>
-					<a href="/uploads/2026/08/guide-to-cypress.docx" target="_blank" rel="noopener">Cypress guide (DOCX)</a>
-					<a href="/uploads/2026/08/guide-to-tomball.pdf" target="_blank" rel="noopener">Tomball guide (PDF)</a>
-					<a href="/uploads/2026/08/guide-to-waller.pdf" target="_blank" rel="noopener">Waller guide (PDF)</a>
-				</div>
-				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-			</div>
-		</section>
-
-		<!-- ============ BUYER HELP ============ -->
-		<section class="help-buy">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">What does the Lippincott Team do for <em>buyers?</em></h2>
-				<div class="steps">
-					<div class="step reveal">
-						<div class="n">1</div>
-						<h3>Tell us how you live</h3>
-						<p>Commute, schools, lot size, budget. We map your criteria to specific Northwest Houston
-							neighborhoods before you tour a single home.</p>
-					</div>
-					<div class="step reveal">
-						<div class="n">2</div>
-						<h3>Tour with a specialist</h3>
-						<p>A dedicated buyer specialist shows you homes that fit, including new construction in
-							Bridgeland and Towne Lake, and flags problems before you fall in love.</p>
-					</div>
-					<div class="step reveal">
-						<div class="n">3</div>
-						<h3>Win the offer, close clean</h3>
-						<p>Your offer is priced from comparable sales and negotiated by the team; inspection through
-							closing is coordinated for you. Relocating? Neighborhood, school and commute comparisons
-							happen before you fly in.</p>
-					</div>
-				</div>
-				<div class="help-quote reveal">
-					<p>"Knowledgeable, dedicated and easy to work with. I recommend everyone I know
-						looking to buy, rent or sell."</p>
-					<div class="src">Verified Zillow review</div>
-				</div>
-				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-			</div>
-		</section>
-
-		<!-- ============ TEAM ============ -->
-		<section class="team dark">
-			<div class="team-split">
-				<div class="team-inner">
-					<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px);max-width:20ch">Who is behind the <em>Lippincott Team?</em></h2>
-					<p class="reveal">The Lippincott Team is a full-service team within eXp Realty, led by broker Amy
-						Lippincott, with dedicated buyer specialists, listing specialists and transaction coordinators.
-						Clients work with a team, not a single agent juggling everything. That structure is how the team
-						sustains both its volume and a 4.9 rating across 750+ reviews on Google and HAR.com.</p>
-					<div class="hero-actions reveal" style="margin-top:34px">
-						<a class="btn" href="/about/">Meet the full team</a>
-						<a class="text-link" href="/reviews/">Read our reviews →</a>
-					</div>
-				</div>
-				<div class="ph">
-					<video controls playsinline preload="none" poster="/uploads/2026/07/team-video-poster.webp">
-						<source src="/uploads/2026/07/amy-website-video-horizontal.mp4" type="video/mp4" />
-					</video>
-					<div class="who">Hear it from the team: who we are, how we work, and why Northwest Houston hires us.</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ MARKET UPDATE ============ -->
-		<section class="market">
-			<div class="wrap">
-				<div class="eyebrow red reveal">Market update</div>
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">What is the Northwest Houston market doing <em>right now?</em></h2>
-				<p class="lede reveal">Greater Houston is a balanced market in mid-2026. The median single-family
-					price held at $345,000 in June, homes averaged 52 days on market, and inventory sat at 5.2 months
-					of supply, inside the 4-to-6-month range economists call balanced.</p>
-				<p class="src-note reveal">Source: Houston Association of Realtors, June 2026 market update.</p>
-				<div class="market-grid">
-					<div class="mkt reveal"><div class="num">$345,000</div><div class="lbl">Houston median price · June 2026</div></div>
-					<div class="mkt reveal"><div class="num">52 days</div><div class="lbl">Average time on market</div></div>
-					<div class="mkt reveal"><div class="num">5.2 mo</div><div class="lbl">Months of supply</div></div>
-					<div class="mkt dark-tile reveal"><div class="num">+12.3%</div><div class="lbl">Pending sales, year over year</div></div>
-				</div>
-				<RegionalMarketComparison />
-				<div class="market-body">
-					<p class="takeaway reveal">What that means for you: pricing precision matters more now than it did
-						in 2021. Homes priced at or just below recent comparable sales still move. Overpriced listings sit.
-						Every Lippincott Team listing starts with a data-backed pricing analysis.
-						<a class="link-arrow" style="display:inline-block;margin-top:12px" href="/sell/"><em>See what your home is worth →</em></a></p>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ FSBO ============ -->
-		<section class="fsbo">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(30px,3.8vw,48px)">Should you sell with an agent or <em>on your own?</em></h2>
-				<p class="lede reveal">Nationwide, the price gap between selling with an agent and selling on
-					your own is measurable, and the challenges owners face alone are well documented:</p>
-				<div class="fsbo-split">
-					<div class="fsbo-stat reveal">
-						<div class="vs"><span class="big agent">$435,000</span><span class="word">with an agent</span></div>
-						<div class="vs" style="margin-top:10px"><span class="big">$380,000</span><span class="word">on your own</span></div>
-						<p class="cap">Median sale prices, agent-assisted versus for-sale-by-owner
-							(National Association of Realtors, 2024 Profile of Home Buyers and Sellers).</p>
-						<p class="share">FSBO has fallen from <strong>21% of home sales in 1985</strong> to a
-							record-low <strong>6% in 2024</strong>.</p>
-					</div>
-					<div class="fsbo-rows reveal">
-						<div class="fsbo-row">
-							<h3>Pricing</h3>
-							<p>17% of FSBO sellers called getting the price right their hardest task (NAR, 2024), and 64%
-								of sellers who went solo said they did not get their desired price (Clever Real Estate FSBO survey).</p>
-						</div>
-						<div class="fsbo-row">
-							<h3>Paperwork</h3>
-							<p>Understanding and performing the paperwork ranked among FSBO sellers' hardest steps
-								(NAR, 2024). In the Clever survey, 43% of unrepresented sellers admitted to making legal mistakes.</p>
-						</div>
-						<div class="fsbo-row">
-							<h3>Exposure</h3>
-							<p>63% of FSBO sellers did not actively market their home at all (NAR, 2024). No campaign,
-								no MLS push, no buyer pool beyond the sign in the yard.</p>
-						</div>
-					</div>
-				</div>
-				<div class="fsbo-close reveal">
-					<p>A consultation costs nothing and commits you to nothing. You keep the pricing data either way.</p>
-					<a class="btn" href="/contact-us/">Schedule a Consultation</a>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ AWARDS / TROPHY WALL ============ -->
-		<section class="awards dark" id="awards">
-			<div class="wrap">
-				<div class="eyebrow gold reveal">Recognition</div>
-				<div class="awards-hero">
-					<div class="reveal">
-						<h2 class="display" style="font-size:clamp(30px,3.8vw,48px)">What awards has the <em>Lippincott Team</em> won?</h2>
-						<p class="lede">
-							Nine Houston Business Journal Residential Real Estate Awards, the GHBA Prism Award for
-							Realtor of the Year, the eXp Icon Award, and a #6-in-Texas sales-volume recognition from
-							eXp Realty. Each one has published, measurable criteria.
-						</p>
-					</div>
-					<div class="reveal">
-						<div class="monument">
-							<span class="numeral" id="awardCount">0</span>
-							<span class="times">times</span>
-						</div>
-						<div class="monument-label">
-							<strong>Houston Business Journal</strong>
-							Residential Real Estate Award
-						</div>
-					</div>
-				</div>
-
-				<div class="wall">
-					<article class="trophy featured reveal">
-						<div class="org">Greater Houston Builders Association</div>
-						<h3>GHBA Prism Award: Realtor of the Year</h3>
-						<p>Issued by the Greater Houston Builders Association for total homes sold, dollar volume,
-							measurable impact on builder sales, community involvement and Realtor-organization leadership.</p>
-					</article>
-					<article class="trophy reveal">
-						<div class="org">Houston Business Journal</div>
-						<h3>Top 25 Residential Real Estate Teams</h3>
-						<p>Ranked on verified MLS and brokerage-reported data: closed volume, closed transactions,
-							consistent annual production. Won every year 2017-2025.</p>
-						<div class="years">
-							<span>2017</span><span>2018</span><span>2019</span><span>2020</span><span>2021</span>
-							<span>2022</span><span>2023</span><span>2024</span><span>2025</span>
-						</div>
-					</article>
-					<article class="trophy reveal">
-						<div class="org">eXp Realty</div>
-						<h3>eXp Icon Award</h3>
-						<p>Reserved for agents clearing strict production minimums ($500,000 gross commission
-							income and 10+ closed transactions) plus mandated teaching, mentoring or committee service.</p>
-					</article>
-					<article class="trophy reveal">
-						<div class="org">eXp Realty · Statewide</div>
-						<h3>#6 in Texas by Sales Volume</h3>
-						<p>eXp Realty's internal statewide ranking, across tens of thousands of Texas
-							license holders.</p>
-					</article>
-					<article class="trophy reveal">
-						<div class="org">Career Honors</div>
-						<h3>Historical Top Producer Awards</h3>
-						<p>Top volume and unit sales recognition from Better Homes and Gardens Real Estate,
-							Keller Williams Platinum, and Howard Hughes Development, across brokerages
-							and across decades.</p>
-					</article>
-				</div>
-
-				<div class="awards-foot reveal">
-					<p class="line">Awards are the receipt. <em>Homes sold are the proof.</em></p>
-					<a class="link-arrow" style="color:var(--gold-bright)" href="/sell/">See what your home is worth →</a>
-				</div>
-			</div>
-		</section>
-
-		<!-- ============ FAQ ============ -->
-		<section class="faq">
-			<div class="wrap">
-				<h2 class="display reveal">Questions, <em>answered.</em></h2>
-				<div class="faq-list">
-					<details class="reveal">
-						<summary>What areas does the Lippincott Team serve? <span class="plus">+</span></summary>
-						<p>Cypress, Tomball, Katy, Magnolia, Waller and Hockley, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities: the greater Northwest Houston market, from first showing to final signature.</p>
-					</details>
-					<details class="reveal">
-						<summary>How much is my home worth in Cypress, TX? <span class="plus">+</span></summary>
-						<p>Cypress's median listing price was $435,535 in May 2026 (Realtor.com). Your value depends on subdivision, condition and recent comparable sales. Request a free data-backed valuation.</p>
-					</details>
-					<details class="reveal">
-						<summary>How long does it take to sell a home in Cypress? <span class="plus">+</span></summary>
-						<p>The Cypress median was 35 days on market in May 2026; Houston overall averaged 52 days in June 2026. Accurately priced, well-presented homes sell fastest.</p>
-					</details>
-					<details class="reveal">
-						<summary>Do I need a realtor to buy new construction in Bridgeland? <span class="plus">+</span></summary>
-						<p>The builder's rep works for the builder. A buyer's agent costs you nothing out of pocket and negotiates incentives, upgrades and inspection terms on your side.</p>
-					</details>
-					<details class="reveal">
-						<summary>Why choose the Lippincott Team over other Northwest Houston realtors? <span class="plus">+</span></summary>
-						<p>Nine verified HBJ awards (2017-2025), 1,463+ homes sold, and 750+ five-star reviews at 4.9 on Google and HAR.com. Documented results, not claims.</p>
-					</details>
-				</div>
-				<p class="sec-cta reveal"><a class="link-arrow" href="/contact-us/">Schedule a Consultation →</a></p>
-			</div>
-		</section>
-
-		<!-- ============ FINAL CTA ============ -->
-		<section class="final dark">
-			<div class="reveal">
-				<h2>Your home could be <em>number 1,464.</em></h2>
-				<p>Tell us about your home. We'll bring the pricing analysis, the marketing plan and the team
-					that sells Northwest Houston. No obligation. You keep the data either way.</p>
-				<div class="final-actions">
-					<a class="btn" href="/contact-us/">Schedule a Consultation</a>
-				</div>
-				<p style="margin-top:22px"><a class="text-link" style="color:rgba(255,255,255,.8);font-size:14px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px" href="https://www.thelippincottteamlistings.com/featured-listings/" target="_blank" rel="noopener">Not selling? Browse live listings →</a></p>
-				<p class="contact"><a href="tel:7134941818">713-494-1818</a> &nbsp;·&nbsp; <a href="mailto:info@lippincottteam.com">info@lippincottteam.com</a></p>
-			</div>
-		</section>
-
-		<!-- ============ RECIRCULATION / NEXT STEPS ============ -->
-		<section class="next">
-			<div class="wrap">
-				<h2 class="display reveal" style="font-size:clamp(28px,3.4vw,42px)">Where to go <em>next.</em></h2>
-				<div class="next-rows reveal">
-					<a class="next-row" href="https://www.thelippincottteamlistings.com/featured-listings/" target="_blank" rel="noopener">
-						<h3>Search live MLS listings</h3>
-						<p>Every active home across Cypress, Tomball, Katy, Bridgeland and the rest of Northwest Houston, updated in real time.</p>
-						<span class="go">Browse live listings →</span>
-					</a>
-					<a class="next-row" href="/sell/">
-						<h3>Get your home's value</h3>
-						<p>A data-backed pricing analysis from the team with nine verified Houston Business Journal awards.</p>
-						<span class="go">See what your home is worth →</span>
-					</a>
-					<a class="next-row" href="/blog/">
-						<h3>Read Our Blog</h3>
-						<p>Market updates, neighborhood guides and buying and selling advice from the team that works here daily.</p>
-						<span class="go">Read the blog →</span>
-					</a>
-				</div>
-			</div>
-		</section>
-	</div>
-
-	<script is:inline data-astro-rerun>
-	(function () {
-		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		// count-up helper
-		function countUp(el, target, opts) {
-			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
-			if (!el.firstChild) return;
-			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
-			var t0 = performance.now();
-			(function tick(t) {
-				var p = Math.min((t - t0) / dur, 1);
-				var e = 1 - Math.pow(1 - p, 3);
-				if (el.firstChild) el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
-				if (p < 1) requestAnimationFrame(tick);
-			})(t0);
-		}
-
-		// awards numeral
-		var awardDone = false;
-		function awardCount() {
-			if (awardDone) return; awardDone = true;
-			var el = document.getElementById('awardCount');
-			if (!el) return;
-			if (reduced) { el.textContent = '9×'; return; }
-			var t0 = performance.now();
-			(function tick(t) {
-				var p = Math.min((t - t0) / 1100, 1);
-				var e = 1 - Math.pow(1 - p, 3);
-				el.textContent = Math.round(e * 9) + '×';
-				if (p < 1) requestAnimationFrame(tick);
-			})(t0);
-		}
-
-		// reveal on scroll + triggers
-		var statsDone = new WeakSet();
-		var awardEl = document.getElementById('awardCount');
-		var io = new IntersectionObserver(function (entries) {
-			entries.forEach(function (en) {
-				if (!en.isIntersecting) return;
-				var el = en.target;
-				el.classList.add('in');
-				if (awardEl && el.contains(awardEl)) awardCount();
-				el.querySelectorAll('.num[data-count]').forEach(function (n) {
-					if (statsDone.has(n)) return; statsDone.add(n);
-					countUp(n, +n.dataset.count, { prefix: n.dataset.prefix || '', suffix: n.dataset.suffix || '' });
-				});
-				io.unobserve(el);
-			});
-		}, { threshold: 0.2 });
-		document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { io.observe(el); });
-
-		// fail-safe: never leave above-fold content hidden
-		setTimeout(function () {
-			document.querySelectorAll('.home-v2 .reveal:not(.in)').forEach(function (el) {
-				if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
-			});
-		}, 1600);
-	})();
-	</script>
-
+	<V2Motion />
 </Base>

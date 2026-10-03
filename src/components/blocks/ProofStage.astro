@@ -98,42 +98,57 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 <script is:inline>
 	if (!window.__proofCountBound) {
 		window.__proofCountBound = true;
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		let proofObs = null;
+		const counted = new WeakSet();
+		const countCancels = new Set();
 		const animateProof = (el) => {
+			if (counted.has(el)) return;
+			counted.add(el);
 			const target = parseInt(el.dataset.target, 10);
 			const render = (v) => { el.textContent = v.toLocaleString('en-US'); };
-			if (reduced) { render(target); return; }
 			let start = null;
+			let raf = null;
 			const dur = 1200;
+			const cancel = () => {
+				if (raf !== null) cancelAnimationFrame(raf);
+				render(target);
+			};
 			const step = (ts) => {
-				if (!start) start = ts;
+				if (!countCancels.has(cancel)) return;
+				if (start === null) start = ts;
 				const p = Math.min((ts - start) / dur, 1);
 				const eased = 1 - Math.pow(1 - p, 3);
 				render(Math.round(target * eased));
-				if (p < 1) requestAnimationFrame(step);
+				if (p < 1) raf = requestAnimationFrame(step);
+				else countCancels.delete(cancel);
 			};
-			requestAnimationFrame(step);
+			countCancels.add(cancel);
+			raf = requestAnimationFrame(step);
+		};
+		const teardownProofCount = () => {
+			if (proofObs) { proofObs.disconnect(); proofObs = null; }
+			countCancels.forEach((cancel) => cancel());
+			countCancels.clear();
 		};
 		const initProofCount = () => {
+			// Tina refreshes replace DOM without a preceding before-swap event.
+			teardownProofCount();
+			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			if (reduced || !('IntersectionObserver' in window)) return;
-			proofObs = proofObs || new IntersectionObserver((entries) => {
+			proofObs = new IntersectionObserver((entries, observer) => {
+				if (observer !== proofObs) return;
 				entries.forEach((e) => {
 					if (e.isIntersecting) {
 						e.target.querySelectorAll('.proof-count').forEach(animateProof);
-						proofObs.unobserve(e.target);
+						observer.unobserve(e.target);
 					}
 				});
 			}, { threshold: 0.3 });
 			document.querySelectorAll('[data-proof-section]').forEach((s) => {
-				if (s.dataset.proofCountBound) return;
-				s.dataset.proofCountBound = '1';
 				proofObs.observe(s);
 			});
 		};
 		document.addEventListener('astro:page-load', initProofCount);
-		document.addEventListener('astro:before-swap', () => {
-			if (proofObs) { proofObs.disconnect(); proofObs = null; }
-		});
+		document.addEventListener('astro:before-swap', teardownProofCount);
 	}
 </script>

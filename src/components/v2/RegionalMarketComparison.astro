@@ -1,6 +1,7 @@
 ---
-import { getPage } from '../../lib/data';
+import { getConfig, getPage } from '../../lib/data';
 import type { DataTableBlock, PageBlock } from '../../lib/data';
+import { safeHref } from '../../lib/url';
 
 const normalizedAnchor = (value?: string | null) => value?.trim().replace(/^#/, '');
 const page = (await getPage('northwest-houston-real-estate')).data.page;
@@ -39,17 +40,19 @@ if (
 }
 
 const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';
+const labels = (await getConfig()).data?.config?.marketTable;
+const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#communities';
 ---
 
 <section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
-	<h3 id="regional-market-heading">Northwest Houston at a Glance</h3>
+	<h3 id="regional-market-heading">{labels?.heading ?? 'Northwest Houston at a Glance'}</h3>
 	<table>
-		<caption class="sr-only">Northwest Houston market and community comparison</caption>
+		<caption class="sr-only">{labels?.caption ?? 'Northwest Houston market and community comparison'}</caption>
 		<thead>
 			<tr>
-				<th scope="col">Area</th>
-				<th scope="col">Median list</th>
-				<th scope="col">Days on market</th>
+				<th scope="col">{labels?.areaLabel ?? 'Area'}</th>
+				<th scope="col">{labels?.medianLabel ?? 'Median list'}</th>
+				<th scope="col">{labels?.daysLabel ?? 'Days on market'}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -62,5 +65,5 @@ const source = comparison.headers?.[0]?.heading ?? 'Realtor.com';
 			))}
 		</tbody>
 	</table>
-	<p>{source} · <a href="/northwest-houston-real-estate/#communities">Sources &amp; full comparison</a></p>
+	<p>{source} · <a href={linkHref}>{labels?.linkLabel ?? 'Sources & full comparison'}</a></p>
 </section>

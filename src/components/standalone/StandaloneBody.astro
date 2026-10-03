@@ -1,0 +1,17 @@
+---
+import type { CmsStandalone } from '../../lib/data';
+import HomeBody from './HomeBody.astro';
+import BuySellBody from './BuySellBody.astro';
+import ReviewsBody from './ReviewsBody.astro';
+import BlogIndexBody from './BlogIndexBody.astro';
+import UtilityBody from './UtilityBody.astro';
+
+interface Props { data?: CmsStandalone | null }
+const { data } = Astro.props;
+---
+
+{data?.__typename === 'StandaloneHome' && <HomeBody data={data} />}
+{(data?.__typename === 'StandaloneBuy' || data?.__typename === 'StandaloneSell') && <BuySellBody data={data} />}
+{data?.__typename === 'StandaloneReviews' && <ReviewsBody data={data} />}
+{data?.__typename === 'StandaloneBlogIndex' && <BlogIndexBody data={data} />}
+{(data?.__typename === 'StandaloneNotFound' || data?.__typename === 'StandaloneThankYou') && <UtilityBody data={data} />}
