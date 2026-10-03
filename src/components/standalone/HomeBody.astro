@@ -68,6 +68,29 @@ const contactPhone = config?.contact?.phone ?? null;
 		</section>
 	)}
 
+	{team && (
+		<section class="team dark" data-tina-field={tinaField(data, 'team')}>
+			<div class="team-split">
+				<div class="team-inner">
+					{team.heading && <V2Heading as="h2" text={team.heading} class="display reveal" style="font-size:clamp(30px,3.8vw,48px);max-width:20ch" data-tina-field={tinaField(team, 'heading')} />}
+					{team.body && <p class="reveal" data-tina-field={tinaField(team, 'body')}>{team.body}</p>}
+					<div class="hero-actions reveal" style="margin-top:34px">
+						{team.primary?.link && <a class="btn" href={safeHref(team.primary.link)} {...extAttrs(team.primary.link)} data-tina-field={tinaField(team.primary)}>{team.primary.label}</a>}
+						{team.secondary?.link && <a class="text-link" href={safeHref(team.secondary.link)} {...extAttrs(team.secondary.link)} data-tina-field={tinaField(team.secondary)}>{team.secondary.label}</a>}
+					</div>
+				</div>
+				<div class="ph">
+					{team.video && (
+						<video controls playsinline preload="none" poster={team.videoPoster ?? undefined}>
+							<source src={team.video} type="video/mp4" />
+						</video>
+					)}
+					{team.videoCaption && <div class="who" data-tina-field={tinaField(team, 'videoCaption')}>{team.videoCaption}</div>}
+				</div>
+			</div>
+		</section>
+	)}
+
 	{data?.capsule && (
 		<div class="capsule" aria-hidden="true">
 			<div class="capsule-inner">
@@ -245,29 +268,6 @@ const contactPhone = config?.contact?.phone ?? null;
 					<div class="src" data-tina-field={tinaField(buyer, 'quoteSource')}>{buyer.quoteSource}</div>
 				</div>
 				{buyer.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={safeHref(buyer.cta.link)} {...extAttrs(buyer.cta.link)} data-tina-field={tinaField(buyer.cta)}>{buyer.cta.label}</a></p>}
-			</div>
-		</section>
-	)}
-
-	{team && (
-		<section class="team dark" data-tina-field={tinaField(data, 'team')}>
-			<div class="team-split">
-				<div class="team-inner">
-					{team.heading && <V2Heading as="h2" text={team.heading} class="display reveal" style="font-size:clamp(30px,3.8vw,48px);max-width:20ch" data-tina-field={tinaField(team, 'heading')} />}
-					{team.body && <p class="reveal" data-tina-field={tinaField(team, 'body')}>{team.body}</p>}
-					<div class="hero-actions reveal" style="margin-top:34px">
-						{team.primary?.link && <a class="btn" href={safeHref(team.primary.link)} {...extAttrs(team.primary.link)} data-tina-field={tinaField(team.primary)}>{team.primary.label}</a>}
-						{team.secondary?.link && <a class="text-link" href={safeHref(team.secondary.link)} {...extAttrs(team.secondary.link)} data-tina-field={tinaField(team.secondary)}>{team.secondary.label}</a>}
-					</div>
-				</div>
-				<div class="ph">
-					{team.video && (
-						<video controls playsinline preload="none" poster={team.videoPoster ?? undefined}>
-							<source src={team.video} type="video/mp4" />
-						</video>
-					)}
-					{team.videoCaption && <div class="who" data-tina-field={tinaField(team, 'videoCaption')}>{team.videoCaption}</div>}
-				</div>
 			</div>
 		</section>
 	)}
