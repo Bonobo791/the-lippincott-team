@@ -89,24 +89,27 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 <script is:inline>
 	if (!window.__ladderBound) {
 		window.__ladderBound = true;
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		let ladderObs = null;
+		const teardownLadders = () => {
+			if (ladderObs) { ladderObs.disconnect(); ladderObs = null; }
+		};
 		const initLadders = () => {
+			// Release replaced islands even when no navigation event preceded this.
+			teardownLadders();
+			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			document.querySelectorAll('[data-ladder]').forEach((s) => {
-				if (s.dataset.ladderBound) return;
-				s.dataset.ladderBound = '1';
+				if (s.classList.contains('in')) return;
 				if (reduced || !('IntersectionObserver' in window)) { s.classList.add('in'); return; }
-				ladderObs = ladderObs || new IntersectionObserver((entries) => {
+				ladderObs = ladderObs || new IntersectionObserver((entries, observer) => {
+					if (observer !== ladderObs) return;
 					entries.forEach((e) => {
-						if (e.isIntersecting) { e.target.classList.add('in'); ladderObs.unobserve(e.target); }
+						if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); }
 					});
 				}, { threshold: 0.2 });
 				ladderObs.observe(s);
 			});
 		};
 		document.addEventListener('astro:page-load', initLadders);
-		document.addEventListener('astro:before-swap', () => {
-			if (ladderObs) { ladderObs.disconnect(); ladderObs = null; }
-		});
+		document.addEventListener('astro:before-swap', teardownLadders);
 	}
 </script>

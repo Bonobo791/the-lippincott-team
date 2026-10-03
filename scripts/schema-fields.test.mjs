@@ -16,6 +16,7 @@ registerHooks({
 	},
 });
 
+const { labelLinkFields } = await import('../tina/schema-fields.ts');
 const shared = await import('../src/components/standalone/shared-fields.template.ts');
 const { homeTemplate } = await import('../src/components/standalone/home.template.ts');
 const { reviewsTemplate, blogIndexTemplate } = await import('../src/components/standalone/reviews.template.ts');
@@ -83,4 +84,13 @@ test('FAQ and CTA factories create isolated nested fields on every call', () => 
 
 test('every exported page schema has its own mutable nested objects', () => {
 	assertFreshObjects(Object.values(schemas));
+});
+
+test('label/link fields retain per-button URL guidance without sharing fields', () => {
+	const fields = labelLinkFields(false, 'e.g. /contact-us/');
+	assert.deepEqual(fields, [
+		{ type: 'string', name: 'label', label: 'Label' },
+		{ type: 'string', name: 'link', label: 'Link', description: 'e.g. /contact-us/' },
+	]);
+	assertFreshObjects([fields, labelLinkFields(false, 'e.g. /contact-us/')]);
 });

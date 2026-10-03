@@ -7,11 +7,11 @@ const routes = ['index', 'buy', 'sell', 'reviews', 'blog/index', '[...slug]', '4
 for (const route of routes) {
 	const source = readFileSync(new URL(`../src/pages/${route}.astro`, import.meta.url), 'utf8');
 	const titleExpression = source.match(/<Base\b[\s\S]*?\btitle=\{([^}]+)\}/)?.[1];
-	assert.ok(titleExpression, `${route} must supply a page title`);
 	const title = (seoTitle, globalTitle = 'Site Title') => runInNewContext(titleExpression, {
 		data: { seoTitle }, config: { seo: { title: globalTitle } },
 	});
 	test(`${route} treats cleared SEO titles as unset and trims populated titles`, () => {
+		assert.ok(titleExpression, `${route} must supply a page title`);
 		const fallback = title(undefined);
 		for (const value of ['', ' \t\n ', null]) assert.equal(title(value), fallback);
 		assert.equal(title(' Page Title '), 'Page Title');

@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
+import { componentScripts } from './astro-script-test-helper.mjs';
 
 const source = (path) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
 const scriptContaining = (path, marker) => {
-	const script = [...source(path).matchAll(/<script(?:\s+is:inline)?>([\s\S]*?)<\/script>/g)]
-		.map((match) => match[1]).find((script) => script.includes(marker));
+	const script = componentScripts(source(path)).find((script) => script.includes(marker));
 	assert.ok(script, `${path} must contain ${marker}`);
 	return stripTypeScriptTypes(script);
 };

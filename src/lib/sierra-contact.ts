@@ -64,7 +64,7 @@ export const interestOptionValues = (options: readonly { label: string; leadType
 // otherwise a crafted "2|spam" writes arbitrary labels with a valid lead type.
 function parseInterest(raw: string, allowedValues?: ReadonlySet<string>): { interest: string; leadType: SierraLead['leadType'] } {
 	const typed = /^([123])\|(.+)$/.exec(raw);
-	if (typed && typed[2].trim()) {
+	if (typed?.[2].trim()) {
 		if (allowedValues && !allowedValues.has(raw)) {
 			throw new Error('Contact form submission has an unsupported interest.');
 		}

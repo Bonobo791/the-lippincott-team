@@ -88,21 +88,31 @@ const includeAnalytics =
 		<script is:inline>
 			if (!window.__appleMotionBound) {
 				window.__appleMotionBound = true;
-				const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 				let h2obs = null;
 				// Active magnetic-CTA animation handles, cancelled on page swap so
 				// rAF loops never outlive their (detached) buttons.
 				let magneticCancels = [];
+				const teardownAppleMotion = () => {
+					if (h2obs) { h2obs.disconnect(); h2obs = null; }
+					magneticCancels.forEach((cancel) => cancel());
+					magneticCancels = [];
+				};
 
 				const initAppleMotion = () => {
+					// Tina refreshes fire page-load without a preceding before-swap.
+					teardownAppleMotion();
+					const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 					// Section headline masked reveals (CSS shows the lines when reduced).
-					if (!reduced) {
-						h2obs = new IntersectionObserver((entries) => {
+					if (!reduced && 'IntersectionObserver' in window) {
+						h2obs = new IntersectionObserver((entries, observer) => {
+							if (observer !== h2obs) return;
 							entries.forEach((e) => {
-								if (e.isIntersecting) { e.target.classList.add('in'); h2obs.unobserve(e.target); }
+								if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); }
 							});
 						}, { threshold: 0.35 });
 						document.querySelectorAll('.h2-mask').forEach((m) => h2obs.observe(m));
+					} else {
+						document.querySelectorAll('.h2-mask').forEach((m) => m.classList.add('in'));
 					}
 
 					// Magnetic primary CTAs (fine pointers only, rAF lerp).
@@ -110,8 +120,9 @@ const includeAnalytics =
 						document.querySelectorAll('.btn-magnetic').forEach((btn) => {
 							if (btn.dataset.magneticBound) return;
 							btn.dataset.magneticBound = '1';
-							let tx = 0, ty = 0, cx = 0, cy = 0, raf = null, hovering = false;
+							let tx = 0, ty = 0, cx = 0, cy = 0, raf = null, hovering = false, active = true;
 							const loop = () => {
+								if (!active) return;
 								cx += (tx - cx) * 0.16;
 								cy += (ty - cy) * 0.16;
 								btn.style.transform = 'translate(' + cx.toFixed(2) + 'px,' + cy.toFixed(2) + 'px)';
@@ -122,21 +133,27 @@ const includeAnalytics =
 									raf = null;
 								}
 							};
-							const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
-							btn.addEventListener('pointermove', (e) => {
+							const kick = () => { if (raf === null) raf = requestAnimationFrame(loop); };
+							const onMove = (e) => {
 								const r = btn.getBoundingClientRect();
 								tx = (e.clientX - r.left - r.width / 2) * 0.22;
 								ty = (e.clientY - r.top - r.height / 2) * 0.28;
 								hovering = true;
 								kick();
-							});
-							btn.addEventListener('pointerleave', () => {
+							};
+							const onLeave = () => {
 								tx = 0; ty = 0; hovering = false;
 								kick();
-							});
+							};
+							btn.addEventListener('pointermove', onMove);
+							btn.addEventListener('pointerleave', onLeave);
 							magneticCancels.push(() => {
+								active = false;
 								hovering = false;
-								if (raf) { cancelAnimationFrame(raf); raf = null; }
+								if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+								btn.removeEventListener('pointermove', onMove);
+								btn.removeEventListener('pointerleave', onLeave);
+								delete btn.dataset.magneticBound;
 								btn.style.transform = '';
 							});
 						});
@@ -146,11 +163,7 @@ const includeAnalytics =
 				// Re-bind after every ClientRouter swap; astro:page-load fires on
 				// first load too, and before-swap drops observers tied to old DOM.
 				document.addEventListener('astro:page-load', initAppleMotion);
-				document.addEventListener('astro:before-swap', () => {
-					if (h2obs) { h2obs.disconnect(); h2obs = null; }
-					magneticCancels.forEach((cancel) => cancel());
-					magneticCancels = [];
-				});
+				document.addEventListener('astro:before-swap', teardownAppleMotion);
 			}
 		</script>
 		{/* @tinacms/bridge refreshes editable regions by swapping each

@@ -130,27 +130,32 @@ const reviews = (data.testimonials ?? []).filter(r => r !== null);
 	// Clip-path bottom-up reveal on the client video frame (skipped under
 	// reduced motion). Bundled by Astro so gsap ships as a module, not a CDN tag.
 	// Module scripts run once, so re-bind on astro:page-load (fires on first
-	// load too) and kill the outgoing page's triggers before each swap.
+	// load too), reverting the prior context on Tina refreshes and navigation.
 	gsap.registerPlugin(ScrollTrigger);
-	let testiTriggers: ScrollTrigger[] = [];
+	let testiContext: gsap.Context | undefined;
+	const cleanupTestiReveal = () => {
+		testiContext?.revert();
+		testiContext = undefined;
+	};
 	const initTestiReveal = () => {
+		cleanupTestiReveal();
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		document.querySelectorAll('.testi-frame').forEach((frame) => {
-			if ((frame as HTMLElement).dataset.testiRevealBound) return;
-			(frame as HTMLElement).dataset.testiRevealBound = '1';
-			const tween = gsap.fromTo(frame,
-				{ clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)' },
-				{
-					clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)',
-					ease: 'none',
-					scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 45%', scrub: true },
-				});
-			if (tween.scrollTrigger) testiTriggers.push(tween.scrollTrigger);
+		testiContext = gsap.context(() => {
+			const frames = document.querySelectorAll<HTMLElement>('.testi-frame');
+			frames.forEach((frame) => {
+				if (frame.dataset.testiRevealBound) return;
+				frame.dataset.testiRevealBound = '1';
+				gsap.fromTo(frame,
+					{ clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)' },
+					{
+						clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)',
+						ease: 'none',
+						scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 45%', scrub: true },
+					});
+			});
+			return () => frames.forEach((frame) => { delete frame.dataset.testiRevealBound; });
 		});
 	};
 	document.addEventListener('astro:page-load', initTestiReveal);
-	document.addEventListener('astro:before-swap', () => {
-		testiTriggers.forEach((t) => t.kill());
-		testiTriggers = [];
-	});
+	document.addEventListener('astro:before-swap', cleanupTestiReveal);
 </script>

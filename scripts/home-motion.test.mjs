@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { before, test } from 'node:test';
 import { runInNewContext } from 'node:vm';
+import { componentScripts } from './astro-script-test-helper.mjs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const home = read('src/pages/index.astro');
 const motionSource = home.includes('<V2Motion') ? read('src/components/v2/V2Motion.astro') : home;
-const script = [...motionSource.matchAll(/<script is:inline data-astro-rerun>([\s\S]*?)<\/script>/g)]
-	.map((match) => match[1]).find((source) => source.includes('MotionBound'));
-assert.ok(script, 'the homepage must initialize scroll motion');
+const script = componentScripts(motionSource).find((source) => source.includes('MotionBound'));
 const awardMarkup = read('src/components/standalone/HomeBody.astro').match(/<span[^>]*id="awardCount"[^>]*>/)?.[0];
-assert.ok(awardMarkup);
+before(() => {
+	assert.ok(script, 'the homepage must initialize scroll motion');
+	assert.ok(awardMarkup);
+});
 
 function setup({ reduced = false, hasObserver = true } = {}) {
 	const callbacks = new Map();

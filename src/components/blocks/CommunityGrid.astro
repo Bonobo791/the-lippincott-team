@@ -202,21 +202,30 @@ const entries = (await listCommunities())
 
 		// Pinned horizontal-pan community gallery (desktop only; CSS covers the
 		// mobile + reduced-motion fallbacks). Module scripts run once, so re-bind
-		// on astro:page-load (fires on first load too) and kill the outgoing
-		// page's triggers before each ClientRouter swap.
+		// on astro:page-load, including Tina refreshes without a router swap.
 		gsap.registerPlugin(ScrollTrigger);
-		const mm = gsap.matchMedia();
+		const desktop = window.matchMedia('(min-width:1081px)');
+		let railContext: gsap.Context | undefined;
+		const cleanupCommRail = () => {
+			desktop.removeEventListener('change', initCommRail);
+			railContext?.revert();
+			railContext = undefined;
+		};
 		const initCommRail = () => {
-			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-			mm.add('(min-width:1081px)', () => {
+			cleanupCommRail();
+			// Reuse one media query instead of accumulating GSAP matchMedia
+			// contexts and listeners on every Tina refresh.
+			desktop.addEventListener('change', initCommRail);
+			if (!desktop.matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			railContext = gsap.context(() => {
 				const cleanups: (() => void)[] = [];
 				document.querySelectorAll('[data-comm-rail]').forEach((rail) => {
 					if ((rail as HTMLElement).dataset.commRailBound) return;
-					(rail as HTMLElement).dataset.commRailBound = '1';
 					const track = rail.querySelector('[data-comm-track]');
 					if (!track) return;
+					(rail as HTMLElement).dataset.commRailBound = '1';
 					const dist = () => Math.max(0, track.scrollWidth - window.innerWidth + 60);
-					const tween = gsap.to(track, {
+					gsap.to(track, {
 						x: () => -dist(),
 						ease: 'none',
 						scrollTrigger: {
@@ -230,9 +239,6 @@ const entries = (await listCommunities())
 						},
 					});
 					cleanups.push(() => {
-						tween.scrollTrigger && tween.scrollTrigger.kill();
-						tween.kill();
-						gsap.set(track, { clearProps: 'x' });
 						delete (rail as HTMLElement).dataset.commRailBound;
 					});
 				});
@@ -240,12 +246,6 @@ const entries = (await listCommunities())
 			});
 		};
 		document.addEventListener('astro:page-load', initCommRail);
-		document.addEventListener('astro:before-swap', () => {
-			// Reverting the matchMedia context runs every context cleanup (kills
-			// tweens/triggers, unbinds rails) and lets the next page-load start
-			// fresh — without this, each swap accumulates contexts and detached
-			// DOM references.
-			mm.revert();
-		});
+		document.addEventListener('astro:before-swap', cleanupCommRail);
 	</script>
 )}

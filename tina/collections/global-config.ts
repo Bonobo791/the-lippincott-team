@@ -7,6 +7,13 @@ const agentChipList = (name: string, label: string, description: string): TinaFi
   fields: labelLinkFields(true),
 });
 
+const linkButtonField = (
+  name: string, label: string, description: string, linkDescription: string,
+): TinaField => ({
+  name, label, description, type: "object",
+  fields: labelLinkFields(false, linkDescription),
+});
+
 export const GlobalConfigCollection: Collection = {
   name: "config",
   label: "Global Config",
@@ -70,26 +77,12 @@ export const GlobalConfigCollection: Collection = {
         //Add more site settings here...
       ],
     },
-    {
-      name: "headerCta",
-      label: "Header Button",
-      description: "The red button at the right end of the header navigation (desktop and mobile menu).",
-      type: "object",
-      fields: [
-        { name: "label", label: "Label", type: "string" },
-        { name: "link", label: "Link", type: "string", description: "e.g. /contact-us/" },
-      ],
-    },
-    {
-      name: "preferredSources",
-      label: '"Add to Preferred Sources" Button',
-      description: "Google Preferred Sources link shown in the footer and at the top of blog articles.",
-      type: "object",
-      fields: [
-        { name: "label", label: "Label", type: "string" },
-        { name: "link", label: "Link", type: "string", description: "e.g. https://www.google.com/preferences/source?q=yourdomain.com" },
-      ],
-    },
+    linkButtonField("headerCta", "Header Button",
+      "The red button at the right end of the header navigation (desktop and mobile menu).",
+      "e.g. /contact-us/"),
+    linkButtonField("preferredSources", '"Add to Preferred Sources" Button',
+      "Google Preferred Sources link shown in the footer and at the top of blog articles.",
+      "e.g. https://www.google.com/preferences/source?q=yourdomain.com"),
     {
       name: "legalLinks",
       label: "Legal Links",

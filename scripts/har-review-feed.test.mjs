@@ -5,10 +5,11 @@ import { stripTypeScriptTypes } from 'node:module';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { safeHref } from '../src/lib/url.ts';
+import { componentScripts } from './astro-script-test-helper.mjs';
 
 const component = new URL('../src/components/standalone/HarReviewFeed.astro', import.meta.url);
 const source = existsSync(component) ? readFileSync(component, 'utf8') : '';
-const script = stripTypeScriptTypes(source.match(/<script>([\s\S]*?)<\/script>/)?.[1]?.replace(/^\s*import[^\n]+/gm, '') ?? '');
+const script = stripTypeScriptTypes(componentScripts(source)[0]?.replace(/^\s*import[^\n]+/gm, '') ?? '');
 
 function setup(memberNumber = '586048', profileUrl = 'https://www.har.com/amy-lippincott/ratings_586048') {
 	const frames = [];

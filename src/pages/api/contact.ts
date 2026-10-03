@@ -43,6 +43,7 @@ let allowedInterestsValues: ReadonlySet<string> | null = null;
 let allowedInterestsAt = 0;
 let allowedInterestsPromise: Promise<ReadonlySet<string>> | null = null;
 
+/** Load the union of choices rendered by every form, including per-form defaults. */
 async function loadInterestOptions() {
 	const options = (await listPages())
 		.flatMap((page) => page.blocks ?? [])
@@ -55,6 +56,7 @@ async function loadInterestOptions() {
 	return interestOptionValues(options.length > 0 ? options : DEFAULT_INTEREST_OPTIONS);
 }
 
+/** Deduplicate refreshes and preserve last-good choices when Tina is temporarily unavailable. */
 function allowedInterests() {
 	if (allowedInterestsValues && Date.now() - allowedInterestsAt < INTERESTS_CACHE_MS) {
 		return Promise.resolve(allowedInterestsValues);

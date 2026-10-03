@@ -2,6 +2,7 @@ import type { TinaField } from 'tinacms';
 import { headingField, labelLinkFields, objectListField, textField, titleBodyFields } from '../../../tina/schema-fields';
 
 /** Fields every standalone page shares: search/social metadata. */
+/** Build the shared editable title, description, and social-image fields. */
 export const seoFields = (): TinaField[] => [
 	{
 		type: 'string',
@@ -27,6 +28,7 @@ export const seoFields = (): TinaField[] => [
 ];
 
 /** A call-to-action object (label + link). */
+/** Create an optional labeled link for a named call to action. */
 export const actionField = (name: string, label: string): TinaField => ({
 	type: 'object',
 	name,
@@ -38,6 +40,7 @@ export const actionField = (name: string, label: string): TinaField => ({
 });
 
 /** Shared FAQ schema; return fresh nested objects for each page template. */
+/** Create FAQ fields with required questions and rich-text answers. */
 export const faqField = (): TinaField => ({
 	type: 'object', name: 'faq', label: 'FAQ Band',
 	description: 'Also emitted as FAQPage structured data.',
@@ -52,6 +55,7 @@ export const faqField = (): TinaField => ({
 });
 
 /** Common CTA content followed by the page's own contact/secondary-action fields. */
+/** Build a final CTA section, appending page-specific fields in their original order. */
 export const finalCtaField = (extraFields: TinaField[] = []): TinaField => ({
 	type: 'object', name: 'finalCta', label: 'Final CTA Band',
 	fields: [
@@ -68,12 +72,14 @@ export const finalCtaField = (extraFields: TinaField[] = []): TinaField => ({
  * an editable field that renders nothing is the exact bug class this
  * collection exists to remove.
  */
+/** Include an introductory paragraph only for sections that render one. */
 export const bandHeadFields = (withLede = false): TinaField[] => [
 	textField('eyebrow', 'Eyebrow'),
 	headingField(),
 	...(withLede ? [{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' } as TinaField] : []),
 ];
 
+/** Build a statistic tile with optional count-up controls and static fallback copy. */
 const statTileField = (name: string, label: string, countUp = true): TinaField => ({
 	type: 'object',
 	name,
@@ -106,6 +112,7 @@ const statTileField = (name: string, label: string, countUp = true): TinaField =
  * Fields shared by the Buy and Sell pages. Called once per template so each
  * gets its own field array.
  */
+/** Create the shared buyer/seller page schema with audience-specific editor labels. */
 export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 	...seoFields(),
 	{
@@ -240,6 +247,7 @@ export const buySellFields = (audience: 'buyers' | 'sellers'): TinaField[] => [
 ];
 
 /** Minimal utility-page fields (404, thank-you). */
+/** Create the compact schema used by the not-found and thank-you pages. */
 export const utilityFields = (): TinaField[] => [
 	...seoFields(),
 	textField('eyebrow', 'Eyebrow'),

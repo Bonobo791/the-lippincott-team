@@ -11,6 +11,7 @@
  * is the source of truth; regen with `tinacms dev` and everything
  * downstream updates.
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type { TinaRichTextContent } from '@tinacms/astro';
 import { requestWithMetadata } from '@tinacms/astro/data';
 import client from '../../tina/__generated__/client';
@@ -24,19 +25,23 @@ const assertSafePath = (value: string) => {
 		throw new Error(`Unsafe content path: ${value}`);
 };
 
-// Memoized: the config is site-global and several consumers (Base chrome,
-// ContactForm rail) need it per page — one in-flight/resolved promise serves
-// them all instead of a Tina query per consumer. Content can't change
-// mid-build; in dev the seeded-cache workflow already expects a restart.
+/** Fetch config with Tina's current request metadata and unsaved overlay. */
 function fetchConfig() {
 	return requestWithMetadata(client.queries.config({ relativePath: 'config.json' }));
 }
-let configCache: ReturnType<typeof fetchConfig> | null = null;
+type ConfigCache = { value?: ReturnType<typeof fetchConfig> };
+const buildConfigCache: ConfigCache = {};
+const requestConfigCache = new AsyncLocalStorage<ConfigCache>();
+
+/** Give an island render and all its nested loaders a fresh, isolated config cache. */
+export function withFreshConfig<T>(render: () => T): T {
+	return requestConfigCache.run({}, render);
+}
+
+/** Deduplicate config per island request, or across a static build outside that scope. */
 export function getConfig() {
-	if (!configCache) {
-		configCache = fetchConfig();
-	}
-	return configCache;
+	const cache = requestConfigCache.getStore() ?? buildConfigCache;
+	return (cache.value ??= fetchConfig());
 }
 
 export const getPage = (slug: string) => {
