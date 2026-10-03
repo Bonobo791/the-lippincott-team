@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { test } from 'node:test';
+import { before, test } from 'node:test';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { parse } from 'node-html-parser';
 
@@ -10,7 +10,7 @@ const { transform } = require('@astrojs/compiler-rs');
 const source = readFileSync(new URL('../src/components/Header.astro', import.meta.url), 'utf8');
 const anchors = [...source.matchAll(/<a\b[\s\S]*?<\/a>/g)]
 	.map(([anchor]) => anchor).filter((anchor) => anchor.includes('headerCta'));
-assert.equal(anchors.length, 2, 'exercise both desktop and mobile CTA anchors');
+before(() => assert.equal(anchors.length, 2, 'exercise both desktop and mobile CTA anchors'));
 
 // Render the real CTA templates and frontmatter without loading unrelated nav
 // icons or a CMS build. Removing either template's link attrs must fail here.
