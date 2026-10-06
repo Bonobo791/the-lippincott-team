@@ -54,8 +54,14 @@ function fixture() {
 const missingTable = 'Regional market comparison requires the Northwest Houston #communities data table.';
 const invalidColumns = 'Regional market comparison requires Median list and Days on market in columns 2 and 4.';
 const invalidRows = 'Regional market comparison requires the six cities Cypress, Magnolia, Tomball, Katy, Waller and Hockley with median list price and days on market.';
+const missingSummary = 'Regional market comparison requires a source summary with the reporting period and property scope.';
 const invalidCases = [
 	['missing table', (page) => { page.blocks = []; }, missingTable],
+	['missing source summary', (page) => { delete page.blocks[0].summary; }, missingSummary],
+	['null source summary', (page) => { page.blocks[0].summary = null; }, missingSummary],
+	['empty Tina rich-text root', (page) => { page.blocks[0].summary = { type: 'root', children: [] }; }, missingSummary],
+	['empty summary paragraph', (page) => { page.blocks[0].summary.children[0].children[0].text = ''; }, missingSummary],
+	['whitespace-only source summary', (page) => { page.blocks[0].summary.children[0].children[0].text = ' \n\t '; }, missingSummary],
 	['missing row', (page) => { page.blocks[0].rows.splice(2, 1); }, invalidRows],
 	['extra row', (page) => { page.blocks[0].rows.push(structuredClone(page.blocks[0].rows[2])); }, invalidRows],
 	['cleared cell', (page) => { page.blocks[0].rows[0].cells[1].text = ''; }, invalidRows],
@@ -131,4 +137,16 @@ test('restoring complete data restores the comparison on the next render', async
 	assert.equal(parse(await render(page)).querySelectorAll('table').length, 0);
 	page.blocks[0].rows[0].cells[3].text = '71';
 	assert.equal(await render(page), expected);
+});
+
+test('restoring the source summary restores publication and editor rendering', async () => {
+	const page = fixture();
+	const summary = page.blocks[0].summary;
+	const expected = await render(page);
+	page.blocks[0].summary = { type: 'root', children: [] };
+	assert.equal(parse(await render(page)).querySelectorAll('table').length, 0);
+	page.blocks[0].summary = summary;
+	for (const isPrerendered of [false, true]) {
+		assert.equal(await render(page, { isPrerendered }), expected);
+	}
 });

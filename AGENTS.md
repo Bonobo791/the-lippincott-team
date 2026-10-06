@@ -4,7 +4,7 @@
 - When I say "clean up", that means to clean your worktrees and branches.
 - When I say "triage", review every PR comment for validity. Fix each valid issue. Post a triage comment. Reply to every bot comment, whether or not you make a code change.
 - NEVER push to the branch. Only commit and add a commit message.
-- Source market statistics only from HAR.com. Preserve the source's reporting period,
+- Source market statistics only from the Houston Association of Realtors (HAR.com). Preserve the source's reporting period,
   property scope, and distinction between active listings and completed sales.
 - Source claims about The Lippincott Team or other realtors from their own websites
   or official profiles on third-party sites. Do not invent citations or recognition dates.
