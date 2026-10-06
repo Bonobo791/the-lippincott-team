@@ -25,6 +25,7 @@ const buyer = data?.buyer;
 const team = data?.team;
 const market = data?.market;
 const fsbo = data?.fsbo;
+const hasFsboComparison = Boolean(fsbo?.agentPrice?.trim() && fsbo?.soloPrice?.trim());
 const awards = data?.awards;
 const faq = data?.faq;
 const finalCta = data?.finalCta;
@@ -307,8 +308,8 @@ const contactPhone = config?.contact?.phone ?? null;
 			<div class="wrap">
 				{fsbo.heading && <V2Heading as="h2" text={fsbo.heading} class="display reveal" style="font-size:clamp(30px,3.8vw,48px)" data-tina-field={tinaField(fsbo, 'heading')} />}
 				{fsbo.lede && <p class="lede reveal" data-tina-field={tinaField(fsbo, 'lede')}>{fsbo.lede}</p>}
-				<div class="fsbo-split">
-					<div class="fsbo-stat reveal">
+				<div class="fsbo-split" style={hasFsboComparison ? undefined : 'grid-template-columns:1fr'}>
+					{hasFsboComparison && <div class="fsbo-stat reveal">
 						<div class="vs"><span class="big agent" data-tina-field={tinaField(fsbo, 'agentPrice')}>{fsbo.agentPrice}</span><span class="word" data-tina-field={tinaField(fsbo, 'agentLabel')}>{fsbo.agentLabel}</span></div>
 						<div class="vs" style="margin-top:10px"><span class="big" data-tina-field={tinaField(fsbo, 'soloPrice')}>{fsbo.soloPrice}</span><span class="word" data-tina-field={tinaField(fsbo, 'soloLabel')}>{fsbo.soloLabel}</span></div>
 						<p class="cap" data-tina-field={tinaField(fsbo, 'caption')}>{fsbo.caption}</p>
@@ -317,7 +318,7 @@ const contactPhone = config?.contact?.phone ?? null;
 								{splitHeading(fsbo.share).map((seg) => (seg.accent ? <strong>{seg.text}</strong> : <Fragment>{seg.text}</Fragment>))}
 							</p>
 						)}
-					</div>
+					</div>}
 					<div class="fsbo-rows reveal" data-tina-field={tinaField(fsbo, 'rows')}>
 						{(fsbo.rows ?? []).filter((r) => r !== null).map((row) => (
 							<div class="fsbo-row" data-tina-field={tinaField(row)}>

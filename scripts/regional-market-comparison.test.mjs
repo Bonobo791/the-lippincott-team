@@ -43,9 +43,9 @@ const render = (page, { isPrerendered = false, marketTable } = {}) => container.
 function fixture() {
 	return { blocks: [{
 		__typename: 'PageBlocksDataTable', anchorId: 'communities',
-		summary: { type: 'root', children: [{ type: 'p', children: [{ text: 'HAR.com city listings, September 2026; Bridgeland uses Realtor.com, June 2026.' }] }] },
+		summary: { type: 'root', children: [{ type: 'p', children: [{ text: 'HAR.com single-family active listings, September 2026, for six cities.' }] }] },
 		headers: ['Area', 'Median list', 'For sale', 'Days on market', 'Character'].map((heading) => ({ heading })),
-		rows: ['Cypress', 'Bridgeland', 'Magnolia', 'Tomball', 'Katy', 'Waller', 'Hockley'].map((market) => ({
+		rows: ['Cypress', 'Magnolia', 'Tomball', 'Katy', 'Waller', 'Hockley'].map((market) => ({
 			cells: [{ text: market }, { text: '$445,000' }, { text: '2,178' }, { text: '71' }, { text: 'Community character' }],
 		})),
 	}] };
@@ -53,7 +53,7 @@ function fixture() {
 
 const missingTable = 'Regional market comparison requires the Northwest Houston #communities data table.';
 const invalidColumns = 'Regional market comparison requires Median list and Days on market in columns 2 and 4.';
-const invalidRows = 'Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.';
+const invalidRows = 'Regional market comparison requires the six cities Cypress, Magnolia, Tomball, Katy, Waller and Hockley with median list price and days on market.';
 const invalidCases = [
 	['missing table', (page) => { page.blocks = []; }, missingTable],
 	['missing row', (page) => { page.blocks[0].rows.splice(2, 1); }, invalidRows],

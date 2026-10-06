@@ -35,15 +35,15 @@ const markets = (hasExpectedColumns ? comparison?.rows ?? [] : [])
 		};
 	});
 
-const requiredMarkets = ['Cypress', 'Bridgeland'];
+const requiredMarkets = ['Cypress', 'Magnolia', 'Tomball', 'Katy', 'Waller', 'Hockley'];
 const hasMarket = (name: string) => markets.some(({ market }) => market?.toLowerCase() === name.toLowerCase());
 
 if (comparison && hasExpectedColumns && (
-	markets.length !== 7 ||
+	markets.length !== requiredMarkets.length ||
 	!requiredMarkets.every(hasMarket) ||
 	markets.some(({ market, median, days }) => !market || !median || !days)
 )) {
-	validationError = 'Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.';
+	validationError = 'Regional market comparison requires the six cities Cypress, Magnolia, Tomball, Katy, Waller and Hockley with median list price and days on market.';
 }
 
 // Keep publication strict, but let the rest of the editor preview render while
