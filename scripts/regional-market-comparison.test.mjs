@@ -13,7 +13,8 @@ const source = readFileSync(new URL('../src/components/v2/RegionalMarketComparis
 const prepared = source
 	.replace("import { getConfig, getPage } from '../../lib/data';", 'const { getConfig, getPage } = Astro.props;')
 	.replace(/^import type [^\n]*\n/gm, '')
-	.replace("'../../lib/url'", JSON.stringify(new URL('../src/lib/url.ts', import.meta.url).href));
+	.replace("'../../lib/url'", JSON.stringify(new URL('../src/lib/url.ts', import.meta.url).href))
+	.replace("'../../lib/rich-text'", JSON.stringify(new URL('../src/lib/rich-text.ts', import.meta.url).href));
 const compiled = await transform(prepared, {
 	filename: 'RegionalMarketComparison.astro', internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
 });
@@ -42,7 +43,8 @@ const render = (page, { isPrerendered = false, marketTable } = {}) => container.
 function fixture() {
 	return { blocks: [{
 		__typename: 'PageBlocksDataTable', anchorId: 'communities',
-		headers: ['Realtor.com · Jun 2026', 'Median list', 'For sale', 'Days on market', 'Character'].map((heading) => ({ heading })),
+		summary: { type: 'root', children: [{ type: 'p', children: [{ text: 'HAR.com city listings, September 2026; Bridgeland uses Realtor.com, June 2026.' }] }] },
+		headers: ['Area', 'Median list', 'For sale', 'Days on market', 'Character'].map((heading) => ({ heading })),
 		rows: ['Cypress', 'Bridgeland', 'Magnolia', 'Tomball', 'Katy', 'Waller', 'Hockley'].map((market) => ({
 			cells: [{ text: market }, { text: '$445,000' }, { text: '2,178' }, { text: '71' }, { text: 'Community character' }],
 		})),
@@ -90,7 +92,7 @@ test('valid data and ordinary edits emit complete comparison HTML in both render
 			page.blocks[0].rows.reverse();
 			page.blocks[0].rows[0].cells[1].text = '$460,000';
 			page.blocks[0].rows[0].cells[3].text = '60';
-			page.blocks[0].headers[0].heading = 'Updated regional source';
+			page.blocks[0].summary.children[0].children[0].text = 'Updated reporting period and source <not markup>.';
 			page.blocks[0].headers[1].heading = ' MEDIAN LIST ';
 			page.blocks[0].headers[3].heading = ' days on MARKET ';
 		}
@@ -115,7 +117,8 @@ test('valid data and ordinary edits emit complete comparison HTML in both render
 			assert.deepEqual(html.querySelectorAll('thead th').map((cell) => cell.text), [labels.areaLabel, labels.medianLabel, labels.daysLabel]);
 			assert.equal(html.querySelector('a').getAttribute('href'), labels.link);
 			assert.equal(html.querySelector('a').text, labels.linkLabel);
-			assert.ok(html.querySelector('p').text.startsWith(page.blocks[0].headers[0].heading));
+			assert.equal(html.querySelector('p').text, page.blocks[0].summary.children[0].children[0].text);
+			assert.ok(output.indexOf(html.querySelector('p').outerHTML) < output.indexOf('<table'), 'source and reporting period must precede the figures');
 		}
 		assert.equal(outputs[1], outputs[0], 'valid published and editor HTML must match');
 	}
