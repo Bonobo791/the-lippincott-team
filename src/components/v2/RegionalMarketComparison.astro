@@ -2,6 +2,7 @@
 import { getConfig, getPage } from '../../lib/data';
 import type { DataTableBlock, PageBlock } from '../../lib/data';
 import { safeHref } from '../../lib/url';
+import { richTextToPlainText } from '../../lib/rich-text';
 
 const normalizedAnchor = (value?: string | null) => value?.trim().replace(/^#/, '');
 const page = (await getPage('northwest-houston-real-estate')).data.page;
@@ -14,11 +15,14 @@ const comparison = blocks.find(
 const hasExpectedColumns =
 	comparison?.headers?.[1]?.heading?.trim().toLowerCase() === 'median list' &&
 	comparison?.headers?.[3]?.heading?.trim().toLowerCase() === 'days on market';
+const sourceSummary = richTextToPlainText(comparison?.summary);
 let validationError: string | undefined;
 if (!comparison) {
 	validationError = 'Regional market comparison requires the Northwest Houston #communities data table.';
 } else if (!hasExpectedColumns) {
 	validationError = 'Regional market comparison requires Median list and Days on market in columns 2 and 4.';
+} else if (!sourceSummary) {
+	validationError = 'Regional market comparison requires a source summary with the reporting period and property scope.';
 }
 
 const markets = (hasExpectedColumns ? comparison?.rows ?? [] : [])
@@ -34,15 +38,15 @@ const markets = (hasExpectedColumns ? comparison?.rows ?? [] : [])
 		};
 	});
 
-const requiredMarkets = ['Cypress', 'Bridgeland'];
+const requiredMarkets = ['Cypress', 'Magnolia', 'Tomball', 'Katy', 'Waller', 'Hockley'];
 const hasMarket = (name: string) => markets.some(({ market }) => market?.toLowerCase() === name.toLowerCase());
 
 if (comparison && hasExpectedColumns && (
-	markets.length !== 7 ||
+	markets.length !== requiredMarkets.length ||
 	!requiredMarkets.every(hasMarket) ||
 	markets.some(({ market, median, days }) => !market || !median || !days)
 )) {
-	validationError = 'Regional market comparison requires six market rows plus Bridgeland — including Cypress and Bridgeland — with median list price and days on market.';
+	validationError = 'Regional market comparison requires the six cities Cypress, Magnolia, Tomball, Katy, Waller and Hockley with median list price and days on market.';
 }
 
 // Keep publication strict, but let the rest of the editor preview render while
@@ -51,13 +55,13 @@ if (validationError && Astro.isPrerendered) {
 	throw new Error(validationError);
 }
 
-const source = comparison?.headers?.[0]?.heading ?? 'Realtor.com';
 const labels = (await getConfig()).data?.config?.marketTable;
 const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#communities';
 ---
 
 {!validationError && <section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">
 	<h3 id="regional-market-heading">{labels?.heading ?? 'Northwest Houston at a Glance'}</h3>
+	<p>{sourceSummary}</p>
 	<table>
 		<caption class="sr-only">{labels?.caption ?? 'Northwest Houston market and community comparison'}</caption>
 		<thead>
@@ -77,5 +81,5 @@ const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#comm
 			))}
 		</tbody>
 	</table>
-	<p>{source} · <a href={linkHref}>{labels?.linkLabel ?? 'Sources & full comparison'}</a></p>
+	<p><a href={linkHref}>{labels?.linkLabel ?? 'Sources & full comparison'}</a></p>
 </section>}
