@@ -10,6 +10,12 @@
 # Old team-member template placeholder page, never real content.
 /team-member-page-design/  /about/  301
 
+# Historical agent bio and contact page, each with a confirmed equivalent.
+# Exact endpoints under src/pages preserve queries on non-Netlify hosts;
+# Netlify passes queries through these 301 rules automatically.
+/agents/amy-lippincott/  /about/amy-lippincott-2/  301
+/contact/  /contact-us/  301
+
 # WordPress author archives (all posts are by the team).
 /author/*  /about/  301
 
