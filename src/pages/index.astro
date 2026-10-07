@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import Base from '../layouts/Base.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import StandaloneBody from '../components/standalone/StandaloneBody.astro';
@@ -65,7 +67,7 @@ const jsonld = [
 >
 	{/* The hero video's poster is the LCP image — discover it from the HTML head
 	    instead of waiting for the <video> element to be parsed. */}
-	{data.hero?.poster && <link slot="head" rel="preload" as="image" href={data.hero.poster} fetchpriority="high" />}
+	{data.hero?.poster && <link slot="head" rel="preload" as="image" href={mediaUrl(data.hero.poster, mediaSite)} fetchpriority="high" />}
 	{jsonld.map((entry) => <script type="application/ld+json" is:inline set:html={JSON.stringify(entry).replace(/</g, '\\u003c')} />)}
 
 	<TinaIsland name="standalone" wrapper={islands.standalone.wrapper} params={{ slug: 'home' }} primary>

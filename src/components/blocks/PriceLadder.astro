@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -36,7 +38,7 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 				{columns.map((col) => (
 					<div class="border-t border-hairline">
 						{col.map((row) => {
-							const href = safeHref(row.link);
+							const href = mediaUrl(safeHref(row.link), mediaSite);
 							const w = typeof row.weight === 'number' ? Math.min(Math.max(row.weight, 0), 100) / 100 : 1;
 							const inner = (
 								<>

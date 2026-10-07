@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { CmsConfig, CmsConfigContactLink, CmsConfigNav, CmsConfigNavChild } from '../lib/data';
 import { linkTargetAttrs, safeHref } from '../lib/url';
@@ -18,7 +20,7 @@ const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href)
 const contact = config?.contact ?? null;
 const today = new Date();
 // CMS-provided URL — only allow http(s)/root-relative before rendering.
-const logoSrc = safeHref(seo?.logo);
+const logoSrc = mediaUrl(safeHref(seo?.logo), mediaSite);
 const legalLinks = (config?.legalLinks ?? []).filter((l) => l !== null);
 const preferredSources = config?.preferredSources ?? null;
 
@@ -44,7 +46,7 @@ const columns = [
 		<div class="space-y-4">
 			<div class="flex items-center gap-3 text-white">
 				{logoSrc ? (
-					<img src={logoSrc} alt="" width="34" height="34" class="size-[34px]" />
+					<img src={mediaUrl(logoSrc, mediaSite)} alt="" width="34" height="34" class="size-[34px]" />
 				) : null}
 				<div>
 					<p class="text-[15px] font-bold leading-[1.1]">{seo?.title ?? 'The Lippincott Team'}</p>
@@ -78,7 +80,7 @@ const columns = [
 			<nav aria-label={`Footer ${column.heading}`}>
 				<h2 class="mb-[18px] text-xs font-semibold uppercase tracking-[0.2em] text-white">
 					{column.href ? (
-						<a href={safeHref(column.href)} class="transition-colors hover:text-white" {...linkTargetAttrs(column.href)}>{column.heading}</a>
+						<a href={mediaUrl(safeHref(column.href), mediaSite)} class="transition-colors hover:text-white" {...linkTargetAttrs(column.href)}>{column.heading}</a>
 					) : (
 						column.heading
 					)}
@@ -87,7 +89,7 @@ const columns = [
 					{column.links.map((item) => (
 						<li>
 							<a
-								href={safeHref(item.link)}
+								href={mediaUrl(safeHref(item.link), mediaSite)}
 								class="transition-colors hover:text-white"
 								{...(isExternal(item.link) ? { target: '_blank', rel: 'noopener' } : {})}
 							>
@@ -100,10 +102,10 @@ const columns = [
 		))}
 	</div>
 	<div class="mx-auto max-w-[1200px] px-6 pb-10">
-		{preferredSources?.link && safeHref(preferredSources.link) && (
+		{preferredSources?.link && mediaUrl(safeHref(preferredSources.link), mediaSite) && (
 			<div class="mt-14 flex w-full">
 				<a
-					href={safeHref(preferredSources.link)}
+					href={mediaUrl(safeHref(preferredSources.link), mediaSite)}
 					target="_blank"
 					rel="noopener"
 					data-tina-field={tinaField(preferredSources)}
@@ -121,7 +123,7 @@ const columns = [
 			{legalLinks.length > 0 && (
 				<p class="flex gap-[22px]" data-tina-field={tinaField(config, 'legalLinks')}>
 					{legalLinks.map((link) => (
-						<a href={safeHref(link.link)} class="transition-colors hover:text-white" {...(isExternal(link.link) ? { target: '_blank', rel: 'noopener' } : {})}>{link.title}</a>
+						<a href={mediaUrl(safeHref(link.link), mediaSite)} class="transition-colors hover:text-white" {...(isExternal(link.link) ? { target: '_blank', rel: 'noopener' } : {})}>{link.title}</a>
 					))}
 				</p>
 			)}

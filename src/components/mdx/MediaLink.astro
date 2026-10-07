@@ -1,0 +1,8 @@
+---
+import { sanitizeHref } from '@tinacms/astro/sanitize';
+import { mediaUrl } from '../../lib/media';
+interface Props { url: string }
+const { url } = Astro.props;
+const href = mediaUrl(sanitizeHref(url), Astro.site?.href ?? Astro.url.origin);
+---
+<a href={href}><slot /></a>

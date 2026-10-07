@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import Icon from '../ui/Icon.astro';
@@ -8,7 +10,7 @@ import { safeHref } from '../../lib/url';
 interface Props { data: CalloutBlock }
 
 const { data } = Astro.props;
-const url = safeHref(data.url);
+const url = mediaUrl(safeHref(data.url), mediaSite);
 ---
 <Section class="py-6 md:py-6">
 	{url ? (

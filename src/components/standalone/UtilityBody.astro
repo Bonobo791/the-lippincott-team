@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import Button from '../ui/Button.astro';
 import type { CmsStandalone } from '../../lib/data';
@@ -16,7 +18,7 @@ const { data } = Astro.props;
 			{data.eyebrow && <p class="text-sm font-medium tracking-widest text-primary uppercase" data-tina-field={tinaField(data, 'eyebrow')}>{data.eyebrow}</p>}
 			{data.heading && <h1 class="mt-2 text-4xl font-semibold tracking-tight lg:text-5xl" data-tina-field={tinaField(data, 'heading')}>{data.heading}</h1>}
 			{data.body && <p class="mx-auto mt-4 max-w-md text-muted-foreground" data-tina-field={tinaField(data, 'body')}>{data.body}</p>}
-			{data.action?.label && safeHref(data.action.link) && <Button href={safeHref(data.action.link)} class="mt-8" data-tina-field={tinaField(data.action)}>{data.action.label}</Button>}
+			{data.action?.label && mediaUrl(safeHref(data.action.link), mediaSite) && <Button href={mediaUrl(safeHref(data.action.link), mediaSite)} class="mt-8" data-tina-field={tinaField(data.action)}>{data.action.label}</Button>}
 		</div>
 	</section>
 )}

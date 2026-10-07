@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
@@ -30,7 +32,7 @@ const entries = (await listCommunities())
 					{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-4 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 				</div>
 				{entries.map(({ node, path }, i) => {
-					const sierraUrl = safeHref(node.listingUrl) ?? null;
+					const sierraUrl = mediaUrl(safeHref(node.listingUrl), mediaSite) ?? null;
 					return (
 						<a
 							href={sierraUrl ?? `/${path}/`}
@@ -38,7 +40,7 @@ const entries = (await listCommunities())
 							class:list={['tile group', { 'tile-lg': i % 3 === 0 }]}
 						>
 							{node.heroImage ? (
-								<img src={node.heroImage} alt={node.title ?? ''} width="660" height="600" loading="lazy" decoding="async" />
+								<img src={mediaUrl(node.heroImage, mediaSite)} alt={node.title ?? ''} width="660" height="600" loading="lazy" decoding="async" />
 							) : (
 								<div aria-hidden class="size-full bg-section"></div>
 							)}
@@ -60,7 +62,7 @@ const entries = (await listCommunities())
 		{data.description && <p data-tina-field={tinaField(data, 'description')} class="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">{data.description}</p>}
 		<div class="mt-10 grid gap-6 md:grid-cols-2">
 			{entries.map(({ node, path }) => {
-				const sierraUrl = safeHref(node.listingUrl) ?? null;
+				const sierraUrl = mediaUrl(safeHref(node.listingUrl), mediaSite) ?? null;
 				return (
 					<a
 						href={sierraUrl ?? `/${path}/`}
@@ -68,7 +70,7 @@ const entries = (await listCommunities())
 						class="group relative block overflow-hidden rounded-2xl shadow-[0_20px_45px_-12px_rgba(16,24,40,0.12)]"
 					>
 						{node.heroImage ? (
-							<img src={node.heroImage} alt={node.title ?? ''} width={600} height={400} loading="lazy" decoding="async" class="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+							<img src={mediaUrl(node.heroImage, mediaSite)} alt={node.title ?? ''} width={600} height={400} loading="lazy" decoding="async" class="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
 						) : (
 							<div aria-hidden class="aspect-[16/9] w-full bg-section"></div>
 						)}

@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import { safeHref, linkTargetAttrs } from '../../lib/url';
 
@@ -18,7 +20,7 @@ interface Props {
 const { actions: raw, class: className } = Astro.props;
 const actions = (raw ?? []).flatMap((action) => {
 	if (!action) return [];
-	const href = safeHref(action.link);
+	const href = mediaUrl(safeHref(action.link), mediaSite);
 	if (!href) return [];
 	const linkAttrs = linkTargetAttrs(action.link);
 	return [{ action, href, linkAttrs }];

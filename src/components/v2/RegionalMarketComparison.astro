@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { getConfig, getPage } from '../../lib/data';
 import type { DataTableBlock, PageBlock } from '../../lib/data';
 import { safeHref } from '../../lib/url';
@@ -56,7 +58,7 @@ if (validationError && Astro.isPrerendered) {
 }
 
 const labels = (await getConfig()).data?.config?.marketTable;
-const linkHref = safeHref(labels?.link) ?? '/northwest-houston-real-estate/#communities';
+const linkHref = mediaUrl(safeHref(labels?.link), mediaSite) ?? '/northwest-houston-real-estate/#communities';
 ---
 
 {!validationError && <section class="regional-market-comparison reveal" aria-labelledby="regional-market-heading">

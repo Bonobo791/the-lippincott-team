@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { Image } from 'astro:assets';
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
@@ -16,7 +18,7 @@ const { data } = Astro.props;
 <section class="font-apple relative overflow-hidden text-white">
 	{data.backgroundImage && (
 		<div class="absolute inset-0" data-tina-field={tinaField(data, 'backgroundImage')}>
-			<Image src={data.backgroundImage} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} loading="lazy" decoding="async" class="size-full object-cover" />
+			<Image src={mediaUrl(data.backgroundImage, mediaSite)} alt="" width={1920} height={1080} sizes="100vw" format="webp" quality={70} loading="lazy" decoding="async" class="size-full object-cover" />
 		</div>
 	)}
 	<div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(100deg,rgba(194,39,55,.88)_0%,rgba(142,27,40,.72)_34%,rgba(0,0,0,.55)_68%,rgba(0,0,0,.35)_100%)]"></div>
@@ -30,7 +32,7 @@ const { data } = Astro.props;
 			{data.description && <p data-tina-field={tinaField(data, 'description')} class="my-[22px] mb-[34px] text-lg leading-[1.4] tracking-[-0.01em] text-white/90 md:text-[21px]">{data.description}</p>}
 			{data.action?.link && (
 				<a
-					href={safeHref(data.action.link)}
+					href={mediaUrl(safeHref(data.action.link), mediaSite)}
 					data-tina-field={tinaField(data.action)}
 					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 					class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-white transition-all hover:bg-white/12 active:scale-95"
