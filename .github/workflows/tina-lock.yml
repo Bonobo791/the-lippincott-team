@@ -13,6 +13,14 @@ on:
 jobs:
   tina-lock:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cdn-mode: [full-site, media-only]
+    env:
+      PUBLIC_CDN_MODE: ${{ matrix.cdn-mode }}
+      PUBLIC_MEDIA_URL: https://media.example.invalid
+      SITE_URL: https://thelippincottteam.com
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -23,9 +31,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm test
       - name: Build (regenerates Tina client + lock)
         run: pnpm build:local
       - name: Fail if tina-lock.json was not regenerated
         run: git diff --exit-code tina/tina-lock.json
       - name: Fail on function residue in the generated schema
         run: node scripts/check-tina-schema.mjs
+      - name: Check generated media delivery URLs
+        env:
+          BUNNY_AUDIT_DIST: dist/client
+        run: node --test scripts/media-output.test.mjs
