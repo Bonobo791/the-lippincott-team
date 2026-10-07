@@ -57,6 +57,9 @@ jobs:
       # visible to its own `if`).
       BUNNY_API_KEY_SET: ${{ secrets.BUNNY_API_KEY != '' }}
       BUNNY_PULL_ZONE_ID_SET: ${{ secrets.BUNNY_PULL_ZONE_ID != '' }}
+      BUNNY_MEDIA_API_KEY_SET: ${{ secrets.BUNNY_MEDIA_API_KEY != '' }}
+      BUNNY_MEDIA_PULL_ZONE_ID_SET: ${{ secrets.BUNNY_MEDIA_PULL_ZONE_ID != '' }}
+      PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -64,30 +67,23 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
-      - name: Wait for the commit to serve, then purge the pull zone
-        if: ${{ env.BUNNY_API_KEY_SET == 'true' && env.BUNNY_PULL_ZONE_ID_SET == 'true' }}
+      - name: Wait for matching build records, then purge the active zones
+        if: ${{ env.BUNNY_API_KEY_SET == 'true' || env.BUNNY_PULL_ZONE_ID_SET == 'true' || env.BUNNY_MEDIA_API_KEY_SET == 'true' || env.BUNNY_MEDIA_PULL_ZONE_ID_SET == 'true' || env.PURGE_REQUIRED == 'true' }}
         env:
           BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
           BUNNY_PULL_ZONE_ID: ${{ secrets.BUNNY_PULL_ZONE_ID }}
+          BUNNY_MEDIA_API_KEY: ${{ secrets.BUNNY_MEDIA_API_KEY }}
+          BUNNY_MEDIA_PULL_ZONE_ID: ${{ secrets.BUNNY_MEDIA_PULL_ZONE_ID }}
+          BUNNY_PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
           SITE_URL: ${{ secrets.SITE_URL }}
           ORIGIN_URL: ${{ secrets.BUNNY_ORIGIN_URL || secrets.SITE_URL || 'https://thelippincottteam.com' }}
           COMMIT_SHA: ${{ github.sha }}
-        run: node scripts/bunny-purge.mjs --wait-for-commit "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
+        run: node scripts/bunny-purge.mjs --deploy-purge "$COMMIT_SHA" --origin "$ORIGIN_URL" --timeout 1800
       - name: Warn when Bunny secrets are not configured (optional purge)
-        if: ${{ (env.BUNNY_API_KEY_SET != 'true' || env.BUNNY_PULL_ZONE_ID_SET != 'true') && env.PURGE_REQUIRED != 'true' }}
-        env:
-          PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
+        if: ${{ env.BUNNY_API_KEY_SET != 'true' && env.BUNNY_PULL_ZONE_ID_SET != 'true' && env.BUNNY_MEDIA_API_KEY_SET != 'true' && env.BUNNY_MEDIA_PULL_ZONE_ID_SET != 'true' && env.PURGE_REQUIRED != 'true' }}
         run: >-
-          echo "::warning::BUNNY_API_KEY / BUNNY_PULL_ZONE_ID are not set as
+          echo "::warning::No Bunny site or media purge credentials are set as
           repository secrets — skipping the Bunny cache purge. Add them under
           Settings -> Secrets and variables -> Actions to enable it, or set
           the BUNNY_PURGE_REQUIRED repository variable to 'true' to make a
           missing purge fail the job instead."
-      - name: Fail when Bunny secrets are missing and purge is required
-        if: ${{ (env.BUNNY_API_KEY_SET != 'true' || env.BUNNY_PULL_ZONE_ID_SET != 'true') && env.PURGE_REQUIRED == 'true' }}
-        env:
-          PURGE_REQUIRED: ${{ vars.BUNNY_PURGE_REQUIRED }}
-        run: >-
-          echo "::error::BUNNY_PURGE_REQUIRED is 'true' but BUNNY_API_KEY /
-          BUNNY_PULL_ZONE_ID are not set as repository secrets — refusing to
-          let a production deploy land with stale CDN content." && exit 1

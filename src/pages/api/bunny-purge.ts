@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { clientIp, createRateLimiter, jsonError, readBody } from '../../lib/api-guards';
 import { BunnyPurgeError, normalizeSiteUrl, purgeUrl } from '../../lib/bunny-purge';
+import { cdnConfig } from '../../lib/media';
 
 // Protected per-URL Bunny cache purge endpoint. Lets a server-side caller
 // (TinaCloud webhook, GitHub Action, manual curl) purge one or more page URLs
@@ -166,6 +167,9 @@ async function purgeTargets(targets: string[], apiKey: string): Promise<Response
 }
 
 async function handle(request: Request, clientAddress?: string): Promise<Response> {
+	if (cdnConfig.mode === 'media-only') {
+		return jsonError(503, 'Page cache purging is disabled in media-only mode. Purge the linked media zone through deployment tooling.');
+	}
 	if (request.url.length > MAX_URL_BYTES) {
 		return jsonError(414, 'Request URL is too long.');
 	}

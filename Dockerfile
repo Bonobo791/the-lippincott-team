@@ -109,7 +109,7 @@ COPY --from=build /app/tina ./tina
 # workflow holds the key in repository secrets and purges after the deploy is
 # serving; BUNNY_PURGE_ON_START is the opt-in last resort for hosts without
 # CI.
-COPY scripts/bunny-purge.mjs scripts/bunny-url.mjs ./scripts/
+COPY scripts/bunny-purge.mjs scripts/bunny-url.mjs scripts/cdn-config.mjs ./scripts/
 COPY scripts/deploy ./scripts/deploy
 USER node
 EXPOSE 4321

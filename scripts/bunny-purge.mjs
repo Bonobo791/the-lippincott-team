@@ -45,6 +45,7 @@
 
 import { pathToFileURL } from 'node:url';
 import { normalizeSiteUrl } from './bunny-url.mjs';
+import { parseCdnBuildRecord } from './cdn-config.mjs';
 
 const BUNNY_API_BASE = 'https://api.bunny.net';
 const MARKER_PATH = '/__moderaty_commit.txt';
@@ -72,7 +73,7 @@ function sleep(ms) {
 }
 
 function parseArgs(argv) {
-	if (argv.includes('--wait-for-commit')) {
+	if (argv.includes('--wait-for-commit') || argv.includes('--deploy-purge')) {
 		const flagValue = (name) => {
 			const index = argv.indexOf(name);
 			return index !== -1 && argv[index + 1] !== undefined ? argv[index + 1] : undefined;
@@ -80,8 +81,8 @@ function parseArgs(argv) {
 		const timeout = Number(flagValue('--timeout') ?? String(DEFAULT_WAIT_TIMEOUT_S));
 		const interval = Number(flagValue('--interval') ?? String(DEFAULT_WAIT_INTERVAL_S));
 		return {
-			mode: 'wait',
-			sha: flagValue('--wait-for-commit'),
+			mode: argv.includes('--deploy-purge') ? 'deploy' : 'wait',
+			sha: flagValue(argv.includes('--deploy-purge') ? '--deploy-purge' : '--wait-for-commit'),
 			origin: flagValue('--origin'),
 			timeout: Number.isFinite(timeout) && timeout > 0 ? timeout : DEFAULT_WAIT_TIMEOUT_S,
 			interval: Number.isFinite(interval) && interval > 0 ? interval : DEFAULT_WAIT_INTERVAL_S,
@@ -183,10 +184,77 @@ async function purgePullZone({ apiKey, pullZoneId, fetchImpl }) {
 		}
 		console.log(`[bunny-purge] Pull zone ${pullZoneId} cache purged.`);
 		return true;
-	} catch (error) {
-		console.error('[bunny-purge] Failed:', error instanceof Error ? error.message : 'Unknown error');
+	} catch {
+		// A transport error may contain request headers; never echo secrets.
+		console.error('[bunny-purge] Failed: network request did not complete.');
 		return false;
 	}
+}
+
+// Read both public markers from the direct origin. Cache-busting and no-store
+// protect against intermediate caches; both commits must identify this release.
+async function deployedConfig(parsed, env, fetchImpl) {
+	const candidate = parsed.origin || env.BUNNY_ORIGIN_URL || env.SITE_URL;
+	let origin;
+	try {
+		const url = new URL(candidate);
+		if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error();
+		origin = url.origin;
+	} catch {
+		console.error('[bunny-purge] --deploy-purge requires a direct http(s) origin without credentials or path.');
+		return null;
+	}
+	if (!/^[a-f0-9]{40}$/i.test(parsed.sha ?? '')) {
+		console.error('[bunny-purge] --deploy-purge requires a full commit SHA.');
+		return null;
+	}
+	const deadline = Date.now() + parsed.timeout * 1000;
+	console.log(`[bunny-purge] Waiting for deployed commit and Bunny config (${parsed.timeout}s timeout).`);
+	while (Date.now() < deadline) {
+		try {
+			const options = { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' }, signal: AbortSignal.timeout(Math.max(1, Math.min(REQUEST_TIMEOUT_MS, deadline - Date.now()))) };
+			const suffix = `?deploy=${parsed.sha}&poll=${Date.now()}`;
+			const [marker, configResponse] = await Promise.all([
+				fetchImpl(`${origin}${MARKER_PATH}${suffix}`, options),
+				fetchImpl(`${origin}/__bunny_config.json${suffix}`, options),
+			]);
+			if (marker.ok && configResponse.ok) {
+				const [commit, body] = await Promise.all([marker.text(), configResponse.text()]);
+				const config = parseCdnBuildRecord(JSON.parse(body));
+				if (commit.trim() === parsed.sha && config.commit === parsed.sha && Date.now() < deadline) return config;
+			}
+		} catch { /* Rolling deploys and invalid/stale records are retryable. */ }
+		const remaining = deadline - Date.now();
+		if (remaining > 0) await sleep(Math.min(parsed.interval * 1000, remaining));
+	}
+	console.error('[bunny-purge] Matching commit/config never served; refusing to purge blindly.');
+	return null;
+}
+
+async function purgeDeployment(parsed, env, fetchImpl) {
+	const config = await deployedConfig(parsed, env, fetchImpl);
+	if (!config) return 1;
+	const prefixes = config.mode === 'full-site' ? ['BUNNY_MEDIA', 'BUNNY'] : ['BUNNY_MEDIA'];
+	const required = env.BUNNY_PURGE_REQUIRED === 'true';
+	const targets = [];
+	// Preflight every applicable layer before invalidating any cache.
+	for (const prefix of prefixes) {
+		const apiKey = env[`${prefix}_API_KEY`]?.trim();
+		const rawId = env[`${prefix}_PULL_ZONE_ID`]?.trim();
+		const label = prefix === 'BUNNY_MEDIA' ? 'media' : 'site';
+		if (!apiKey && !rawId && !required) {
+			console.warn(`[bunny-purge] ${label} purge not configured; skipping this layer.`);
+			continue;
+		}
+		const pullZoneId = Number(rawId);
+		if (!apiKey || !/^\d+$/.test(rawId ?? '') || !Number.isSafeInteger(pullZoneId) || pullZoneId <= 0) {
+			console.error(`[bunny-purge] ${prefix}_API_KEY and ${prefix}_PULL_ZONE_ID must both be configured correctly.`);
+			return 1;
+		}
+		targets.push({ apiKey, pullZoneId, fetchImpl });
+	}
+	for (const target of targets) if (!(await purgePullZone(target))) return 1;
+	return 0;
 }
 
 // Purges each target in order, aborting at the first failure. Sequential is
@@ -239,6 +307,7 @@ export async function main(args, env = process.env, fetchImpl = fetch) {
 	const siteUrl = env.SITE_URL ?? '';
 	const originUrl = env.BUNNY_ORIGIN_URL ?? '';
 	const parsed = parseArgs(args);
+	if (parsed.mode === 'deploy') return purgeDeployment(parsed, env, fetchImpl);
 
 	// Validate CLI arguments FIRST so a malformed command fails predictably
 	// even when credentials are absent (otherwise `--wait-for-commit nope`

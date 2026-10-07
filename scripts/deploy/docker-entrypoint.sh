@@ -48,7 +48,12 @@ case "$purge_on_start" in
 	*) purge_on_start=0 ;;
 esac
 
-if [ "$purge_on_start" -eq 1 ]; then
+cdn_mode=$(node -e "try{const c=require('/app/dist/client/__bunny_config.json');process.stdout.write(['full-site','media-only'].includes(c.mode)?c.mode:'invalid')}catch{process.stdout.write('invalid')}")
+if [ "$cdn_mode" = "media-only" ]; then
+	echo '[entrypoint] Media-only build: no website startup purge; media invalidation runs from CI.'
+elif [ "$cdn_mode" = "invalid" ]; then
+	echo '[entrypoint] WARN: build CDN record missing/invalid; skipping startup purge' >&2
+elif [ "$purge_on_start" -eq 1 ]; then
 	if [ "$ready" -eq 1 ]; then
 		if [ -n "${BUNNY_API_KEY:-}" ] && [ -n "${BUNNY_PULL_ZONE_ID:-}" ]; then
 			node /app/scripts/bunny-purge.mjs || echo '[bunny-purge] WARN: purge failed; continuing'
