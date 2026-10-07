@@ -48,7 +48,7 @@ case "$purge_on_start" in
 	*) purge_on_start=0 ;;
 esac
 
-cdn_mode=$(node -e "try{const c=require('/app/dist/client/__bunny_config.json');process.stdout.write(['full-site','media-only'].includes(c.mode)?c.mode:'invalid')}catch{process.stdout.write('invalid')}")
+cdn_mode=$(node -e "try{const {parseCdnBuildRecord}=require('/app/scripts/cdn-config.mjs');process.stdout.write(parseCdnBuildRecord(require('/app/dist/client/__bunny_config.json')).mode)}catch{process.stdout.write('invalid')}")
 if [ "$cdn_mode" = "media-only" ]; then
 	echo '[entrypoint] Media-only build: no website startup purge; media invalidation runs from CI.'
 elif [ "$cdn_mode" = "invalid" ]; then

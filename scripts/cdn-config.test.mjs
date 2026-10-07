@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 // The implementation must export these contracts; a missing export is the
@@ -12,30 +14,57 @@ test('exports the shared build and rendering contracts', () => {
     assert.equal(typeof api[name], 'function', name);
   }
 });
+function markerFixture(gitLayout = 'loose') {
+  const root = mkdtempSync(join(tmpdir(), 'bunny-marker-'));
+  const sha = 'a'.repeat(40);
+  mkdirSync(join(root, 'scripts', 'deploy'), { recursive: true });
+  mkdirSync(join(root, 'public'));
+  copyFileSync(new URL('./cdn-config.mjs', import.meta.url), join(root, 'scripts', 'cdn-config.mjs'));
+  copyFileSync(new URL('./deploy/write-commit-marker.mjs', import.meta.url), join(root, 'scripts', 'deploy', 'write-commit-marker.mjs'));
+  symlinkSync(fileURLToPath(new URL('../node_modules', import.meta.url)), join(root, 'node_modules'), 'dir');
+  const gitDir = join(root, gitLayout === 'worktree' ? 'linked-git' : '.git');
+  mkdirSync(join(gitDir, 'refs', 'heads'), { recursive: true });
+  if (gitLayout === 'worktree') writeFileSync(join(root, '.git'), `gitdir: ${gitDir}\n`);
+  writeFileSync(join(gitDir, 'HEAD'), gitLayout === 'detached' ? `${sha}\n` : 'ref: refs/heads/dev\n');
+  if (gitLayout === 'packed') writeFileSync(join(gitDir, 'packed-refs'), `# pack-refs\n${sha} refs/heads/dev\n`);
+  else writeFileSync(join(gitDir, 'refs', 'heads', 'dev'), `${sha}\n`);
+  return {
+    root, sha,
+    run(settings = {}) {
+      const env = { ...process.env };
+      for (const key of ['COMMIT_SHA', 'SOURCE_COMMIT', 'COMMIT_REF', 'GITHUB_SHA', 'PUBLIC_CDN_MODE', 'PUBLIC_MEDIA_URL']) delete env[key];
+      const result = spawnSync(process.execPath, [join(root, 'scripts', 'deploy', 'write-commit-marker.mjs')], { cwd: root, env: { ...env, ...settings }, encoding: 'utf8' });
+      assert.equal(result.status, 0, result.stderr);
+      const record = JSON.parse(readFileSync(join(root, 'public', '__bunny_config.json'), 'utf8'));
+      assert.equal(readFileSync(join(root, 'public', '__moderaty_commit.txt'), 'utf8').trim(), record.commit);
+      return record;
+    },
+    remove: () => rmSync(root, { recursive: true, force: true }),
+  };
+}
 if (api.parseCdnConfig) {
-  test('marker writer uses the current worktree commit and emits matching mode records', async () => {
-    const root = fileURLToPath(new URL('../', import.meta.url));
-    let gitDir = resolve(root, '.git');
-    try { gitDir = resolve(root, readFileSync(gitDir, 'utf8').trim().slice(7).trim()); } catch { /* ordinary checkout */ }
-    const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim();
-    let common = gitDir;
-    try { common = resolve(gitDir, readFileSync(resolve(gitDir, 'commondir'), 'utf8').trim()); } catch { /* ordinary checkout */ }
-    const sha = head.startsWith('ref: ') ? readFileSync(resolve(common, head.slice(5)), 'utf8').trim() : head;
-    const saved = { ...process.env };
+  for (const layout of ['loose', 'worktree', 'packed', 'detached']) {
+    test(`marker writer emits matching records in an isolated ${layout} checkout`, () => {
+      const fixture = markerFixture(layout);
+      try {
+        for (const mode of ['full-site', 'media-only']) {
+          assert.deepEqual(fixture.run({ PUBLIC_CDN_MODE: mode, PUBLIC_MEDIA_URL: 'https://media.example.invalid' }), { version: 1, commit: fixture.sha, mode, mediaUrl: mode === 'media-only' ? 'https://media.example.invalid' : null });
+        }
+      } finally { fixture.remove(); }
+    });
+  }
+  test('marker settings follow production env-file precedence and shell overrides', () => {
+    const fixture = markerFixture();
     try {
-    for (const mode of ['full-site', 'media-only']) {
-      Object.assign(process.env, { COMMIT_SHA: '', SOURCE_COMMIT: '', COMMIT_REF: '', GITHUB_SHA: '', PUBLIC_CDN_MODE: mode, PUBLIC_MEDIA_URL: 'https://media.example.invalid' });
-      await import(`./deploy/write-commit-marker.mjs?test=${mode}`);
-      assert.equal(readFileSync(new URL('../public/__moderaty_commit.txt', import.meta.url), 'utf8').trim(), sha);
-      const record = JSON.parse(readFileSync(new URL('../public/__bunny_config.json', import.meta.url), 'utf8'));
-      assert.equal(record.commit, sha);
-      assert.equal(record.mode, mode);
-      assert.equal(record.mediaUrl, mode === 'media-only' ? 'https://media.example.invalid' : null);
-    }
-    } finally {
-      for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
-      Object.assign(process.env, saved);
-    }
+      writeFileSync(join(fixture.root, '.env'), 'PUBLIC_CDN_MODE=full-site\nPUBLIC_MEDIA_URL=https://base.example.invalid\n');
+      writeFileSync(join(fixture.root, '.env.production'), 'PUBLIC_CDN_MODE=media-only\nPUBLIC_MEDIA_URL=https://production.example.invalid\n');
+      assert.equal(fixture.run().mode, 'media-only');
+      assert.equal(fixture.run().mediaUrl, 'https://production.example.invalid');
+      writeFileSync(join(fixture.root, '.env.production.local'), 'PUBLIC_MEDIA_URL=https://local.example.invalid\n');
+      assert.equal(fixture.run().mediaUrl, 'https://local.example.invalid');
+      assert.equal(fixture.run({ PUBLIC_MEDIA_URL: 'https://shell.example.invalid' }).mediaUrl, 'https://shell.example.invalid');
+      assert.equal(fixture.run({ PUBLIC_CDN_MODE: 'full-site' }).mode, 'full-site');
+    } finally { fixture.remove(); }
   });
   const { parseCdnConfig, resolveMediaUrl, parseCdnBuildRecord } = api;
   const site = 'https://thelippincottteam.com';
@@ -63,8 +92,18 @@ if (api.parseCdnConfig) {
     assert.equal(resolveMediaUrl(undefined, media, site), undefined);
   });
   test('malformed or traversal paths are never sent to the media origin', () => {
-    for (const value of ['/uploads/../secret', '/uploads/%2e%2e/secret', '/uploads/a/../../secret', '/uploads/a%2f..%2f..%2fsecret', '/uploads/a\\..\\secret', '/uploads/%zz.jpg']) {
+    for (const value of ['/uploads/../secret', '/uploads/%2e%2e/secret', '/uploads/a/../../secret', '/uploads/a%2f..%2f..%2fsecret', '/uploads/a\\..\\secret', '/uploads/%zz.jpg', '/uploads/%E0%A4%A', '/uploads/a\u0000.jpg', '/uploads/a\n.jpg', '/uploads/%00.jpg', '/uploads/%0A.jpg', '/uploads/%7F.jpg']) {
       assert.equal(resolveMediaUrl(value, media, site), value);
+    }
+  });
+  test('valid encoded filename characters stay encoded without recursive decoding', () => {
+    for (const value of ['/uploads/100%25.webp', '/uploads/literal%2500.webp', '/uploads/Photo%20One.webp']) {
+      assert.equal(resolveMediaUrl(value, media, site), `https://media.example.invalid${value}`);
+    }
+  });
+  test('invalid media origins fail with a constant message and no supplied value', () => {
+    for (const value of [undefined, '', '   ', 'https://user:private-value@media.example.invalid']) {
+      assert.throws(() => parseCdnConfig({ PUBLIC_CDN_MODE: 'media-only', PUBLIC_MEDIA_URL: value }), { message: 'PUBLIC_MEDIA_URL must be an HTTPS origin without credentials, path, query or fragment' });
     }
   });
   test('full-site leaves owned paths and absolute URLs unchanged', () => {

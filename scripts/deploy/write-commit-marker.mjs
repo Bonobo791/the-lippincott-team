@@ -22,8 +22,11 @@ import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseCdnConfig } from '../cdn-config.mjs';
+import { loadEnv } from 'vite';
 
-try { process.loadEnvFile(); } catch { /* CI supplies the environment */ }
+// All build scripts compile Astro in production mode. Use Vite's identical
+// env-file precedence here; injected shell values continue to win.
+Object.assign(process.env, loadEnv('production', process.cwd(), ''));
 const cdnConfig = parseCdnConfig(process.env);
 
 const SOURCE_KEYS = ['COMMIT_SHA', 'SOURCE_COMMIT', 'COMMIT_REF', 'GITHUB_SHA'];

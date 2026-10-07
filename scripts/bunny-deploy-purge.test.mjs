@@ -96,6 +96,24 @@ test('polling retries a stale record and only purges after both markers match', 
   assert.ok(polls >= 2);
   assert.equal(f.purges().length, 1);
 });
+test('deployment SHA identity is case-insensitive across the argument and both markers', async () => {
+  for (const [argument, marker, configCommit] of [[sha.toUpperCase(), sha, sha], [sha, sha.toUpperCase(), sha.toUpperCase()]]) {
+    const f = fake('media-only', url => url.includes('__moderaty_commit.txt') ? response(marker) : url.includes('__bunny_config.json') ? response({ ...record('media-only'), commit: configCommit }) : undefined);
+    assert.equal((await run(mediaCreds, f, [args[0], argument, ...args.slice(2)])).code, 0);
+    assert.equal(f.purges().length, 1);
+  }
+});
+test('malformed JSON retries and cannot permit a purge until a valid record is served', async () => {
+  let polls = 0;
+  const recovering = fake('media-only', url => url.includes('__bunny_config.json') && ++polls === 1 ? response('{broken') : undefined);
+  assert.equal((await run(mediaCreds, recovering)).code, 0);
+  assert.ok(polls >= 2);
+  assert.equal(recovering.purges().length, 1);
+  const broken = fake('media-only', url => url.includes('__bunny_config.json') ? response('{broken') : undefined);
+  assert.equal((await run(mediaCreds, broken)).code, 1);
+  assert.equal(broken.purges().length, 0);
+  assert.ok(broken.calls.length < 40);
+});
 test('failed media purge aborts the site purge and logs no key or upstream body', async () => {
   const f = fake('full-site', url => url.includes('/pullzone/34/') ? response('media-secret site-secret', 500) : undefined);
   const result = await run({ ...mediaCreds, ...siteCreds }, f);

@@ -1,5 +1,6 @@
 ---
 import { mediaUrl } from '../../lib/media';
+import { safeHref } from '../../lib/url';
 const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import { splitHeading } from '../../lib/split-heading';
@@ -51,7 +52,7 @@ const cellClass =
 				</>
 			);
 			return item.link ? (
-				<a data-tina-field={tinaField(item)} href={item.link} {...externalAttrs(item.link)} class={cellClass + ' flex-1 transition-colors hover:bg-black/[0.03]'}>
+				<a data-tina-field={tinaField(item)} href={mediaUrl(safeHref(item.link), mediaSite)} {...externalAttrs(item.link)} class={cellClass + ' flex-1 transition-colors hover:bg-black/[0.03]'}>
 					{inner}
 				</a>
 			) : (

@@ -208,6 +208,7 @@ async function deployedConfig(parsed, env, fetchImpl) {
 		console.error('[bunny-purge] --deploy-purge requires a full commit SHA.');
 		return null;
 	}
+	const sha = parsed.sha.toLowerCase();
 	const deadline = Date.now() + parsed.timeout * 1000;
 	console.log(`[bunny-purge] Waiting for deployed commit and Bunny config (${parsed.timeout}s timeout).`);
 	while (Date.now() < deadline) {
@@ -221,7 +222,7 @@ async function deployedConfig(parsed, env, fetchImpl) {
 			if (marker.ok && configResponse.ok) {
 				const [commit, body] = await Promise.all([marker.text(), configResponse.text()]);
 				const config = parseCdnBuildRecord(JSON.parse(body));
-				if (commit.trim() === parsed.sha && config.commit === parsed.sha && Date.now() < deadline) return config;
+				if (commit.trim().toLowerCase() === sha && config.commit.toLowerCase() === sha && Date.now() < deadline) return config;
 			}
 		} catch { /* Rolling deploys and invalid/stale records are retryable. */ }
 		const remaining = deadline - Date.now();

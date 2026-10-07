@@ -34,7 +34,13 @@ for (const mode of ['full-site', 'media-only']) {
     const previous = process.env.PUBLIC_CDN_MODE;
     process.env.PUBLIC_CDN_MODE = mode === 'media-only' ? 'full-site' : 'media-only';
     try {
-      for (const video of ['/uploads/video.mp4?version=2#t=3', 'https://thelippincottteam.com/uploads/video.mp4', 'https://assets.tina.io/uploads/preview.mp4']) {
+      const fixtures = [
+        ['/uploads/video.mp4?version=2#t=3', 'https://media.example.invalid/uploads/video.mp4?version=2#t=3'],
+        ['https://thelippincottteam.com/uploads/video.mp4', 'https://media.example.invalid/uploads/video.mp4'],
+        ['https://assets.tina.io/uploads/preview.mp4', 'https://assets.tina.io/uploads/preview.mp4'],
+        ['https://assets.tina.io.evil.test/uploads/preview.mp4', 'https://assets.tina.io.evil.test/uploads/preview.mp4'],
+      ];
+      for (const [video, mediaExpected] of fixtures) {
         setMediaIsland(Video, video);
         const url = new URL('https://thelippincottteam.com/tina-island/page?slug=test');
         const response = await ALL({ params: { name: 'page' }, url, request: new Request(url, { method: 'POST', headers: { 'content-type': 'application/x-tina-preview+json', 'X-Tina-Prime': '1' }, body: '{}' }) });
@@ -42,7 +48,7 @@ for (const mode of ['full-site', 'media-only']) {
         assert.equal(response.status, 200, html);
         assert.equal(response.headers.get('cache-control'), 'no-store');
         const dom = parse(html);
-        const expected = mode === 'media-only' && !video.startsWith('https://assets.tina.io') ? `https://media.example.invalid${video.replace('https://thelippincottteam.com', '')}` : video;
+        const expected = mode === 'media-only' ? mediaExpected : video;
         assert.equal(dom.querySelector('source').getAttribute('src'), expected);
         assert.equal(dom.querySelectorAll('source')[1].getAttribute('src'), expected.replace('.mp4', '.webm'));
         assert.equal(dom.querySelector('video').getAttribute('poster'), mode === 'media-only' ? 'https://media.example.invalid/uploads/poster.webp' : '/uploads/poster.webp');
