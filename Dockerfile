@@ -40,6 +40,8 @@ ARG PUBLIC_TINA_CLIENT_ID=""
 ARG TINA_TOKEN=""
 ARG SITE_URL="https://thelippincottteam.com"
 ARG PUBLIC_GA_ID=""
+ARG PUBLIC_CDN_MODE="full-site"
+ARG PUBLIC_MEDIA_URL=""
 # Coolify sets COOLIFY_BRANCH (Build Variable) — promote it to ENV so
 # tina/config.ts branch detection sees it and staging builds don't fall
 # back to `main`.
@@ -53,6 +55,8 @@ ARG SOURCE_COMMIT=""
 ENV PUBLIC_TINA_CLIENT_ID=$PUBLIC_TINA_CLIENT_ID \
     SITE_URL=$SITE_URL \
     PUBLIC_GA_ID=$PUBLIC_GA_ID \
+    PUBLIC_CDN_MODE=$PUBLIC_CDN_MODE \
+    PUBLIC_MEDIA_URL=$PUBLIC_MEDIA_URL \
     COOLIFY_BRANCH=$COOLIFY_BRANCH \
     SOURCE_COMMIT=$SOURCE_COMMIT \
     NODE_ENV=production \
