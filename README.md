@@ -66,9 +66,12 @@ server.
      too — the Dockerfile bakes in no runtime default, so without it
      `/api/contact` rejects browser form posts whose `Origin` isn't in its
      allowlist (see below) and `/api/bunny-purge` answers 503; both fail
-     closed rather than assume the production origin. Set it **runtime-only**
-     (uncheck "Build Variable"): as a build arg it only feeds the build
-     stage and never reaches the running container.
+     closed rather than assume the production origin. Set it at **build and
+     runtime**; a Docker build argument alone does not populate runtime env.
+   - `PUBLIC_CDN_MODE` (build) — `full-site` by default, or `media-only` to
+     serve the website directly and owned uploads through Bunny Storage.
+     Media-only also requires `PUBLIC_MEDIA_URL`, an HTTPS media origin.
+     Rebuild after changing either public setting.
    - `CONTACT_ALLOWED_ORIGINS` (optional) — comma-separated extra origins
      allowed to submit the contact form when the app is also served from a
      host no platform var expresses, e.g. a staging Bunny edge hostname
@@ -97,7 +100,13 @@ Forms dependency anymore.
 
 ### Bunny CDN
 
-Traffic is served through Bunny CDN: a **pull zone** in front of the Coolify
+Two delivery modes are supported. `full-site` preserves the setup below;
+`media-only` serves the website from Coolify and sends images, videos and
+downloads under `/uploads/` to the linked Storage media Pull Zone. See the
+[delivery-mode runbook](docs/deployment/bunny-modes.md) for exact Coolify,
+DNS/TLS, Storage upload, purge and rollback instructions.
+
+In full-site mode, traffic is served through Bunny CDN: a **pull zone** in front of the Coolify
 origin (HTML/JS/CSS) plus a **storage zone** that serves `/uploads/*` media
 (images and videos). The media files stay in this repo as the source of
 truth — the pull zone routes `/uploads/*` requests to the storage zone via an
@@ -107,16 +116,17 @@ Setup (Bunny dashboard):
 
 1. **Storage zone** → *Add Storage Zone* (e.g. `lippincott-media`). Note the
    linked pull-zone hostname (e.g. `lippincott-media.b-cdn.net`), then upload
-   the contents of `public/uploads/` (drag-and-drop the folder). Re-upload
+   `public/uploads/` with the `uploads/` prefix preserved in Storage. Re-upload
    when media changes.
 2. **Pull zone** → *Add Pull Zone*:
-   - **Origin URL**: your Coolify domain — the production domain in prod;
-     for dev, `http://www.lrmrpayrrcyadik6utzhit1l.169.58.185.96.sslip.io/`
-     until the real domain is live.
+   - **Origin URL**: a stable direct HTTPS Coolify hostname. It must reach
+     Coolify, not resolve back to the public Bunny zone; use a direct preview
+     hostname for staging.
    - **Origin Host Header**: set to the same domain — Coolify's Traefik
      routes by `Host` header, so this must match the app's configured domain.
 3. **Edge Rules** on the pull zone, in order:
-   1. `*/api/*` and `*/tina-island/*` → **Bypass cache** (contact endpoint
+   1. `*/api/*`, `*/tina-island/*`, `*/admin/*`, `*/__moderaty_commit.txt*`
+      and `*/__bunny_config.json*` → **Bypass cache** (contact endpoint
       and the visual-editing route are never cached).
    2. `*/uploads/*` → action **Origin URL** = `https://<storage-zone>.b-cdn.net`,
       with extra action cache time **30 days**.
@@ -139,10 +149,13 @@ never at push time, never blindly, and never from inside the container:
   exact commit that produced it to `/__moderaty_commit.txt` (via
   `scripts/deploy/write-commit-marker.mjs`, from `SOURCE_COMMIT` on Coolify —
   enable *Include Source Commit in Build* — `COMMIT_REF` on Netlify, or git
-  locally). The workflow polls that marker at
+  locally). Builds also write `/__bunny_config.json` with the mode and media
+  origin. The workflow polls both records at
   the origin until it returns the pushed commit SHA — i.e. the new container
-  is actually serving — then full-purges the pull zone with `BUNNY_API_KEY` /
-  `BUNNY_PULL_ZONE_ID` from **repository secrets** (Settings → Secrets and
+  is actually serving — then purges the linked media zone, followed by the
+  main zone in full-site mode. Use `BUNNY_MEDIA_API_KEY` /
+  `BUNNY_MEDIA_PULL_ZONE_ID` for media and `BUNNY_API_KEY` /
+  `BUNNY_PULL_ZONE_ID` for the main zone, from **repository secrets** (Settings → Secrets and
   variables → Actions). The key never enters the application environment, and
   a deploy that fails or never serves the marker makes the job fail loudly
   instead of purging into nothing.
@@ -171,7 +184,10 @@ never at push time, never blindly, and never from inside the container:
 - Without the env vars the script is a no-op, so local builds are unaffected;
   with them set, a failed purge logs loudly and exits non-zero.
 
-Purging a single page (CMS edits between deploys):
+Purging a single page (full-site mode, CMS edits between deploys):
+
+Media-only builds disable this website-cache endpoint with `503`; use the
+deployment tooling for linked media-zone invalidation.
 
 - **Webhook endpoint**: the protected `/api/bunny-purge` route purges one or
   more URLs immediately. Set `BUNNY_PURGE_SECRET` on the host (any strong

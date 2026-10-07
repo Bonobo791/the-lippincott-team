@@ -1,14 +1,11 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { parseCdnConfig } from './scripts/cdn-config.mjs';
+import { loadEnv } from 'vite';
 
-// Config files run in plain Node, so Vite's .env loading does not apply —
-// load .env explicitly for local builds (Node >= 20.6). CI/Netlify inject
-// the same vars into the process env, where this is a no-op fallback.
-try {
-	process.loadEnvFile();
-} catch {
-	// no .env file present (e.g. CI) — rely on the process environment
-}
+// Match Vite's active env files, including .env.production(.local), before
+// validating build settings. Existing shell/host values retain precedence.
+Object.assign(process.env, loadEnv(process.env.NODE_ENV || 'development', process.cwd(), ''));
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
@@ -16,6 +13,9 @@ import icon from 'astro-icon';
 import tina from '@tinacms/astro/integration';
 import { tinaAdminDevRedirect } from '@tinacms/astro/vite';
 import tailwindcss from '@tailwindcss/vite';
+
+// Fail before adapter/content compilation when a build is misconfigured.
+parseCdnConfig(process.env);
 
 // Host-neutral: every content page prerenders to static HTML, and the one
 // on-demand route (/tina-island, the visual-editing endpoint) is served by

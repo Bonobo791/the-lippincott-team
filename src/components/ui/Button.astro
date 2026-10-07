@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import type { HTMLAttributes } from 'astro/types';
 import { tv, type VariantProps } from 'tailwind-variants';
 import { cn } from '../../lib/cn';
@@ -33,7 +35,7 @@ type Props = VariantProps<typeof button> &
 
 const { variant, size, href, class: className, ...rest } = Astro.props;
 const classes = cn(button({ variant, size }), className);
-const safeUrl = safeHref(href);
+const safeUrl = mediaUrl(safeHref(href), mediaSite);
 ---
 
 {safeUrl ? (

@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import FormattedDate from '../FormattedDate.astro';
@@ -51,7 +53,7 @@ const cta = data?.cta;
 					{rest.map((post) => (
 						<a href={`/blog/${post._sys.filename}/`} class="group flex flex-col gap-5 bg-background p-6 no-underline transition-colors duration-300 hover:bg-section sm:flex-row md:p-7">
 							{post.heroImage && (
-								<img src={post.heroImage} alt={post.title ?? ''} width={400} height={300} loading="lazy" class="aspect-[4/3] w-full shrink-0 rounded-lg object-cover sm:w-40" />
+								<img src={mediaUrl(post.heroImage, mediaSite)} alt={post.title ?? ''} width={400} height={300} loading="lazy" class="aspect-[4/3] w-full shrink-0 rounded-lg object-cover sm:w-40" />
 							)}
 							<div>
 								<span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -83,14 +85,14 @@ const cta = data?.cta;
 				<div class="mt-9 flex flex-wrap items-center justify-center gap-4">
 					{cta.primary?.link && (
 						<a
-							href={safeHref(cta.primary.link)}
+							href={mediaUrl(safeHref(cta.primary.link), mediaSite)}
 							data-tina-field={tinaField(cta.primary)}
 							{...linkTargetAttrs(cta.primary.link)}
 							class="btn-magnetic inline-flex items-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-7 py-4 text-sm font-semibold text-white no-underline shadow-lg transition-colors duration-200 hover:bg-primary/90 active:scale-95"
 						>{cta.primary.label} <span aria-hidden="true">→</span></a>
 					)}
 					{cta.secondary?.link && (
-						<a href={safeHref(cta.secondary.link)} {...linkTargetAttrs(cta.secondary.link)} data-tina-field={tinaField(cta.secondary)} class="inline-flex items-center whitespace-nowrap rounded-full border border-white/30 px-7 py-4 text-sm font-semibold text-white no-underline transition-colors duration-200 hover:border-white hover:bg-white/10">{cta.secondary.label}</a>
+						<a href={mediaUrl(safeHref(cta.secondary.link), mediaSite)} {...linkTargetAttrs(cta.secondary.link)} data-tina-field={tinaField(cta.secondary)} class="inline-flex items-center whitespace-nowrap rounded-full border border-white/30 px-7 py-4 text-sm font-semibold text-white no-underline transition-colors duration-200 hover:border-white hover:bg-white/10">{cta.secondary.label}</a>
 					)}
 				</div>
 			</div>

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
+import { parseCdnConfig, resolveMediaUrl } from './cdn-config.mjs';
 
 const readComponent = (path) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
 const pageURL = new URL('https://example.com/northwest-houston-real-estate/cypress/');
@@ -24,14 +25,20 @@ const headFrontmatter = stripTypeScriptTypes(
 	headSource.split('---')[1].replace(/^import .+;$/gm, ''),
 );
 
-function socialImageURLs(image) {
+function socialImageURLs(image, mode = 'full-site') {
 	const Astro = { props: { title: 'Test', description: 'Test', image }, url: pageURL, site: pageURL.origin };
 	return ['og:image', 'twitter:image'].map((property) => {
 		const expression = headSource.match(new RegExp(`<meta property="${property}" content=\\{([^}]+)\\}`))?.[1];
 		assert.ok(expression, `${property} must have a content expression`);
-		return runInNewContext(`${headFrontmatter}\nString(${expression})`, { Astro, URL });
+		const config = parseCdnConfig({ PUBLIC_CDN_MODE: mode, PUBLIC_MEDIA_URL: 'https://media.example.invalid' });
+		return runInNewContext(`${headFrontmatter}\nString(${expression})`, { Astro, URL, mediaUrl: (value) => resolveMediaUrl(value, config, pageURL.origin) });
 	});
 }
+
+test('media-only social tags use the actual media resolver', () => {
+	assert.deepEqual(socialImageURLs('/uploads/social.webp', 'media-only'), ['https://media.example.invalid/uploads/social.webp', 'https://media.example.invalid/uploads/social.webp']);
+	assert.deepEqual(socialImageURLs('https://example.com/uploads/social.webp', 'media-only'), ['https://media.example.invalid/uploads/social.webp', 'https://media.example.invalid/uploads/social.webp']);
+});
 
 function layoutImage(image, config) {
 	return imageProp(layoutSource, 'BaseHead', { image, config });

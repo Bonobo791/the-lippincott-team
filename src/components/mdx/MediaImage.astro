@@ -1,0 +1,8 @@
+---
+import { sanitizeImageSrc } from '@tinacms/astro/sanitize';
+import { mediaUrl } from '../../lib/media';
+interface Props { url: string; alt?: string; caption?: string }
+const { url, alt } = Astro.props;
+const src = mediaUrl(sanitizeImageSrc(url), Astro.site?.href ?? Astro.url.origin);
+---
+<img src={src} alt={alt ?? ''} />

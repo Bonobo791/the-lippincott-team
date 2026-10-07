@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -11,7 +13,7 @@ interface Props { data: Omit<ProofStageBlock, '__typename'> }
 
 const { data } = Astro.props;
 const metrics = (data.metrics ?? []).filter(m => m !== null);
-const linkHref = safeHref(data.action?.link);
+const linkHref = mediaUrl(safeHref(data.action?.link), mediaSite);
 const hasQuote = !!(data.quote?.text || hasRichText(data.rating));
 // metricsFirst swaps visual order via flex `order` (markup stays single-sourced).
 const quoteSplitClass = `grid items-start gap-10 lg:grid-cols-2 lg:gap-16 ${data.metricsFirst ? 'order-2 mt-14' : 'order-1 mb-14'}`;
@@ -56,7 +58,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 			{metrics.length > 0 && (
 				<div class={metricsGridClass}>
 					{metrics.map((metric) => {
-					const metricHref = metric.link ? safeHref(metric.link) : null;
+					const metricHref = metric.link ? mediaUrl(safeHref(metric.link), mediaSite) : null;
 					const tileClass = `block bg-tile p-8 transition-colors duration-300 md:p-10 ${metricHref ? 'hover:bg-[#2e2e31]' : 'cursor-default'}`;
 					const tileInner = (
 						<>

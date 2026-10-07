@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { isExternal, safeHref } from '../../lib/url';
@@ -24,7 +26,7 @@ const items = (data.items ?? []).filter(i => i !== null);
 			{data.description && <p data-tina-field={tinaField(data, 'description')} class="mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-body">{data.description}</p>}
 			{data.action?.link && (
 				<a
-					href={safeHref(data.action.link)}
+					href={mediaUrl(safeHref(data.action.link), mediaSite)}
 					data-tina-field={tinaField(data.action)}
 					{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 					class="btn-magnetic mt-8 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-[22px] py-[11px] text-[17px] leading-none text-white transition-colors hover:bg-[#9e1e2c] active:scale-95"

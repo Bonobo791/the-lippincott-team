@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { safeHref, linkTargetAttrs } from '../../lib/url';
 
 interface Props {
@@ -14,7 +16,7 @@ interface Props {
  * break visual editing, same pattern as GuideHero's mobile CTA row).
  */
 const { label, link } = Astro.props;
-const href = safeHref(link);
+const href = mediaUrl(safeHref(link), mediaSite);
 ---
 {href && label && (
 	<section class="bg-section py-12 md:py-16">

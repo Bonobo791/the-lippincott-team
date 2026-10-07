@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { Image } from 'astro:assets';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -54,7 +56,7 @@ const jsonLd = data && {
 		worksFor: { '@type': 'Organization', name: 'The Lippincott Team at eXp Realty' },
 		...(data.email ? { email: `mailto:${data.email}` } : {}),
 		...(phoneDigits ? { telephone: `+1${phoneDigits}` } : {}),
-		...(data.photo ? { image: new URL(data.photo, Astro.url).href } : {}),
+		...(data.photo ? { image: new URL(mediaUrl(data.photo, mediaSite), Astro.url).href } : {}),
 		workLocation: location,
 	},
 };
@@ -81,7 +83,7 @@ const jsonLd = data && {
 		<section class="py-12 md:py-16">
 			<div class="mx-auto grid max-w-[1200px] items-start gap-10 px-6 md:grid-cols-2 md:px-12 md:gap-16">
 				{data.photo && (
-					<Image src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 1200px) 520px, (min-width: 768px) calc((100vw - 160px) / 2), calc(100vw - 48px)" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
+					<Image src={mediaUrl(data.photo, mediaSite)} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 1200px) 520px, (min-width: 768px) calc((100vw - 160px) / 2), calc(100vw - 48px)" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
 				)}
 				{(data.bio || data.marketLogo) && (
 					<div>
@@ -91,7 +93,7 @@ const jsonLd = data && {
 							</div>
 						)}
 						{data.marketLogo && (
-							<img src={data.marketLogo} alt={`The Lippincott Team — ${location} logo`} width="160" height="160" loading="lazy" decoding="async" data-tina-field={tinaField(data, 'marketLogo')} class="mt-10 h-28 w-auto max-w-[220px] object-contain object-left md:h-32" />
+							<img src={mediaUrl(data.marketLogo, mediaSite)} alt={`The Lippincott Team — ${location} logo`} width="160" height="160" loading="lazy" decoding="async" data-tina-field={tinaField(data, 'marketLogo')} class="mt-10 h-28 w-auto max-w-[220px] object-contain object-left md:h-32" />
 						)}
 					</div>
 				)}
@@ -146,13 +148,13 @@ const jsonLd = data && {
 				</div>
 				<div class="flex flex-wrap gap-3">
 					{leadChips.map((chip) => (
-						safeHref(chip.link) && <a href={safeHref(chip.link)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+						mediaUrl(safeHref(chip.link), mediaSite) && <a href={mediaUrl(safeHref(chip.link), mediaSite)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
 					))}
 					{teammates.map((m) => (
 						<a href={`/about/${m._sys.filename}/`} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{m.name}</a>
 					))}
 					{extraChips.map((chip) => (
-						safeHref(chip.link) && <a href={safeHref(chip.link)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+						mediaUrl(safeHref(chip.link), mediaSite) && <a href={mediaUrl(safeHref(chip.link), mediaSite)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
 					))}
 				</div>
 			</div>

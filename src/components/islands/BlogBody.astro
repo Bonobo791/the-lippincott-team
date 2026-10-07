@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { getConfig, getTeamMember, listBlogs, type CmsBlog, type CmsTeam } from '../../lib/data';
@@ -67,7 +69,7 @@ const related = data
 				<div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
 					{author && (
 						<div class="flex items-center gap-3">
-							{author.photo && <img src={author.photo} alt={author.name ?? ''} width={44} height={44} class="size-11 rounded-full object-cover" />}
+							{author.photo && <img src={mediaUrl(author.photo, mediaSite)} alt={author.name ?? ''} width={44} height={44} class="size-11 rounded-full object-cover" />}
 							<div>
 								<b class="block text-sm font-semibold text-ink">{author.name}</b>
 								{author.role && <span class="block text-xs text-muted-foreground">{author.role}, The Lippincott Team at eXp Realty</span>}
@@ -79,9 +81,9 @@ const related = data
 					)}
 					<span class="text-[13px] text-muted-foreground">{minutes} min read</span>
 				</div>
-				{preferredSources?.link && safeHref(preferredSources.link) && (
+				{preferredSources?.link && mediaUrl(safeHref(preferredSources.link), mediaSite) && (
 					<a
-						href={safeHref(preferredSources.link)}
+						href={mediaUrl(safeHref(preferredSources.link), mediaSite)}
 						target="_blank"
 						rel="noopener"
 						class="mt-4 inline-flex max-w-full items-center justify-center whitespace-normal break-words rounded-full border border-border bg-transparent px-5 py-2.5 text-center text-sm font-medium text-ink transition-colors hover:bg-section focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -100,7 +102,7 @@ const related = data
 					</div>
 				)}
 				{data.heroImage && (
-					<img src={data.heroImage} alt={data.title ?? ''} width={1200} height={675} data-tina-field={tinaField(data, 'heroImage')} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />
+					<img src={mediaUrl(data.heroImage, mediaSite)} alt={data.title ?? ''} width={1200} height={675} data-tina-field={tinaField(data, 'heroImage')} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />
 				)}
 			</div>
 		</section>
@@ -136,7 +138,7 @@ const related = data
 					{author && (
 						<footer class="mt-10 flex flex-col gap-6 border-t border-border pt-10 sm:flex-row">
 							{author.photo && (
-								<img src={author.photo} alt={author.name ?? ''} width={96} height={96} class="size-24 shrink-0 rounded-full object-cover" />
+								<img src={mediaUrl(author.photo, mediaSite)} alt={author.name ?? ''} width={96} height={96} class="size-24 shrink-0 rounded-full object-cover" />
 							)}
 							<div>
 								<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{blogCopy?.aboutAuthorLabel ?? 'About the author'}</span>
@@ -162,7 +164,7 @@ const related = data
 						{related.map((post) => (
 							<a href={`/blog/${post._sys.filename}/`} class="group no-underline">
 								{post.heroImage && (
-									<img src={post.heroImage} alt={post.title ?? ''} width={480} height={320} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
+									<img src={mediaUrl(post.heroImage, mediaSite)} alt={post.title ?? ''} width={480} height={320} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
 								)}
 								<span class="mt-5 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{post.category ?? 'Guides'}</span>
 								<h3 class="mt-2 font-serif text-xl font-light leading-snug tracking-[-0.01em] text-ink transition-colors group-hover:text-primary">{post.title}</h3>

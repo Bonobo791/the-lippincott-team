@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
@@ -31,7 +33,7 @@ const phoneHref = telHref(contact?.phone);
 			<div class="mt-10 flex flex-wrap justify-center gap-3.5">
 				{actions.map((action, index) => (
 					<a
-						href={safeHref(action.link) ?? '#'}
+						href={mediaUrl(safeHref(action.link), mediaSite) ?? '#'}
 						data-tina-field={tinaField(action)}
 						{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 						class={index === 0

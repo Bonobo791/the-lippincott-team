@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { before, test } from 'node:test';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { parse } from 'node-html-parser';
+import { compiledMediaModule } from './test-fixtures/compiled-media.mjs';
 
 const require = createRequire(import.meta.resolve('astro/package.json'));
 const { transform } = require('@astrojs/compiler-rs');
@@ -15,6 +16,7 @@ before(() => assert.equal(anchors.length, 2, 'exercise both desktop and mobile C
 // Render the real CTA templates and frontmatter without loading unrelated nav
 // icons or a CMS build. Removing either template's link attrs must fail here.
 const frontmatter = source.split('---')[1]
+	.replace("'../lib/media'", JSON.stringify(compiledMediaModule()))
 	.replace(/^import (?:type |\{ Icon \}|\{ cn \})[^\n]*\n/gm, '')
 	.replaceAll('"@tinacms/astro/tina-field"', JSON.stringify(import.meta.resolve('@tinacms/astro/tina-field')))
 	.replaceAll("'../lib/url'", JSON.stringify(new URL('../src/lib/url.ts', import.meta.url).href));

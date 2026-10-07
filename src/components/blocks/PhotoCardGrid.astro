@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -12,7 +14,7 @@ interface Props { data: Omit<PhotoCardGridBlock, '__typename'> }
 const { data } = Astro.props;
 const cards = (data.cards ?? []).filter(c => c !== null);
 const gridCols = data.columns === '2' ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3';
-const footerHref = safeHref(data.footerAction?.link);
+const footerHref = mediaUrl(safeHref(data.footerAction?.link), mediaSite);
 ---
 <section class="bg-section py-12 md:py-16">
 	<div class="mx-auto max-w-[1200px] px-6 md:px-12">
@@ -33,10 +35,10 @@ const footerHref = safeHref(data.footerAction?.link);
 		{cards.length > 0 && (
 			<div class={`grid gap-8 ${gridCols}`}>
 				{cards.map((card) => {
-					const href = safeHref(card.link);
+					const href = mediaUrl(safeHref(card.link), mediaSite);
 					const inner = (
 						<>
-							{card.image && <img src={card.image} alt={card.title ?? ''} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100" />}
+							{card.image && <img src={mediaUrl(card.image, mediaSite)} alt={card.title ?? ''} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100" />}
 							<span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(23,21,26,0.82)] via-[rgba(23,21,26,0.15)] to-transparent" aria-hidden="true"></span>
 							<span class="absolute inset-x-0 bottom-0 block p-6">
 								<span class="block text-[1.35rem] font-medium leading-snug text-white">{card.title}</span>

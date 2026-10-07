@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { Icon } from 'astro-icon/components';
@@ -25,7 +27,7 @@ const finalCta = data?.finalCta;
 
 const extAttrs = (link?: string | null) => linkTargetAttrs(link);
 const feedNoteParts = feed?.feedNote?.split('{profile}') ?? null;
-const feedProfileHref = safeHref(feed?.profileUrl) ?? null;
+const feedProfileHref = mediaUrl(safeHref(feed?.profileUrl), mediaSite) ?? null;
 // Fewer than two slides renders a static figure — the arrows/dots script
 // early-returns at the same threshold, so the controls must not render.
 const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
@@ -61,14 +63,14 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 						);
 						return (
 							<div class="dtile" data-tina-field={tinaField(t)}>
-								{safeHref(t.link) ? <a href={safeHref(t.link)} {...extAttrs(t.link)}>{num}</a> : num}
+								{mediaUrl(safeHref(t.link), mediaSite) ? <a href={mediaUrl(safeHref(t.link), mediaSite)} {...extAttrs(t.link)}>{num}</a> : num}
 								<span class="slabel">{t.slabel}</span>
 								{t.ssrc && <span class="ssrc">{t.ssrc}</span>}
 							</div>
 						);
 					})}
 				</div>
-				{record.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={safeHref(record.cta.link)} {...extAttrs(record.cta.link)} data-tina-field={tinaField(record.cta)}>{record.cta.label}</a></p>}
+				{record.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={mediaUrl(safeHref(record.cta.link), mediaSite)} {...extAttrs(record.cta.link)} data-tina-field={tinaField(record.cta)}>{record.cta.label}</a></p>}
 			</div>
 		</section>
 	)}
@@ -107,7 +109,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 					)}
 				</div>
 				)}
-				{featured.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={safeHref(featured.cta.link)} {...extAttrs(featured.cta.link)} data-tina-field={tinaField(featured.cta)}>{featured.cta.label}</a></p>}
+				{featured.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={mediaUrl(safeHref(featured.cta.link), mediaSite)} {...extAttrs(featured.cta.link)} data-tina-field={tinaField(featured.cta)}>{featured.cta.label}</a></p>}
 			</div>
 		</section>
 	)}
@@ -132,7 +134,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 						</p>
 					)}
 				</div>
-				{feed.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={safeHref(feed.cta.link)} {...extAttrs(feed.cta.link)} data-tina-field={tinaField(feed.cta)}>{feed.cta.label}</a></p>}
+				{feed.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(feed.cta.link), mediaSite)} {...extAttrs(feed.cta.link)} data-tina-field={tinaField(feed.cta)}>{feed.cta.label}</a></p>}
 			</div>
 		</section>
 	)}
@@ -153,7 +155,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 							<span class="tag red">{card.tag}</span>
 							<h3>{card.title}</h3>
 							<TinaMarkdown content={card.body} components={mdxComponents} />
-							{card.link && <a class="link-arrow" href={safeHref(card.link)} {...extAttrs(card.link)}>{card.linkLabel}</a>}
+							{card.link && <a class="link-arrow" href={mediaUrl(safeHref(card.link), mediaSite)} {...extAttrs(card.link)}>{card.linkLabel}</a>}
 						</div>
 					))}
 				</div>
@@ -162,12 +164,12 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 						<span class="social-label" data-tina-field={tinaField(verify, 'socialLabel')}>{verify.socialLabel}</span>
 						<div class="social-btns">
 							{socials.map((s) => (
-								<a class="social-btn" href={safeHref(s.link)} {...extAttrs(s.link)}>{s.icon && <Icon name={s.icon} size={18} />}<span>{s.title}</span></a>
+								<a class="social-btn" href={mediaUrl(safeHref(s.link), mediaSite)} {...extAttrs(s.link)}>{s.icon && <Icon name={s.icon} size={18} />}<span>{s.title}</span></a>
 							))}
 						</div>
 					</div>
 				)}
-				{verify.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={safeHref(verify.cta.link)} {...extAttrs(verify.cta.link)} data-tina-field={tinaField(verify.cta)}>{verify.cta.label}</a></p>}
+				{verify.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(verify.cta.link), mediaSite)} {...extAttrs(verify.cta.link)} data-tina-field={tinaField(verify.cta)}>{verify.cta.label}</a></p>}
 			</div>
 		</section>
 	)}
@@ -184,7 +186,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 						</details>
 					))}
 				</div>
-				{faq.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={safeHref(faq.cta.link)} {...extAttrs(faq.cta.link)} data-tina-field={tinaField(faq.cta)}>{faq.cta.label}</a></p>}
+				{faq.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(faq.cta.link), mediaSite)} {...extAttrs(faq.cta.link)} data-tina-field={tinaField(faq.cta)}>{faq.cta.label}</a></p>}
 			</div>
 		</section>
 	)}
@@ -195,7 +197,7 @@ const featuredReviews = (featured?.reviews ?? []).filter((r) => r !== null);
 				{finalCta.heading && <V2Heading text={finalCta.heading} data-tina-field={tinaField(finalCta, 'heading')} />}
 				{finalCta.body && <p data-tina-field={tinaField(finalCta, 'body')}>{finalCta.body}</p>}
 				<div class="final-actions">
-					{finalCta.primary?.link && <a class="btn" href={safeHref(finalCta.primary.link)} {...extAttrs(finalCta.primary.link)} data-tina-field={tinaField(finalCta.primary)}>{finalCta.primary.label}</a>}
+					{finalCta.primary?.link && <a class="btn" href={mediaUrl(safeHref(finalCta.primary.link), mediaSite)} {...extAttrs(finalCta.primary.link)} data-tina-field={tinaField(finalCta.primary)}>{finalCta.primary.label}</a>}
 					{finalCta.showPhone && phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
 				</div>
 			</div>

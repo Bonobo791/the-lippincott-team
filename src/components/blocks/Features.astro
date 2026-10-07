@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
@@ -42,7 +44,7 @@ const externalAttrs = (href?: string | null) =>
 						</div>
 						{item.action?.label && item.action?.link && (
 							<a
-								href={safeHref(item.action.link)}
+								href={mediaUrl(safeHref(item.action.link), mediaSite)}
 								data-tina-field={tinaField(item, 'action')}
 								{...externalAttrs(item.action.link)}
 								class="group/link inline-flex items-center gap-1.5 text-[17px] text-primary hover:underline"

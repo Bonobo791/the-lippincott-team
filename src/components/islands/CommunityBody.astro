@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsCommunity } from '../../lib/data';
@@ -18,7 +20,7 @@ const blocks = (data?.blocks ?? []).filter(b => b !== null);
 const faqs = (data?.faqs ?? []).filter(f => f !== null);
 // Red "View Listings" hero CTA links to the doc's external listings URL
 // (Sierra property search) when one is set; unset docs get none.
-const sierraUrl = safeHref(data?.listingUrl) ?? null;
+const sierraUrl = mediaUrl(safeHref(data?.listingUrl), mediaSite) ?? null;
 // Community FAQs are static Q&A inside the rich-text body (no doc uses the
 // faqs frontmatter), so h2/h3 overrides restyle that section to the
 // accordion pattern. Docs that do use frontmatter FAQs get FaqAccordion.
@@ -34,7 +36,7 @@ const bodyComponents = { ...mdxComponents, h2: CommunityFaqHeading, h3: Communit
 		{data.heroImage ? (
 			<section class="relative w-full overflow-hidden">
 				<div data-tina-field={tinaField(data, 'heroImage')} class="absolute inset-0">
-					<img src={data.heroImage} alt="" class="size-full object-cover" />
+					<img src={mediaUrl(data.heroImage, mediaSite)} alt="" class="size-full object-cover" />
 					<div class="absolute inset-0 bg-black/50"></div>
 				</div>
 				<div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">

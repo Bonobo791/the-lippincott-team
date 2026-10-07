@@ -5,12 +5,14 @@ import test from 'node:test';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { createComponent } from 'astro/runtime/server/index.js';
 import { parse } from 'node-html-parser';
+import { compiledMediaModule } from './test-fixtures/compiled-media.mjs';
 
 const require = createRequire(import.meta.resolve('astro/package.json'));
 const { transform } = require('@astrojs/compiler-rs');
 const source = readFileSync(new URL('../src/components/v2/RegionalMarketComparison.astro', import.meta.url), 'utf8');
 // Inject only the CMS loaders; compile and render the complete real component.
 const prepared = source
+	.replace("'../../lib/media'", JSON.stringify(compiledMediaModule()))
 	.replace("import { getConfig, getPage } from '../../lib/data';", 'const { getConfig, getPage } = Astro.props;')
 	.replace(/^import type [^\n]*\n/gm, '')
 	.replace("'../../lib/url'", JSON.stringify(new URL('../src/lib/url.ts', import.meta.url).href))

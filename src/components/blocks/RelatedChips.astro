@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { safeHref, isExternal } from '../../lib/url';
@@ -8,7 +10,7 @@ interface Props { data: Omit<RelatedChipsBlock, '__typename'> }
 
 const { data } = Astro.props;
 const chips = (data.chips ?? []).flatMap((chip) => {
-	const href = safeHref(chip?.link);
+	const href = mediaUrl(safeHref(chip?.link), mediaSite);
 	return chip && href ? [{ chip, href }] : [];
 });
 ---
