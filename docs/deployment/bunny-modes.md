@@ -70,6 +70,8 @@ Store credentials under repository **Secrets and variables → Actions**:
 
 Use zone-scoped purge keys where available. A Storage upload password is a separate credential and is not a purge key. Keep Bunny keys out of public variables, build arguments, CMS content and source control.
 
+The media and main site Pull Zone IDs must be distinct. The script rejects a known collision before sending any purge, including in media-only mode if the website ID is still configured. This catches a copy/paste error; it does not verify that arbitrary different IDs belong to the intended zones. Confirm those associations in Bunny before enabling required purges.
+
 The workflow calls `node scripts/bunny-purge.mjs --deploy-purge <full-sha> --origin <direct-origin> --timeout 1800`. It waits until both `/__moderaty_commit.txt` and `/__bunny_config.json` identify that commit, then selects the zones from the deployed record. Media invalidation precedes website invalidation. A failed configured purge stops the sequence.
 
 Set repository variable `BUNNY_PURGE_REQUIRED=true` after configuring the selected mode's credentials. Required media-only purges need the media pair; required full-site purges need both pairs. The script validates all applicable pairs before sending a purge. Optional missing pairs warn and skip; partial pairs fail. Existing site-only full-site installations retain their website purge with a warning that the media layer was not invalidated.

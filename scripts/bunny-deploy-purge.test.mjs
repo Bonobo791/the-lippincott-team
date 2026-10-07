@@ -38,6 +38,25 @@ test('full-site purges media before site with independent keys', async () => {
   assert.equal((await run({ ...siteCreds, ...mediaCreds, BUNNY_PURGE_REQUIRED: 'true' }, f)).code, 0);
   assert.deepEqual(f.purges().map(c => [c.url, c.options.headers.AccessKey]), [['https://api.bunny.net/pullzone/34/purgeCache', 'media-secret'], ['https://api.bunny.net/pullzone/12/purgeCache', 'site-secret']]);
 });
+for (const mode of ['full-site', 'media-only']) {
+  for (const required of [undefined, 'true']) {
+    for (const mediaId of ['12', '0012']) {
+      test(`${mode} rejects colliding zone roles before purging (required=${required}, media=${mediaId})`, async () => {
+        const f = fake(mode);
+        const result = await run({ ...siteCreds, ...mediaCreds, BUNNY_MEDIA_PULL_ZONE_ID: mediaId, BUNNY_PURGE_REQUIRED: required }, f);
+        assert.equal(result.code, 1);
+        assert.equal(f.purges().length, 0);
+        assert.match(result.logs, /distinct.*zone/i);
+        assert.doesNotMatch(result.logs, /media-secret|site-secret/);
+      });
+    }
+  }
+}
+test('media-only still ignores malformed unrelated site credentials', async () => {
+  const f = fake('media-only');
+  assert.equal((await run({ ...mediaCreds, BUNNY_PULL_ZONE_ID: 'not-an-id', BUNNY_PURGE_REQUIRED: 'true' }, f)).code, 0);
+  assert.deepEqual(f.purges().map(c => c.url), ['https://api.bunny.net/pullzone/34/purgeCache']);
+});
 test('optional legacy site-only credentials retain main purge with a media warning', async () => {
   const f = fake('full-site');
   const result = await run(siteCreds, f);

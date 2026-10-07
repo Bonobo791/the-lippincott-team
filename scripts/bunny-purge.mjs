@@ -253,6 +253,14 @@ async function purgeDeployment(parsed, env, fetchImpl) {
 		}
 		targets.push({ apiKey, pullZoneId, fetchImpl });
 	}
+	// These are separate cache layers. Also prevent a known website zone from
+	// being purged as "media" when the website is direct in media-only mode.
+	const siteId = env.BUNNY_PULL_ZONE_ID?.trim();
+	const mediaId = env.BUNNY_MEDIA_PULL_ZONE_ID?.trim();
+	if (/^\d+$/.test(siteId ?? '') && /^\d+$/.test(mediaId ?? '') && Number(siteId) === Number(mediaId)) {
+		console.error('[bunny-purge] Media and site roles must use distinct Pull Zone IDs; refusing to purge.');
+		return 1;
+	}
 	for (const target of targets) if (!(await purgePullZone(target))) return 1;
 	return 0;
 }
