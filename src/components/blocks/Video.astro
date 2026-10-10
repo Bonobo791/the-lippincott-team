@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import Section from '../ui/Section.astro';
 import YouTubeFacade from '../ui/YouTubeFacade.astro';
@@ -59,8 +61,8 @@ if (video?.type === 'file') {
 			{video.type === 'youtube'
 				? <YouTubeFacade id={video.id} params={ytParams} />
 				: video.type === 'file'
-					? <video class="absolute inset-0 h-full w-full object-cover" poster={data.poster || undefined} controls muted={data.autoPlay || undefined} autoplay={data.autoPlay || undefined} loop={data.loop || undefined} playsinline preload={data.autoPlay ? 'metadata' : 'none'}>{fileSources.map(s => <source src={s.src} type={s.type} />)}</video>
-					: <iframe class="absolute inset-0 h-full w-full" src={embedSrc} title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
+					? <video class="absolute inset-0 h-full w-full object-cover" poster={mediaUrl(data.poster || undefined, mediaSite)} controls muted={data.autoPlay || undefined} autoplay={data.autoPlay || undefined} loop={data.loop || undefined} playsinline preload={data.autoPlay ? 'metadata' : 'none'}>{fileSources.map(s => <source src={mediaUrl(s.src, mediaSite)} type={s.type} />)}</video>
+					: <iframe class="absolute inset-0 h-full w-full" src={mediaUrl(embedSrc, mediaSite)} title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
 		</div>
 	</Section>
 )}

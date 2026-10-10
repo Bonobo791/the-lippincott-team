@@ -1,14 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
-import Button from '../components/ui/Button.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import StandaloneBody from '../components/standalone/StandaloneBody.astro';
+import { getConfig, getStandalone } from '../lib/data';
+import { islands } from '../lib/islands';
+
+const result = await getStandalone('not-found');
+const data = result.data?.standalone;
+if (!data || data.__typename !== 'StandaloneNotFound') return new Response('Not Found', { status: 404 });
+const config = (await getConfig()).data?.config ?? null;
 ---
-<Base title="Page Not Found | The Lippincott Team" description="The page you're looking for doesn't exist.">
-	<section class="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-6 text-center">
-		<div class="relative flex flex-col items-center">
-			<p class="text-sm font-medium tracking-widest text-primary uppercase">Error 404</p>
-			<h1 class="mt-2 text-4xl font-semibold tracking-tight lg:text-5xl">Page not found</h1>
-			<p class="mx-auto mt-4 max-w-md text-muted-foreground">The page you're looking for doesn't exist. Let's get you back home.</p>
-			<Button href="/" class="mt-8">Back to home</Button>
-		</div>
-	</section>
+
+<Base
+	title={data.seoTitle?.trim() || 'Page Not Found | The Lippincott Team'}
+	description={data.description?.trim() || config?.seo?.description || ''}
+	image={data.socialImage ?? undefined}
+>
+	<TinaIsland name="standalone" wrapper={islands.standalone.wrapper} params={{ slug: 'not-found' }} primary>
+		<StandaloneBody data={data} />
+	</TinaIsland>
 </Base>

@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { Icon } from 'astro-icon/components';
 import type { HTMLAttributes } from 'astro/types';
 import { safeHref } from '../lib/url';
@@ -12,10 +14,10 @@ type Props = HTMLAttributes<'a'> & {
 
 const { title, link, icon, ...rest } = Astro.props;
 const safeTitle = title ?? '';
-const safeLink = safeHref(link) ?? '#';
+const safeLink = mediaUrl(safeHref(link), mediaSite) ?? '#';
 ---
 
-<a href={safeLink} target="_blank" aria-label={`Go to ${safeTitle}`} {...rest}>
+<a href={safeLink} target="_blank" aria-label={`Go to ${safeTitle}`} {...rest} rel="noopener">
 	<span class="sr-only">{safeTitle}</span>
 	{icon && <Icon name={icon} size={32} />}
 </a>

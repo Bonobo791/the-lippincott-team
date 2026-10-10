@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { isExternal, safeHref } from '../../lib/url';
@@ -24,11 +26,11 @@ const reviews = (data.testimonials ?? []).filter(r => r !== null);
 			<div>
 				<div class="testi-frame relative overflow-hidden rounded-[18px]">
 					{data.videoUrl ? (
-						<video controls preload="none" playsinline poster={data.poster ?? undefined} class="aspect-[16/10] w-full bg-black object-cover" data-tina-field={tinaField(data, 'videoUrl')}>
-							<source src={data.videoUrl} type="video/mp4" />
+						<video controls preload="none" playsinline poster={mediaUrl(data.poster ?? undefined, mediaSite)} class="aspect-[16/10] w-full bg-black object-cover" data-tina-field={tinaField(data, 'videoUrl')}>
+							<source src={mediaUrl(data.videoUrl, mediaSite)} type="video/mp4" />
 						</video>
 					) : data.poster ? (
-						<img src={data.poster} alt="" width="800" height="500" loading="lazy" decoding="async" class="aspect-[16/10] w-full object-cover" data-tina-field={tinaField(data, 'poster')} />
+						<img src={mediaUrl(data.poster, mediaSite)} alt="" width="800" height="500" loading="lazy" decoding="async" class="aspect-[16/10] w-full object-cover" data-tina-field={tinaField(data, 'poster')} />
 					) : null}
 				</div>
 				{data.caption && <p data-tina-field={tinaField(data, 'caption')} class="mt-3 text-xs text-muted-foreground">{data.caption}</p>}
@@ -62,9 +64,9 @@ const reviews = (data.testimonials ?? []).filter(r => r !== null);
 				{data.action?.link && (
 					<div class="mt-7">
 						<a
-							href={safeHref(data.action.link)}
+							href={mediaUrl(safeHref(data.action.link), mediaSite)}
 							data-tina-field={tinaField(data.action)}
-							{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+							{...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 							class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-primary bg-transparent px-[22px] py-[11px] text-[17px] leading-none text-primary transition-all hover:bg-primary/[0.06] active:scale-95"
 						>
 							{data.action.label ?? 'See All Reviews'}
@@ -130,27 +132,32 @@ const reviews = (data.testimonials ?? []).filter(r => r !== null);
 	// Clip-path bottom-up reveal on the client video frame (skipped under
 	// reduced motion). Bundled by Astro so gsap ships as a module, not a CDN tag.
 	// Module scripts run once, so re-bind on astro:page-load (fires on first
-	// load too) and kill the outgoing page's triggers before each swap.
+	// load too), reverting the prior context on Tina refreshes and navigation.
 	gsap.registerPlugin(ScrollTrigger);
-	let testiTriggers: ScrollTrigger[] = [];
+	let testiContext: gsap.Context | undefined;
+	const cleanupTestiReveal = () => {
+		testiContext?.revert();
+		testiContext = undefined;
+	};
 	const initTestiReveal = () => {
+		cleanupTestiReveal();
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		document.querySelectorAll('.testi-frame').forEach((frame) => {
-			if ((frame as HTMLElement).dataset.testiRevealBound) return;
-			(frame as HTMLElement).dataset.testiRevealBound = '1';
-			const tween = gsap.fromTo(frame,
-				{ clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)' },
-				{
-					clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)',
-					ease: 'none',
-					scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 45%', scrub: true },
-				});
-			if (tween.scrollTrigger) testiTriggers.push(tween.scrollTrigger);
+		testiContext = gsap.context(() => {
+			const frames = document.querySelectorAll<HTMLElement>('.testi-frame');
+			frames.forEach((frame) => {
+				if (frame.dataset.testiRevealBound) return;
+				frame.dataset.testiRevealBound = '1';
+				gsap.fromTo(frame,
+					{ clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)' },
+					{
+						clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)',
+						ease: 'none',
+						scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 45%', scrub: true },
+					});
+			});
+			return () => frames.forEach((frame) => { delete frame.dataset.testiRevealBound; });
 		});
 	};
 	document.addEventListener('astro:page-load', initTestiReveal);
-	document.addEventListener('astro:before-swap', () => {
-		testiTriggers.forEach((t) => t.kill());
-		testiTriggers = [];
-	});
+	document.addEventListener('astro:before-swap', cleanupTestiReveal);
 </script>

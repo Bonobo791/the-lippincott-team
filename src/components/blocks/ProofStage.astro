@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -11,7 +13,7 @@ interface Props { data: Omit<ProofStageBlock, '__typename'> }
 
 const { data } = Astro.props;
 const metrics = (data.metrics ?? []).filter(m => m !== null);
-const linkHref = safeHref(data.action?.link);
+const linkHref = mediaUrl(safeHref(data.action?.link), mediaSite);
 const hasQuote = !!(data.quote?.text || hasRichText(data.rating));
 // metricsFirst swaps visual order via flex `order` (markup stays single-sourced).
 const quoteSplitClass = `grid items-start gap-10 lg:grid-cols-2 lg:gap-16 ${data.metricsFirst ? 'order-2 mt-14' : 'order-1 mb-14'}`;
@@ -46,7 +48,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 							</div>
 						)}
 						{linkHref && data.action?.label && (
-							<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
+							<a href={linkHref} data-tina-field={tinaField(data, 'action')} {...(isExternal(data.action.link) ? { target: '_blank', rel: 'noopener' } : {})} class="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-gold no-underline transition-[gap] duration-200 hover:gap-3.5">
 								{data.action.label} <span aria-hidden="true">→</span>
 							</a>
 						)}
@@ -56,7 +58,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 			{metrics.length > 0 && (
 				<div class={metricsGridClass}>
 					{metrics.map((metric) => {
-					const metricHref = metric.link ? safeHref(metric.link) : null;
+					const metricHref = metric.link ? mediaUrl(safeHref(metric.link), mediaSite) : null;
 					const tileClass = `block bg-tile p-8 transition-colors duration-300 md:p-10 ${metricHref ? 'hover:bg-[#2e2e31]' : 'cursor-default'}`;
 					const tileInner = (
 						<>
@@ -71,7 +73,7 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 						</>
 					);
 					return metricHref ? (
-						<a href={metricHref} data-tina-field={tinaField(metric)} {...(metric.link && isExternal(metric.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class={tileClass}>{tileInner}</a>
+						<a href={metricHref} data-tina-field={tinaField(metric)} {...(metric.link && isExternal(metric.link) ? { target: '_blank', rel: 'noopener' } : {})} class={tileClass}>{tileInner}</a>
 					) : (
 						<div data-tina-field={tinaField(metric)} class={tileClass}>{tileInner}</div>
 					);
@@ -98,42 +100,57 @@ const metricsGridClass = `grid gap-px border border-white/12 bg-white/12 ${data.
 <script is:inline>
 	if (!window.__proofCountBound) {
 		window.__proofCountBound = true;
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		let proofObs = null;
+		const counted = new WeakSet();
+		const countCancels = new Set();
 		const animateProof = (el) => {
+			if (counted.has(el)) return;
+			counted.add(el);
 			const target = parseInt(el.dataset.target, 10);
 			const render = (v) => { el.textContent = v.toLocaleString('en-US'); };
-			if (reduced) { render(target); return; }
 			let start = null;
+			let raf = null;
 			const dur = 1200;
+			const cancel = () => {
+				if (raf !== null) cancelAnimationFrame(raf);
+				render(target);
+			};
 			const step = (ts) => {
-				if (!start) start = ts;
+				if (!countCancels.has(cancel)) return;
+				if (start === null) start = ts;
 				const p = Math.min((ts - start) / dur, 1);
 				const eased = 1 - Math.pow(1 - p, 3);
 				render(Math.round(target * eased));
-				if (p < 1) requestAnimationFrame(step);
+				if (p < 1) raf = requestAnimationFrame(step);
+				else countCancels.delete(cancel);
 			};
-			requestAnimationFrame(step);
+			countCancels.add(cancel);
+			raf = requestAnimationFrame(step);
+		};
+		const teardownProofCount = () => {
+			if (proofObs) { proofObs.disconnect(); proofObs = null; }
+			countCancels.forEach((cancel) => cancel());
+			countCancels.clear();
 		};
 		const initProofCount = () => {
+			// Tina refreshes replace DOM without a preceding before-swap event.
+			teardownProofCount();
+			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			if (reduced || !('IntersectionObserver' in window)) return;
-			proofObs = proofObs || new IntersectionObserver((entries) => {
+			proofObs = new IntersectionObserver((entries, observer) => {
+				if (observer !== proofObs) return;
 				entries.forEach((e) => {
 					if (e.isIntersecting) {
 						e.target.querySelectorAll('.proof-count').forEach(animateProof);
-						proofObs.unobserve(e.target);
+						observer.unobserve(e.target);
 					}
 				});
 			}, { threshold: 0.3 });
 			document.querySelectorAll('[data-proof-section]').forEach((s) => {
-				if (s.dataset.proofCountBound) return;
-				s.dataset.proofCountBound = '1';
 				proofObs.observe(s);
 			});
 		};
 		document.addEventListener('astro:page-load', initProofCount);
-		document.addEventListener('astro:before-swap', () => {
-			if (proofObs) { proofObs.disconnect(); proofObs = null; }
-		});
+		document.addEventListener('astro:before-swap', teardownProofCount);
 	}
 </script>

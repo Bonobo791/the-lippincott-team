@@ -1,4 +1,7 @@
 ---
+import { mediaUrl } from '../../lib/media';
+import { safeHref } from '../../lib/url';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import { splitHeading } from '../../lib/split-heading';
 import type { PageBlock } from '../../lib/data';
@@ -13,7 +16,7 @@ const { data } = Astro.props;
 const items = (data.items ?? []).filter(i => i !== null);
 const isExternal = (href?: string | null) => !!href && /^https?:\/\//.test(href);
 const externalAttrs = (href?: string | null) =>
-	isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+	isExternal(href) ? { target: '_blank', rel: 'noopener' } : {};
 // Title doubles as the lead cell: plain segments render as the small label,
 // **accented** segments as the big figure ("Trusted by **1,000+ families**").
 const titleSegments = data.title ? splitHeading(data.title) : [];
@@ -35,12 +38,12 @@ const cellClass =
 			const inner = (
 				<>
 					{item.ratingImage ? (
-						<img src={item.ratingImage} alt="" width="68" height="12" loading="lazy" decoding="async" class="h-3.5 w-auto object-contain" />
+						<img src={mediaUrl(item.ratingImage, mediaSite)} alt="" width="68" height="12" loading="lazy" decoding="async" class="h-3.5 w-auto object-contain" />
 					) : (
 						<span class="text-sm tracking-[2px] text-gold" aria-label={item.rating ?? 'Rated'}>★★★★★</span>
 					)}
 					{item.image
-						? <img src={item.image} alt={item.imageAlt ?? ''} width="109" height="76" loading="lazy" decoding="async" class="h-6 w-auto object-contain" />
+						? <img src={mediaUrl(item.image, mediaSite)} alt={item.imageAlt ?? ''} width="109" height="76" loading="lazy" decoding="async" class="h-6 w-auto object-contain" />
 						: item.wordmark
 							? <span data-tina-field={tinaField(item, 'wordmark')} class="text-[17px] font-semibold text-ink">{item.wordmark}</span>
 							: null}
@@ -49,7 +52,7 @@ const cellClass =
 				</>
 			);
 			return item.link ? (
-				<a data-tina-field={tinaField(item)} href={item.link} {...externalAttrs(item.link)} class={cellClass + ' flex-1 transition-colors hover:bg-black/[0.03]'}>
+				<a data-tina-field={tinaField(item)} href={mediaUrl(safeHref(item.link), mediaSite)} {...externalAttrs(item.link)} class={cellClass + ' flex-1 transition-colors hover:bg-black/[0.03]'}>
 					{inner}
 				</a>
 			) : (

@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { tinaField } from '@tinacms/astro/tina-field';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import Section from '../ui/Section.astro';
@@ -40,7 +42,7 @@ const actions = (data.actions ?? []).filter(a => a !== null);
 		</div>
 		{data.image?.src && (
 			<div data-tina-field={tinaField(data, 'image')} class="bg-background overflow-hidden rounded-2xl border p-2 shadow-lg">
-				<img src={data.image.src} alt={data.image.alt ?? ''} width="1200" height="900" class="aspect-[4/3] w-full rounded-xl border border-border/25 object-cover" />
+				<img src={mediaUrl(data.image.src, mediaSite)} alt={data.image.alt ?? ''} width="1200" height="900" class="aspect-[4/3] w-full rounded-xl border border-border/25 object-cover" />
 			</div>
 		)}
 	</div>

@@ -21,6 +21,13 @@
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseCdnConfig } from '../cdn-config.mjs';
+import { loadEnv } from 'vite';
+
+// All build scripts compile Astro in production mode. Use Vite's identical
+// env-file precedence here; injected shell values continue to win.
+Object.assign(process.env, loadEnv('production', process.cwd(), ''));
+const cdnConfig = parseCdnConfig(process.env);
 
 const SOURCE_KEYS = ['COMMIT_SHA', 'SOURCE_COMMIT', 'COMMIT_REF', 'GITHUB_SHA'];
 const SHA_RE = /^[0-9a-f]{40}$/i;
@@ -60,7 +67,7 @@ function resolveGitDir() {
 		const nl = text.indexOf('\n');
 		const line = (nl === -1 ? text : text.slice(0, nl)).trim();
 		const value = line.startsWith('gitdir:') ? line.slice('gitdir:'.length).trim() : '';
-		return value ? resolve(join(REPO_ROOT, value)) : '';
+		return value ? resolve(REPO_ROOT, value) : '';
 	} catch {
 		return '';
 	}
@@ -117,5 +124,6 @@ const markerPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'pu
 rmSync(markerPath, { force: true });
 const sha = resolveCommitSha();
 writeFileSync(markerPath, `${sha}\n`);
+writeFileSync(join(REPO_ROOT, 'public', '__bunny_config.json'), `${JSON.stringify({ version: 1, commit: sha, ...cdnConfig })}\n`);
 const summary = sha ? `Wrote ${sha}` : 'No commit SHA available; marker left empty';
 console.log(`[commit-marker] ${summary} -> public/__moderaty_commit.txt`);

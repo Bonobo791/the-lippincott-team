@@ -33,7 +33,7 @@ export function linkTargetAttrs(link: string | undefined | null): Record<string,
 	if (!link) return {};
 	const value = link.trim();
 	const opensInNewTab = HTTP_URL_RE.test(value) || DOWNLOAD_FILE_RE.test(value);
-	return opensInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+	return opensInNewTab ? { target: '_blank', rel: 'noopener' } : {};
 }
 
 /** Build a `tel:` href from a display phone number (US 10-digit numbers get the leading 1). */

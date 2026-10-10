@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
@@ -36,7 +38,7 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 				{columns.map((col) => (
 					<div class="border-t border-hairline">
 						{col.map((row) => {
-							const href = safeHref(row.link);
+							const href = mediaUrl(safeHref(row.link), mediaSite);
 							const w = typeof row.weight === 'number' ? Math.min(Math.max(row.weight, 0), 100) / 100 : 1;
 							const inner = (
 								<>
@@ -50,7 +52,7 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 								</>
 							);
 							return href ? (
-								<a href={href} data-tina-field={tinaField(row)} {...(isExternal(row.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="group block border-b border-hairline py-5 no-underline">
+								<a href={href} data-tina-field={tinaField(row)} {...(isExternal(row.link) ? { target: '_blank', rel: 'noopener' } : {})} class="group block border-b border-hairline py-5 no-underline">
 									{inner}
 								</a>
 							) : (
@@ -89,24 +91,27 @@ const columns = [rows.slice(0, half), rows.slice(half)].filter(c => c.length > 0
 <script is:inline>
 	if (!window.__ladderBound) {
 		window.__ladderBound = true;
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		let ladderObs = null;
+		const teardownLadders = () => {
+			if (ladderObs) { ladderObs.disconnect(); ladderObs = null; }
+		};
 		const initLadders = () => {
+			// Release replaced islands even when no navigation event preceded this.
+			teardownLadders();
+			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			document.querySelectorAll('[data-ladder]').forEach((s) => {
-				if (s.dataset.ladderBound) return;
-				s.dataset.ladderBound = '1';
+				if (s.classList.contains('in')) return;
 				if (reduced || !('IntersectionObserver' in window)) { s.classList.add('in'); return; }
-				ladderObs = ladderObs || new IntersectionObserver((entries) => {
+				ladderObs = ladderObs || new IntersectionObserver((entries, observer) => {
+					if (observer !== ladderObs) return;
 					entries.forEach((e) => {
-						if (e.isIntersecting) { e.target.classList.add('in'); ladderObs.unobserve(e.target); }
+						if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); }
 					});
 				}, { threshold: 0.2 });
 				ladderObs.observe(s);
 			});
 		};
 		document.addEventListener('astro:page-load', initLadders);
-		document.addEventListener('astro:before-swap', () => {
-			if (ladderObs) { ladderObs.disconnect(); ladderObs = null; }
-		});
+		document.addEventListener('astro:before-swap', teardownLadders);
 	}
 </script>

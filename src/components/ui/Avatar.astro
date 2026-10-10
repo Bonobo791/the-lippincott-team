@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { Image } from 'astro:assets';
 
 interface Props {
@@ -12,6 +14,6 @@ const { src, alt, fallback, class: className } = Astro.props;
 ---
 <span class={`relative flex size-9 shrink-0 overflow-hidden rounded-full bg-muted ${className ?? ''}`}>
 	{src
-		? <Image src={src} alt={alt ?? ''} width={120} height={120} format="webp" quality={75} loading="lazy" class="aspect-square size-full object-cover" />
+		? <Image src={mediaUrl(src, mediaSite)} alt={alt ?? ''} width={120} height={120} format="webp" quality={75} loading="lazy" class="aspect-square size-full object-cover" />
 		: <span class="flex size-full items-center justify-center text-xs font-medium text-muted-foreground">{fallback ?? ''}</span>}
 </span>

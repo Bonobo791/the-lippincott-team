@@ -7,7 +7,11 @@
  */
 import type { APIRoute } from 'astro';
 import { experimental_createIslandRoute } from '@tinacms/astro/experimental';
+import { withFreshConfig } from '../../lib/data';
 import { islands } from '../../lib/islands';
 
 export const prerender = false;
-export const ALL: APIRoute = experimental_createIslandRoute(islands);
+const renderIsland = experimental_createIslandRoute(islands);
+// Scope the whole render so component-level config reads refresh too, without
+// sharing an editor's overlay or resetting another concurrent request's cache.
+export const ALL: APIRoute = (context) => withFreshConfig(() => renderIsland(context));

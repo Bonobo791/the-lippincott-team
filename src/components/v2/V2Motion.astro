@@ -1,9 +1,9 @@
 ---
 /**
  * V2Motion — shared "Verified Record" scroll motion for the static one-off
- * pages (buy/sell). Reveal-on-scroll + [data-count] count-ups, same behavior
- * as the homepage's inline script (which keeps its own copy because it also
- * drives the awards monument). Everything no-ops under prefers-reduced-motion.
+ * pages and the homepage awards monument. Reveal-on-scroll + [data-count]
+ * count-ups share a single lifecycle across navigation and Tina refreshes.
+ * Everything no-ops under prefers-reduced-motion.
  *
  * Resilience: with JS disabled a <noscript> rule in Base.astro keeps .reveal
  * content visible; without IntersectionObserver every numeral renders its
@@ -17,11 +17,16 @@
 	(function () {
 		if (window.__v2MotionBound) return;
 		window.__v2MotionBound = true;
-		var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var reduced = false;
+		var frames = new Set();
+		function scheduleFrame(callback) {
+			var id = requestAnimationFrame(function (time) { frames.delete(id); callback(time); });
+			frames.add(id);
+		}
 
 		// count-up helper
 		function countUp(el, target, opts) {
-			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = (opts && opts.dur) || 1200;
+			var prefix = (opts && opts.prefix) || '', suffix = (opts && opts.suffix) || '', dur = +el.dataset.duration || (opts && opts.dur) || 1200;
 			if (!el.firstChild) return;
 			if (reduced) { el.firstChild.textContent = prefix + target.toLocaleString() + suffix; return; }
 			var t0 = performance.now();
@@ -29,7 +34,7 @@
 				var p = Math.min((t - t0) / dur, 1);
 				var e = 1 - Math.pow(1 - p, 3);
 				if (el.firstChild) el.firstChild.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
-				if (p < 1) requestAnimationFrame(tick);
+				if (p < 1) scheduleFrame(tick);
 			})(t0);
 		}
 
@@ -38,10 +43,13 @@
 		function teardown() {
 			if (io) { io.disconnect(); io = null; }
 			if (failSafe) { clearTimeout(failSafe); failSafe = 0; }
+			frames.forEach(cancelAnimationFrame);
+			frames.clear();
 		}
 
 		function init() {
 			teardown();
+			reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window);
 			// No IntersectionObserver: reveal everything and render final numerals.
 			if (!('IntersectionObserver' in window)) {
 				document.querySelectorAll('.home-v2 .reveal').forEach(function (el) { el.classList.add('in'); });

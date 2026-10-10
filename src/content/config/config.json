@@ -2,13 +2,100 @@
   "seo": {
     "title": "The Lippincott Team",
     "description": "Award-winning Northwest Houston Realtors with eXp Realty, serving Cypress, Tomball, Katy, Waller, Hockley, and Magnolia, including the Bridgeland, Towne Lake, Elyson, Fairfield and Coles Crossing master-planned communities. Winners of the Houston Business Journal Residential Real Estate Award 9 times.",
-    "siteOwner": "The Lippincott Team \u2014 eXp Realty",
-    "logo": "/logo.webp"
+    "siteOwner": "The Lippincott Team — eXp Realty",
+    "logo": "/logo.webp",
+    "brandSubtitle": "eXp Realty",
+    "socialImage": "/logo.webp"
+  },
+  "headerCta": {
+    "label": "Schedule a Consultation",
+    "link": "/contact-us/"
+  },
+  "preferredSources": {
+    "label": "Add to Preferred Sources",
+    "link": "https://www.google.com/preferences/source?q=thelippincottteam.com"
+  },
+  "legalLinks": [
+    {
+      "title": "Privacy Policy",
+      "link": "/privacy-policy/"
+    },
+    {
+      "title": "Cookie Preferences",
+      "link": "/opt-out-preferences/"
+    },
+    {
+      "title": "Terms and Conditions",
+      "link": "/terms-and-conditions/"
+    }
+  ],
+  "agentPages": {
+    "eyebrow": "Meet your local expert",
+    "workHeading": "Work with **{name} directly.**",
+    "teamHeading": "The rest of **the team.**",
+    "ctaHeading": "Talk to {name} about **your next move.**",
+    "ctaBody": "A consultation costs nothing and commits you to nothing. Reach {name} directly or book time with the team.",
+    "leadChips": [
+      {
+        "label": "Full roster",
+        "link": "/about/#team"
+      }
+    ],
+    "chips": [
+      {
+        "label": "Northwest Houston guide",
+        "link": "/northwest-houston-real-estate/"
+      }
+    ],
+    "proof": {
+      "eyebrow": "The record",
+      "title": "The record behind **your agent.**",
+      "metrics": [
+        {
+          "value": 1463,
+          "suffix": "+",
+          "label": "Homes sold",
+          "source": "Team sales records, Northwest Houston"
+        },
+        {
+          "value": 750,
+          "suffix": "+",
+          "label": "Five-star reviews",
+          "source": "Google and HAR.com, rated 4.9 on both"
+        },
+        {
+          "value": 9,
+          "suffix": "×",
+          "label": "HBJ awards",
+          "source": "Residential Real Estate Award, 2017-2025"
+        }
+      ]
+    }
+  },
+  "blogPost": {
+    "shortAnswerLabel": "The short answer",
+    "tocLabel": "On this page",
+    "aboutAuthorLabel": "About the author",
+    "relatedEyebrow": "Keep reading",
+    "relatedHeading": "More from the team.",
+    "ctaTitle": "Want the same analysis on your home?",
+    "ctaBody": "A data-backed pricing report for your subdivision, free and without obligation.",
+    "ctaLabel": "Schedule a Consultation",
+    "ctaLink": "/contact-us/"
+  },
+  "marketTable": {
+    "heading": "Northwest Houston at a Glance",
+    "caption": "Northwest Houston market and community comparison",
+    "areaLabel": "Area",
+    "medianLabel": "Median list",
+    "daysLabel": "Days on market",
+    "linkLabel": "Sources & full comparison",
+    "link": "/northwest-houston-real-estate/#communities"
   },
   "nav": [
     {
       "title": "Search",
-      "link": "https://www.thelippincottteamlistings.com/property-search/results/"
+      "link": "https://northwest-houston-ai-home-search.thelippincottteam.com/"
     },
     {
       "title": "NW Houston Communities",
@@ -161,5 +248,5 @@
     "phone": "713-494-1818",
     "email": "amy@lippincottteam.com"
   },
-  "footerBlurb": "The Lippincott Team at eXp Realty provides buying, selling, rental, and relocation services across Northwest Houston \u2014 backed by a proven track record and 9 Houston Business Journal Residential Real Estate Awards."
+  "footerBlurb": "The Lippincott Team at eXp Realty provides buying, selling, rental, and relocation services across Northwest Houston — backed by a proven track record and 9 Houston Business Journal Residential Real Estate Awards."
 }

@@ -34,13 +34,13 @@
     "test:sierra": "tsc --ignoreConfig --module nodenext --moduleResolution nodenext --target esnext --types node --outDir .launch/sierra-test src/lib/sierra-contact.test.ts && node --test .launch/sierra-test/sierra-contact.test.js",
     "astro": "astro",
     "test:bunny-purge": "node --test scripts/bunny-purge.test.mjs",
-    "test:home-listings": "node --test scripts/home-listings-links.test.mjs"
+    "test": "pnpm test:sierra && pnpm test:rich-text && node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.4",
     "@astrojs/mdx": "^7.0.3",
     "@astrojs/netlify": "^8.1.2",
-    "@astrojs/node": "^11.0.2",
+    "@astrojs/node": "^11.1.6",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/vercel": "^11.0.3",
@@ -51,7 +51,7 @@
     "@iconify-json/tabler": "^1.2.35",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.3.0",
-    "@tinacms/astro": "^0.5.1",
+    "@tinacms/astro": "^0.7.0",
     "astro": "7.2.8",
     "astro-icon": "^1.1.5",
     "clsx": "^2.1.1",

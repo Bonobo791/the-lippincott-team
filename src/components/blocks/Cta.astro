@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import Section from '../ui/Section.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
@@ -31,9 +33,9 @@ const phoneHref = telHref(contact?.phone);
 			<div class="mt-10 flex flex-wrap justify-center gap-3.5">
 				{actions.map((action, index) => (
 					<a
-						href={safeHref(action.link) ?? '#'}
+						href={mediaUrl(safeHref(action.link), mediaSite) ?? '#'}
 						data-tina-field={tinaField(action)}
-						{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+						{...(isExternal(action.link) ? { target: '_blank', rel: 'noopener' } : {})}
 						class={index === 0
 							? 'btn-magnetic inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-7 py-3.5 text-lg font-light leading-none text-primary transition-all hover:bg-section active:scale-95'
 							: 'inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/80 bg-transparent px-7 py-3.5 text-lg font-light leading-none text-white transition-all hover:bg-white/12 active:scale-95'}

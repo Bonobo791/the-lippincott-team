@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import SplitHeading from '../ui/SplitHeading.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import { safeHref, isExternal } from '../../lib/url';
@@ -8,7 +10,7 @@ interface Props { data: Omit<RelatedChipsBlock, '__typename'> }
 
 const { data } = Astro.props;
 const chips = (data.chips ?? []).flatMap((chip) => {
-	const href = safeHref(chip?.link);
+	const href = mediaUrl(safeHref(chip?.link), mediaSite);
 	return chip && href ? [{ chip, href }] : [];
 });
 ---
@@ -25,7 +27,7 @@ const chips = (data.chips ?? []).flatMap((chip) => {
 					<a
 						href={href}
 						data-tina-field={tinaField(chip)}
-						{...(isExternal(chip.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+						{...(isExternal(chip.link) ? { target: '_blank', rel: 'noopener' } : {})}
 						class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary"
 					>{chip.label}</a>
 				))}

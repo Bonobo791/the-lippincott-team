@@ -75,6 +75,74 @@ test('createSierraLead surfaces Sierra and network failures', async () => {
 	);
 });
 
+test('createSierraLead reports safe diagnostics for non-JSON error responses', async () => {
+	const responseBody = '<!doctype html><html><body>PRIVATE_BODY_MARKER</body></html>';
+	const originalConsoleError = console.error;
+	const logged: unknown[][] = [];
+	console.error = (...args: unknown[]) => logged.push(args);
+	try {
+		await assert.rejects(
+			createSierraLead(toSierraLead(baseForm, 'lead-secret'), 'api-key-secret', async () => new Response(responseBody, {
+				status: 403,
+				headers: { 'content-type': 'text/html; charset=utf-8', 'cf-ray': 'ray-id-123' },
+			})),
+			(error: unknown) => {
+				assert.ok(error instanceof Error);
+				assert.match(error.message, /HTTP status 403/);
+				assert.match(error.message, /content-type: text\/html; charset=utf-8/);
+				assert.match(error.message, /cf-ray: ray-id-123/);
+				assert.match(error.message, /non-JSON response/);
+				assert.match(error.message, /possible gateway\/edge block/);
+				assert.match(error.message, /investigate with Sierra support/i);
+				assert.doesNotMatch(error.message, /PRIVATE_BODY_MARKER|api-key-secret|Jordan|jordan@example\.com/);
+				return true;
+			},
+		);
+		assert.doesNotMatch(logged.flat().join(' '), /PRIVATE_BODY_MARKER|api-key-secret|lead-secret|Jordan|jordan@example\.com/);
+	} finally {
+		console.error = originalConsoleError;
+	}
+});
+
+test('createSierraLead preserves JSON Sierra errors and reports generic non-JSON responses', async () => {
+	const buyerLead = toSierraLead(baseForm, 'test-password');
+	await assert.rejects(
+		createSierraLead(buyerLead, 'api-key', async () => Response.json(
+			{ errorMessage: 'Invalid or expired API key' },
+			{ status: 403 },
+		)),
+		/Sierra lead creation failed with HTTP status 403: Invalid or expired API key\./,
+	);
+	await assert.rejects(
+		createSierraLead(buyerLead, 'api-key', async () => new Response('Not JSON', {
+			status: 200,
+			headers: { 'content-type': 'text/plain' },
+		})),
+		(error: unknown) => {
+			assert.ok(error instanceof Error);
+			assert.match(error.message, /HTTP status 200/);
+			assert.match(error.message, /content-type: text\/plain/);
+			assert.match(error.message, /non-JSON response/);
+			assert.doesNotMatch(error.message, /gateway|edge|possible block/i);
+			return true;
+		},
+	);
+	await assert.rejects(
+		createSierraLead(buyerLead, 'api-key', async () => new Response('Unavailable', {
+			status: 503,
+			headers: { 'content-type': 'text/plain' },
+		})),
+		(error: unknown) => {
+			assert.ok(error instanceof Error);
+			assert.match(error.message, /HTTP status 503/);
+			assert.match(error.message, /content-type: text\/plain/);
+			assert.match(error.message, /non-JSON response/);
+			assert.doesNotMatch(error.message, /gateway|edge|possible block|cf-ray/i);
+			return true;
+		},
+	);
+});
+
 test('forwardContactLead forwards only valid contact-form submissions', async () => {
 	const originalApiKey = process.env.SIERRA_API_KEY;
 	const originalFetch = globalThis.fetch;

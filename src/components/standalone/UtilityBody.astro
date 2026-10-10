@@ -1,0 +1,24 @@
+---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
+import { tinaField } from '@tinacms/astro/tina-field';
+import Button from '../ui/Button.astro';
+import type { CmsStandalone } from '../../lib/data';
+import { safeHref } from '../../lib/url';
+
+interface Props {
+	data?: Extract<CmsStandalone, { __typename: 'StandaloneNotFound' | 'StandaloneThankYou' }> | null;
+}
+const { data } = Astro.props;
+---
+
+{data && (
+	<section class="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-6 text-center">
+		<div class="relative flex flex-col items-center">
+			{data.eyebrow && <p class="text-sm font-medium tracking-widest text-primary uppercase" data-tina-field={tinaField(data, 'eyebrow')}>{data.eyebrow}</p>}
+			{data.heading && <h1 class="mt-2 text-4xl font-semibold tracking-tight lg:text-5xl" data-tina-field={tinaField(data, 'heading')}>{data.heading}</h1>}
+			{data.body && <p class="mx-auto mt-4 max-w-md text-muted-foreground" data-tina-field={tinaField(data, 'body')}>{data.body}</p>}
+			{data.action?.label && mediaUrl(safeHref(data.action.link), mediaSite) && <Button href={mediaUrl(safeHref(data.action.link), mediaSite)} class="mt-8" data-tina-field={tinaField(data.action)}>{data.action.label}</Button>}
+		</div>
+	</section>
+)}

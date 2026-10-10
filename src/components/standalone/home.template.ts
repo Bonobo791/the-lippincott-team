@@ -1,0 +1,262 @@
+import type { Template } from 'tinacms';
+import { actionField, faqField, finalCtaField, seoFields } from './shared-fields.template';
+
+import { headingField, objectListField, textField, titleBodyFields } from '../../../tina/schema-fields';
+
+export const homeTemplate: Template = {
+	name: 'home',
+	label: 'Homepage',
+	fields: [
+		...seoFields(),
+		{
+			type: 'string',
+			name: 'capsule',
+			label: 'Quick-Answer Capsule',
+			ui: { component: 'textarea' },
+			description: 'Visually hidden summary for AI/answer engines. The phone number from Global Config is appended automatically.',
+		},
+		{
+			type: 'object',
+			name: 'hero',
+			label: 'Hero',
+			fields: [
+				textField('kicker', 'Kicker Badge'),
+				headingField(),
+				{ type: 'rich-text', name: 'body', label: 'Intro Paragraph' },
+				textField('video', 'Background Video', { description: 'Path to the MP4, e.g. /uploads/…/hero.mp4' }),
+				{ type: 'image', name: 'poster', label: 'Video Poster Image', description: 'Also the page preload image (LCP).' },
+				actionField('primary', 'Primary Button'),
+				actionField('secondary', 'Secondary Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'trust',
+			label: 'Trust Bar',
+			fields: [
+				textField('lead', 'Lead Text'),
+				objectListField('items', 'Rating Items', [
+					textField('name', 'Source Name'),
+					textField('sub', 'Sub-Line'),
+				], 'name'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'why',
+			label: 'Why Choose Us',
+			fields: [
+				headingField(),
+				{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' },
+				textField('ledeTail', 'Bold Lead-In Line', { ui: { component: 'textarea' } }),
+				objectListField('cards', 'Service Cards', [
+					...titleBodyFields(),
+					textField('linkLabel', 'Link Label'),
+					textField('link', 'Link'),
+				]),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'testimonial',
+			label: 'Testimonials',
+			fields: [
+				textField('video', 'Testimonial Video', { description: 'Path to the MP4.' }),
+				{ type: 'image', name: 'videoPoster', label: 'Video Poster Image' },
+				textField('videoCaption', 'Video Caption'),
+				textField('statNumber', 'Stat Number', { description: 'e.g. "750"' }),
+				textField('statSuffix', 'Stat Suffix', { description: 'e.g. "+"' }),
+				{ type: 'rich-text', name: 'statBody', label: 'Stat Text' },
+				headingField(),
+				objectListField('quotes', 'Quotes', [
+					textField('quote', 'Quote', { ui: { component: 'textarea' } }),
+					textField('src', 'Source Line'),
+				], 'src'),
+				actionField('moreLink', 'All Reviews Link'),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'seller',
+			label: 'Seller Help',
+			fields: [
+				headingField(),
+				textField('lede', 'Intro Line'),
+				textField('quote', 'Quote', { ui: { component: 'textarea' } }),
+				textField('quoteSource', 'Quote Source'),
+				objectListField('jobs', 'Jobs', [
+					...titleBodyFields(),
+				]),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'stats',
+			label: 'Stats Band',
+			fields: [
+				headingField(),
+				textField('lede', 'Intro Paragraph', { ui: { component: 'textarea' } }),
+				objectListField('items', 'Stats', [
+					{ type: 'number', name: 'count', label: 'Count-Up To', description: 'If set, the number animates from 0 up to this value.' },
+					textField('num', 'Static Number', { description: 'Shown when Count-Up To is empty, e.g. "$345M+".' }),
+					textField('prefix', 'Count-Up Prefix', { description: 'Prepended to the counted number, e.g. "$".' }),
+					textField('suffix', 'Count-Up Suffix', { description: 'Appended to the counted number, e.g. "M".' }),
+					textField('tail', 'Static Suffix', { description: 'Styled suffix shown after the number, e.g. "+".' }),
+					textField('label', 'Label'),
+				], 'label'),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'communities',
+			label: 'Community Guides',
+			fields: [
+				textField('eyebrow', 'Eyebrow'),
+				headingField(),
+				textField('lede', 'Intro Paragraph', { ui: { component: 'textarea' } }),
+				objectListField('cards', 'Community Cards', [
+					{ type: 'image', name: 'image', label: 'Image' },
+					textField('alt', 'Image Alt Text'),
+					{ type: 'number', name: 'width', label: 'Image Width (px)' },
+					{ type: 'number', name: 'height', label: 'Image Height (px)' },
+					textField('title', 'City Name'),
+					textField('subtitle', 'Description'),
+					textField('link', 'Link'),
+					textField('linkLabel', 'Link Label', { description: 'e.g. "Read the guide →"' }),
+				]),
+				textField('downloadsLabel', 'Downloads Label'),
+				objectListField('downloads', 'Download Links', [
+					textField('label', 'Label'),
+					textField('link', 'File URL'),
+				], 'label'),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'buyer',
+			label: 'Buyer Help',
+			fields: [
+				headingField(),
+				objectListField('steps', 'Steps', [
+					...titleBodyFields(),
+				]),
+				textField('quote', 'Quote', { ui: { component: 'textarea' } }),
+				textField('quoteSource', 'Quote Source'),
+				actionField('cta', 'Section Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'team',
+			label: 'Team Band',
+			fields: [
+				headingField(),
+				textField('body', 'Body', { ui: { component: 'textarea' } }),
+				actionField('primary', 'Primary Button'),
+				actionField('secondary', 'Secondary Link'),
+				textField('video', 'Team Video', { description: 'Path to the MP4.' }),
+				{ type: 'image', name: 'videoPoster', label: 'Video Poster Image' },
+				textField('videoCaption', 'Video Caption'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'market',
+			label: 'Market Update',
+			fields: [
+				textField('eyebrow', 'Eyebrow'),
+				headingField(),
+				{ type: 'rich-text', name: 'lede', label: 'Intro Paragraph' },
+				textField('source', 'Source Note'),
+				objectListField('tiles', 'Market Tiles', [
+					textField('num', 'Number'),
+					textField('label', 'Label'),
+					{ type: 'boolean', name: 'accent', label: 'Dark Tile' },
+				], 'label'),
+				textField('takeaway', 'Takeaway', { ui: { component: 'textarea' } }),
+				actionField('takeawayLink', 'Takeaway Link'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'fsbo',
+			label: 'Agent vs FSBO',
+			fields: [
+				headingField(),
+				textField('lede', 'Intro Paragraph', { ui: { component: 'textarea' } }),
+				textField('agentPrice', 'Agent Price'),
+				textField('agentLabel', 'Agent Label'),
+				textField('soloPrice', 'FSBO Price'),
+				textField('soloLabel', 'FSBO Label'),
+				textField('caption', 'Caption', { ui: { component: 'textarea' } }),
+				textField('share', 'Share Paragraph', { ui: { component: 'textarea' }, description: 'Wrap bold segments in **…**.' }),
+				objectListField('rows', 'Hardship Rows', [
+					...titleBodyFields(),
+				]),
+				textField('closeBody', 'Closing Line', { ui: { component: 'textarea' } }),
+				actionField('closeCta', 'Closing Button'),
+			],
+		},
+		{
+			type: 'object',
+			name: 'awards',
+			label: 'Awards Wall',
+			fields: [
+				textField('eyebrow', 'Eyebrow'),
+				headingField(),
+				textField('lede', 'Intro Paragraph', { ui: { component: 'textarea' } }),
+				{ type: 'number', name: 'monumentValue', label: 'Monument Number', description: 'The big counting numeral (e.g. 9).' },
+				textField('monumentSuffix', 'Monument Suffix', { description: 'e.g. "times"' }),
+				textField('monumentLabel', 'Monument Label'),
+				textField('monumentSub', 'Monument Sub-Label'),
+				objectListField('trophies', 'Trophies', [
+					textField('org', 'Organization'),
+					...titleBodyFields(),
+					textField('years', 'Year Chips', { list: true, description: 'Optional year chips, e.g. 2017.' }),
+					{ type: 'boolean', name: 'featured', label: 'Featured Style' },
+				]),
+				textField('footLine', 'Footer Line', { description: 'Wrap the italic accent phrase in **…**.' }),
+				actionField('footLink', 'Footer Link'),
+			],
+		},
+		faqField(),
+		finalCtaField([
+			actionField('secondary', 'Secondary Link'),
+			textField('email', 'Contact Email', { description: 'Shown under the button. Leave empty to fall back to Global Config.' }),
+		]),
+		{
+			type: 'object',
+			name: 'next',
+			label: 'Where To Go Next',
+			fields: [
+				headingField(),
+				objectListField('items', 'Rows', [
+					...titleBodyFields(),
+					textField('linkLabel', 'Link Label'),
+					textField('link', 'Link'),
+				]),
+			],
+		},
+		{
+			type: 'object',
+			name: 'agentSchema',
+			label: 'Agent Structured Data',
+			description: 'RealEstateAgent JSON-LD emitted on this page. Name, URL, phone and email come from Global Config.',
+			fields: [
+				textField('description', 'Business Description', { ui: { component: 'textarea' } }),
+				objectListField('areasServed', 'Areas Served', [
+					textField('name', 'Name', { required: true }),
+					textField('kind', 'Type', { options: ['City', 'Place'], description: 'Schema.org place type.' }),
+				], 'name'),
+				textField('award', 'Awards Summary', { ui: { component: 'textarea' } }),
+				textField('rating', 'Aggregate Rating', { description: 'e.g. "4.9"' }),
+				textField('reviewCount', 'Review Count', { description: 'e.g. "750"' }),
+			],
+		},
+	],
+};

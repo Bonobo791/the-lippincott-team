@@ -1,10 +1,12 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import { Image } from 'astro:assets';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsTeam } from '../../lib/data';
-import { listTeam } from '../../lib/data';
-import { telHref } from '../../lib/url';
+import { getConfig, listTeam } from '../../lib/data';
+import { linkTargetAttrs, safeHref, telHref } from '../../lib/url';
 import { mdxComponents } from '../mdx/components';
 import ProofStage from '../blocks/ProofStage.astro';
 import GuideActions from '../ui/GuideActions.astro';
@@ -21,6 +23,15 @@ const splitName = nameParts.length > 1
 	? `**${firstName}** ${nameParts.slice(1).join(' ')}`
 	: `**${firstName}**`;
 const h1 = data?.headline?.trim() || splitName;
+
+// Shared bio-page copy lives in Global Config → Agent Bio Pages; {name} is
+// the current agent's first name.
+const config = (await getConfig()).data?.config ?? null;
+const agentCopy = config?.agentPages ?? null;
+const fillName = (s?: string | null) => (s ?? '').replaceAll('{name}', firstName);
+const proof = agentCopy?.proof ?? null;
+const leadChips = (agentCopy?.leadChips ?? []).filter((c) => c !== null);
+const extraChips = (agentCopy?.chips ?? []).filter((c) => c !== null);
 
 // Chips row: other roster members, featured first, capped at 3 (plus the two
 // fixed chips below). Runs in both the page and the /tina-island render.
@@ -45,7 +56,7 @@ const jsonLd = data && {
 		worksFor: { '@type': 'Organization', name: 'The Lippincott Team at eXp Realty' },
 		...(data.email ? { email: `mailto:${data.email}` } : {}),
 		...(phoneDigits ? { telephone: `+1${phoneDigits}` } : {}),
-		...(data.photo ? { image: new URL(data.photo, Astro.url).href } : {}),
+		...(data.photo ? { image: new URL(mediaUrl(data.photo, mediaSite), Astro.url).href } : {}),
 		workLocation: location,
 	},
 };
@@ -62,7 +73,7 @@ const jsonLd = data && {
 					<span aria-current="page">{data.name}</span>
 				</nav>
 				<div class="mt-7">
-					<p class="eyebrow">Meet your local expert</p>
+					<p class="eyebrow">{agentCopy?.eyebrow ?? 'Meet your local expert'}</p>
 					<div class="h2-mask mt-4">
 						<SplitHeading as="h1" text={h1} accentClass="font-normal italic text-primary" data-tina-field={tinaField(data, data.headline?.trim() ? 'headline' : 'name')} class="max-w-[24ch] text-balance text-[clamp(2.2rem,4.5vw,3.5rem)] font-serif font-light leading-[1.12] tracking-[-0.02em] text-ink" />
 					</div>
@@ -72,7 +83,7 @@ const jsonLd = data && {
 		<section class="py-12 md:py-16">
 			<div class="mx-auto grid max-w-[1200px] items-start gap-10 px-6 md:grid-cols-2 md:px-12 md:gap-16">
 				{data.photo && (
-					<Image src={data.photo} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 1200px) 520px, (min-width: 768px) calc((100vw - 160px) / 2), calc(100vw - 48px)" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
+					<Image src={mediaUrl(data.photo, mediaSite)} alt={`${data.name}${data.role ? `, ${data.role} with The Lippincott Team` : ' with The Lippincott Team'}`} width={640} height={800} sizes="(min-width: 1200px) 520px, (min-width: 768px) calc((100vw - 160px) / 2), calc(100vw - 48px)" format="webp" quality={75} data-tina-field={tinaField(data, 'photo')} class="aspect-[4/5] w-full rounded-2xl object-cover object-top" />
 				)}
 				{(data.bio || data.marketLogo) && (
 					<div>
@@ -82,7 +93,7 @@ const jsonLd = data && {
 							</div>
 						)}
 						{data.marketLogo && (
-							<img src={data.marketLogo} alt={`The Lippincott Team — ${location} logo`} width="160" height="160" loading="lazy" decoding="async" data-tina-field={tinaField(data, 'marketLogo')} class="mt-10 h-28 w-auto max-w-[220px] object-contain object-left md:h-32" />
+							<img src={mediaUrl(data.marketLogo, mediaSite)} alt={`The Lippincott Team — ${location} logo`} width="160" height="160" loading="lazy" decoding="async" data-tina-field={tinaField(data, 'marketLogo')} class="mt-10 h-28 w-auto max-w-[220px] object-contain object-left md:h-32" />
 						)}
 					</div>
 				)}
@@ -91,7 +102,7 @@ const jsonLd = data && {
 		<section class="bg-section py-12 md:py-16">
 			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 				<div class="h2-mask mb-10 md:mb-14">
-					<SplitHeading as="h2" text={`Work with **${firstName} directly.**`} accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
+					<SplitHeading as="h2" text={fillName(agentCopy?.workHeading) || `Work with **${firstName} directly.**`} accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 				</div>
 				<div class="grid gap-px border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
 					{data.phone && (
@@ -119,37 +130,43 @@ const jsonLd = data && {
 				</div>
 			</div>
 		</section>
-		<ProofStage data={{
-			eyebrow: 'The record',
-			title: 'The record behind **your agent.**',
-			metrics: [
-				{ __typename: 'PageBlocksProofStageMetrics', value: 1463, suffix: '+', label: 'Homes sold', source: 'Team sales records, Northwest Houston' },
-				{ __typename: 'PageBlocksProofStageMetrics', value: 750, suffix: '+', label: 'Five-star reviews', source: 'Google and HAR.com, rated 4.9 on both' },
-				{ __typename: 'PageBlocksProofStageMetrics', value: 9, suffix: '×', label: 'HBJ awards', source: 'Residential Real Estate Award, 2017-2025' },
-			],
-		}} />
+		{(proof?.eyebrow || proof?.title || (proof?.metrics?.length ?? 0) > 0) && (
+			<ProofStage data={{
+				eyebrow: proof?.eyebrow ?? null,
+				title: proof?.title ?? null,
+				metricsFirst: null,
+				rating: null,
+				quote: null,
+				action: null,
+				metrics: (proof?.metrics ?? []).filter((m) => m !== null).map((m) => ({ ...m, link: null, __typename: 'PageBlocksProofStageMetrics' as const })),
+			}} />
+		)}
 		<section class="bg-section py-14 md:py-20">
 			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 				<div class="h2-mask mb-8">
-					<SplitHeading as="h2" text="The rest of **the team.**" accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
+					<SplitHeading as="h2" text={fillName(agentCopy?.teamHeading) || 'The rest of **the team.**'} accentClass="font-normal italic text-primary" class="max-w-[22ch] text-[clamp(1.9rem,3.2vw,2.5rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 				</div>
 				<div class="flex flex-wrap gap-3">
-					<a href="/about/#team" class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">Full roster</a>
+					{leadChips.map((chip) => (
+						mediaUrl(safeHref(chip.link), mediaSite) && <a href={mediaUrl(safeHref(chip.link), mediaSite)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+					))}
 					{teammates.map((m) => (
 						<a href={`/about/${m._sys.filename}/`} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{m.name}</a>
 					))}
-					<a href="/northwest-houston-real-estate/" class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">Northwest Houston guide</a>
+					{extraChips.map((chip) => (
+						mediaUrl(safeHref(chip.link), mediaSite) && <a href={mediaUrl(safeHref(chip.link), mediaSite)} {...linkTargetAttrs(chip.link)} class="inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-[13px] font-medium text-body no-underline transition-colors duration-200 hover:border-primary hover:text-primary">{chip.label}</a>
+					))}
 				</div>
 			</div>
 		</section>
 		<section class="relative overflow-hidden bg-tile py-16 text-center text-white md:py-24" data-agent-cta>
 			<div class="relative z-[2] mx-auto max-w-[1200px] px-6 md:px-12">
 				<div class="h2-mask">
-					<SplitHeading as="h2" text={`Talk to ${firstName} about **your next move.**`} accentClass="font-normal italic text-gold" class="mx-auto max-w-[22ch] text-balance text-[clamp(2rem,3.8vw,3rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-white" />
+					<SplitHeading as="h2" text={fillName(agentCopy?.ctaHeading) || `Talk to ${firstName} about **your next move.**`} accentClass="font-normal italic text-gold" class="mx-auto max-w-[22ch] text-balance text-[clamp(2rem,3.8vw,3rem)] font-serif font-light leading-[1.1] tracking-[-0.02em] text-white" />
 				</div>
-				<p class="mx-auto mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85">A consultation costs nothing and commits you to nothing. Reach {firstName} directly or book time with the team.</p>
+				<p class="mx-auto mt-5 max-w-[56ch] text-[clamp(17px,1.6vw,21px)] text-white/85">{fillName(agentCopy?.ctaBody) || `A consultation costs nothing and commits you to nothing. Reach ${firstName} directly or book time with the team.`}</p>
 				<GuideActions actions={[
-					{ label: 'Schedule a Consultation', link: '/contact-us/', type: 'button' },
+					{ label: config?.headerCta?.label ?? 'Schedule a Consultation', link: config?.headerCta?.link ?? '/contact-us/', type: 'button' },
 					...(data.email ? [{ label: `Email ${firstName}`, link: `mailto:${data.email}`, type: 'link' }] : []),
 				]} class="mt-9 justify-center" />
 			</div>
@@ -164,6 +181,6 @@ const jsonLd = data && {
 				pointer-events: none;
 			}
 		</style>
-		{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+		{jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
 	</>
 )}

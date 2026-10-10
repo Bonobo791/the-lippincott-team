@@ -1,11 +1,15 @@
 ---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
-import { getTeamMember, listBlogs, type CmsBlog } from '../../lib/data';
+import { getConfig, getTeamMember, listBlogs, type CmsBlog, type CmsTeam } from '../../lib/data';
 import { extractToc, readingTimeMinutes } from '../../lib/article';
 import { hasRichText } from '../../lib/rich-text';
+import { safeHref } from '../../lib/url';
 import FormattedDate from '../FormattedDate.astro';
 import GuideActions from '../ui/GuideActions.astro';
+import SplitHeading from '../ui/SplitHeading.astro';
 import { mdxComponents } from '../mdx/components';
 import ArticleH2 from '../mdx/ArticleH2.astro';
 
@@ -14,13 +18,18 @@ interface Props {
 }
 
 const { data } = Astro.props;
-// Byline + author box: the blog schema has no author field and every migrated
-// post is bylined to Amy on the live site, so her team doc is the source for
-// photo/name/role/bio.
+const config = (await getConfig()).data?.config ?? null;
+const blogCopy = config?.blogPost ?? null;
+const preferredSources = config?.preferredSources ?? null;
+// Byline + author box: the post's `author` reference wins; posts that never
+// set it fall back to Amy's team doc (the live site's historical byline).
+const authorRef = data?.author;
 const author = data
-	? await getTeamMember('amy-lippincott-2')
-		.then((res) => res.data?.team ?? null)
-		.catch(() => null)
+	? authorRef && typeof authorRef === 'object'
+		? (authorRef as CmsTeam)
+		: await getTeamMember('amy-lippincott-2')
+			.then((res) => res.data?.team ?? null)
+			.catch(() => null)
 	: null;
 
 const toc = extractToc(data?.body);
@@ -60,7 +69,7 @@ const related = data
 				<div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
 					{author && (
 						<div class="flex items-center gap-3">
-							{author.photo && <img src={author.photo} alt={author.name ?? ''} width={44} height={44} class="size-11 rounded-full object-cover" />}
+							{author.photo && <img src={mediaUrl(author.photo, mediaSite)} alt={author.name ?? ''} width={44} height={44} class="size-11 rounded-full object-cover" />}
 							<div>
 								<b class="block text-sm font-semibold text-ink">{author.name}</b>
 								{author.role && <span class="block text-xs text-muted-foreground">{author.role}, The Lippincott Team at eXp Realty</span>}
@@ -72,18 +81,28 @@ const related = data
 					)}
 					<span class="text-[13px] text-muted-foreground">{minutes} min read</span>
 				</div>
+				{preferredSources?.link && mediaUrl(safeHref(preferredSources.link), mediaSite) && (
+					<a
+						href={mediaUrl(safeHref(preferredSources.link), mediaSite)}
+						target="_blank"
+						rel="noopener"
+						class="mt-4 inline-flex max-w-full items-center justify-center whitespace-normal break-words rounded-full border border-border bg-transparent px-5 py-2.5 text-center text-sm font-medium text-ink transition-colors hover:bg-section focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						{preferredSources.label ?? 'Add to Preferred Sources'}
+					</a>
+				)}
 			</div>
 		</section>
 		<section class="py-12 md:py-16">
 			<div class="mx-auto max-w-[1200px] px-6 md:px-12">
 				{data.description && (
 					<div data-tina-field={tinaField(data, 'description')} class="rounded-2xl border border-border bg-section p-6 md:p-8">
-						<span class="eyebrow">The short answer</span>
+						<span class="eyebrow">{blogCopy?.shortAnswerLabel ?? 'The short answer'}</span>
 						<p class="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-body">{data.description}</p>
 					</div>
 				)}
 				{data.heroImage && (
-					<img src={data.heroImage} alt={data.title ?? ''} width={1200} height={675} data-tina-field={tinaField(data, 'heroImage')} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />
+					<img src={mediaUrl(data.heroImage, mediaSite)} alt={data.title ?? ''} width={1200} height={675} data-tina-field={tinaField(data, 'heroImage')} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />
 				)}
 			</div>
 		</section>
@@ -91,7 +110,7 @@ const related = data
 			<div class="mx-auto grid max-w-[1200px] items-start gap-12 px-6 md:px-12 lg:grid-cols-[220px_minmax(0,720px)_minmax(0,1fr)] lg:gap-10">
 				{toc.length > 0 ? (
 					<aside aria-label="Table of contents" class="hidden lg:sticky lg:top-24 lg:block">
-						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">On this page</span>
+						<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{blogCopy?.tocLabel ?? 'On this page'}</span>
 						<div class="mt-4 flex flex-col gap-3">
 							{toc.map((entry) => (
 								<a href={`#${entry.id}`} class="text-[13px] leading-snug text-muted-foreground no-underline transition-colors hover:text-primary">{entry.text}</a>
@@ -105,20 +124,24 @@ const related = data
 							<TinaMarkdown content={data.body} components={articleComponents} />
 						</div>
 					)}
-					<div class="mt-12 flex flex-col gap-6 rounded-2xl border border-border bg-section p-7 sm:flex-row sm:items-center sm:justify-between md:p-8">
-						<div>
-							<h2 class="font-serif text-2xl font-light tracking-[-0.01em] text-ink">Want the same analysis on your home?</h2>
-							<p class="mt-2 text-sm leading-relaxed text-muted-foreground">A data-backed pricing report for your subdivision, free and without obligation.</p>
+					{(blogCopy?.ctaTitle || blogCopy?.ctaBody || blogCopy?.ctaLabel) && (
+						<div class="mt-12 flex flex-col gap-6 rounded-2xl border border-border bg-section p-7 sm:flex-row sm:items-center sm:justify-between md:p-8">
+							<div>
+								{blogCopy?.ctaTitle && <h2 class="font-serif text-2xl font-light tracking-[-0.01em] text-ink">{blogCopy.ctaTitle}</h2>}
+								{blogCopy?.ctaBody && <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{blogCopy.ctaBody}</p>}
+							</div>
+							{blogCopy?.ctaLabel && blogCopy?.ctaLink && (
+								<GuideActions actions={[{ label: blogCopy.ctaLabel, link: blogCopy.ctaLink, type: 'button' }]} class="shrink-0" />
+							)}
 						</div>
-						<GuideActions actions={[{ label: 'Schedule a Consultation', link: '/contact-us/', type: 'button' }]} class="shrink-0" />
-					</div>
+					)}
 					{author && (
 						<footer class="mt-10 flex flex-col gap-6 border-t border-border pt-10 sm:flex-row">
 							{author.photo && (
-								<img src={author.photo} alt={author.name ?? ''} width={96} height={96} class="size-24 shrink-0 rounded-full object-cover" />
+								<img src={mediaUrl(author.photo, mediaSite)} alt={author.name ?? ''} width={96} height={96} class="size-24 shrink-0 rounded-full object-cover" />
 							)}
 							<div>
-								<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">About the author</span>
+								<span class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{blogCopy?.aboutAuthorLabel ?? 'About the author'}</span>
 								<h2 class="mt-2 font-serif text-2xl font-light tracking-[-0.01em] text-ink">{author.name}</h2>
 								{hasRichText(author.bio) && (
 									<div class="prose mt-3 max-w-none text-sm [--tw-prose-body:var(--color-muted-foreground)]">
@@ -135,13 +158,13 @@ const related = data
 		{related.length > 0 && (
 			<section class="bg-section py-16 md:py-24">
 				<div class="mx-auto max-w-[1200px] px-6 md:px-12">
-					<p class="eyebrow">Keep reading</p>
-					<h2 class="mt-4 font-serif text-[clamp(1.9rem,3.2vw,2.5rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">More from the team.</h2>
+					<p class="eyebrow">{blogCopy?.relatedEyebrow ?? 'Keep reading'}</p>
+					<SplitHeading as="h2" text={blogCopy?.relatedHeading ?? 'More from the team.'} accentClass="italic text-primary" class="mt-4 font-serif text-[clamp(1.9rem,3.2vw,2.5rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink" />
 					<div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 						{related.map((post) => (
 							<a href={`/blog/${post._sys.filename}/`} class="group no-underline">
 								{post.heroImage && (
-									<img src={post.heroImage} alt={post.title ?? ''} width={480} height={320} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
+									<img src={mediaUrl(post.heroImage, mediaSite)} alt={post.title ?? ''} width={480} height={320} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
 								)}
 								<span class="mt-5 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{post.category ?? 'Guides'}</span>
 								<h3 class="mt-2 font-serif text-xl font-light leading-snug tracking-[-0.01em] text-ink transition-colors group-hover:text-primary">{post.title}</h3>

@@ -1,0 +1,297 @@
+---
+import { mediaUrl } from '../../lib/media';
+const mediaSite = Astro.site?.href ?? Astro.url.origin;
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { mdxComponents } from '../mdx/components';
+import RegionalMarketComparison from '../v2/RegionalMarketComparison.astro';
+import V2Heading from '../v2/V2Heading.astro';
+import { getConfig, type CmsStandalone } from '../../lib/data';
+import { linkTargetAttrs, safeHref, telHref } from '../../lib/url';
+import { hasRichText } from '../../lib/rich-text';
+
+interface Props {
+	data?: Extract<CmsStandalone, { __typename: 'StandaloneBuy' | 'StandaloneSell' }> | null;
+}
+const { data } = Astro.props;
+const config = (await getConfig()).data?.config ?? null;
+const phone = config?.contact?.phone ?? null;
+
+const hero = data?.hero;
+const market = data?.market;
+const work = data?.work;
+const comparison = data?.comparison;
+const service = data?.service;
+const process = data?.process;
+const record = data?.record;
+const faq = data?.faq;
+const related = data?.related;
+const finalCta = data?.finalCta;
+
+const extAttrs = (link?: string | null) => linkTargetAttrs(link);
+---
+
+{data && (
+<div class="home-v2">
+	{hero && (
+		<section class="hero stage" data-tina-field={tinaField(data, 'hero')}>
+			{hero.image && <img class="hs-media" src={mediaUrl(hero.image, mediaSite)} alt={hero.imageAlt ?? ''} fetchpriority="high" decoding="async" />}
+			<div class="hero-inner">
+				{hero.eyebrow && <span class="eyebrow gold" data-tina-field={tinaField(hero, 'eyebrow')}>{hero.eyebrow}</span>}
+				{hero.heading && <V2Heading as="h1" text={hero.heading} data-tina-field={tinaField(hero, 'heading')} />}
+				{(hero.chips ?? []).filter((c) => c !== null).length > 0 && (
+					<div class="gchips" data-tina-field={tinaField(hero, 'chips')}>
+						{(hero.chips ?? []).filter((c) => c !== null).map((chip) => (
+							<span class="gchip" data-tina-field={tinaField(chip)}><b>{chip.bold}</b>{chip.text}</span>
+						))}
+					</div>
+				)}
+				<div class="hero-actions">
+					{hero.primary?.link && <a class="btn" href={mediaUrl(safeHref(hero.primary.link), mediaSite)} {...extAttrs(hero.primary.link)} data-tina-field={tinaField(hero.primary)}>{hero.primary.label}</a>}
+					{hero.secondary?.link && <a class="text-link" href={mediaUrl(safeHref(hero.secondary.link), mediaSite)} {...extAttrs(hero.secondary.link)} data-tina-field={tinaField(hero.secondary)}>{hero.secondary.label}</a>}
+				</div>
+			</div>
+		</section>
+	)}
+
+	{market && (
+		<section class="band" data-tina-field={tinaField(data, 'market')}>
+			<div class="wrap">
+				{market.eyebrow && <span class="eyebrow red reveal" data-tina-field={tinaField(market, 'eyebrow')}>{market.eyebrow}</span>}
+				{market.heading && <V2Heading text={market.heading} class="display sec reveal" data-tina-field={tinaField(market, 'heading')} />}
+				{hasRichText(market.lede) && (
+					<div class="lede reveal" data-tina-field={tinaField(market, 'lede')}>
+						<TinaMarkdown content={market.lede} components={mdxComponents} />
+					</div>
+				)}
+				<div class="market-grid reveal" data-tina-field={tinaField(market, 'tiles')}>
+					{(market.tiles ?? []).filter((t) => t !== null).map((t) => (
+						<div class:list={['mkt', { 'dark-tile': t.accent }]} data-tina-field={tinaField(t)}>
+							{mediaUrl(safeHref(t.link), mediaSite) ? (
+								<a href={mediaUrl(safeHref(t.link), mediaSite)} {...extAttrs(t.link)}><div class="num">{t.num}{t.tail && <span>{t.tail}</span>}</div></a>
+							) : (
+								<div class="num">{t.num}{t.tail && <span>{t.tail}</span>}</div>
+							)}
+							<div class="lbl">{t.label}</div>
+							{t.source && <div class="src">{t.source}</div>}
+						</div>
+					))}
+				</div>
+				<RegionalMarketComparison />
+				<div class="jobs three reveal" style="margin-top:2px" data-tina-field={tinaField(market, 'jobs')}>
+					{(market.jobs ?? []).filter((j) => j !== null).map((job) => (
+						<div class="job" data-tina-field={tinaField(job)}>
+							<span class="tag red">{job.tag}</span>
+							<TinaMarkdown content={job.body} components={mdxComponents} />
+						</div>
+					))}
+				</div>
+				{market.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(market.cta.link), mediaSite)} {...extAttrs(market.cta.link)} data-tina-field={tinaField(market.cta)}>{market.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{work && (
+		<section class="band ivory" data-tina-field={tinaField(data, 'work')}>
+			<div class="wrap">
+				{work.eyebrow && <span class="eyebrow red reveal" data-tina-field={tinaField(work, 'eyebrow')}>{work.eyebrow}</span>}
+				{work.heading && <V2Heading text={work.heading} class="display sec reveal" data-tina-field={tinaField(work, 'heading')} />}
+				<div class="jobs paper reveal" style="margin-top:52px" data-tina-field={tinaField(work, 'jobs')}>
+					{(work.jobs ?? []).filter((j) => j !== null).map((job) => (
+						<div class="job" data-tina-field={tinaField(job)}>
+							<span class="tag">{job.tag}</span>
+							<h3>{job.title}</h3>
+							<TinaMarkdown content={job.body} components={mdxComponents} />
+						</div>
+					))}
+				</div>
+				{work.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(work.cta.link), mediaSite)} {...extAttrs(work.cta.link)} data-tina-field={tinaField(work.cta)}>{work.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{comparison && (
+		<section class="band ink dark" data-tina-field={tinaField(data, 'comparison')}>
+			<div class="wrap">
+				{comparison.eyebrow && <span class="eyebrow gold reveal" data-tina-field={tinaField(comparison, 'eyebrow')}>{comparison.eyebrow}</span>}
+				{comparison.heading && <V2Heading text={comparison.heading} class="display sec reveal" data-tina-field={tinaField(comparison, 'heading')} />}
+				{hasRichText(comparison.lede) && (
+					<div class="lede reveal" data-tina-field={tinaField(comparison, 'lede')}>
+						<TinaMarkdown content={comparison.lede} components={mdxComponents} />
+					</div>
+				)}
+				<div class="panel-ink reveal">
+					<div class="dgrid two" data-tina-field={tinaField(comparison, 'vsTiles')}>
+						{(comparison.vsTiles ?? []).filter((t) => t !== null).map((t) => (
+							<div class="dtile" data-tina-field={tinaField(t)}>
+								<span class="slabel">{t.slabel}</span>
+								<span class:list={['num', { gold: t.gold }]}>{t.num}</span>
+								<p class="cap">{t.cap}</p>
+							</div>
+						))}
+					</div>
+					{hasRichText(comparison.body) && (
+						<div class="body" data-tina-field={tinaField(comparison, 'body')}>
+							<TinaMarkdown content={comparison.body} components={mdxComponents} />
+						</div>
+					)}
+					<div class="dgrid three spaced" data-tina-field={tinaField(comparison, 'stats')}>
+						{(comparison.stats ?? []).filter((t) => t !== null).map((t) => (
+							<div class="dtile" data-tina-field={tinaField(t)}>
+								<span class="num sm">{t.num}</span>
+								<span class="slabel">{t.slabel}</span>
+								{t.ssrc && <span class="ssrc">{t.ssrc}</span>}
+							</div>
+						))}
+					</div>
+					{hasRichText(comparison.note) && (
+						<div class="note" data-tina-field={tinaField(comparison, 'note')}>
+							<TinaMarkdown content={comparison.note} components={mdxComponents} />
+						</div>
+					)}
+				</div>
+				{comparison.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={mediaUrl(safeHref(comparison.cta.link), mediaSite)} {...extAttrs(comparison.cta.link)} data-tina-field={tinaField(comparison.cta)}>{comparison.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{service && (
+		<section class="band" data-tina-field={tinaField(data, 'service')}>
+			<div class="wrap">
+				{service.eyebrow && <span class="eyebrow red reveal" data-tina-field={tinaField(service, 'eyebrow')}>{service.eyebrow}</span>}
+				{service.heading && <V2Heading text={service.heading} class="display sec reveal" data-tina-field={tinaField(service, 'heading')} />}
+				<div class="split2">
+					<div class="plist reveal">
+						{service.intro && <p data-tina-field={tinaField(service, 'intro')}>{service.intro}</p>}
+						<ul data-tina-field={tinaField(service, 'items')}>
+							{(service.items ?? []).filter((i) => i !== null).map((item) => (
+								<li data-tina-field={tinaField(item)}><b>{item.bold}</b>{item.text}</li>
+							))}
+						</ul>
+						{hasRichText(service.outro) && (
+							<div data-tina-field={tinaField(service, 'outro')}>
+								<TinaMarkdown content={service.outro} components={mdxComponents} />
+							</div>
+						)}
+					</div>
+					{service.ctaCard && (
+						<div class="cta-card reveal" data-tina-field={tinaField(service, 'ctaCard')}>
+							{service.ctaCard.tag && <span class="tag gold">{service.ctaCard.tag}</span>}
+							{service.ctaCard.title && <h3>{service.ctaCard.title}</h3>}
+							{service.ctaCard.body && <p>{service.ctaCard.body}</p>}
+							{service.ctaCard.ctaLink && <a class="btn" href={mediaUrl(safeHref(service.ctaCard.ctaLink), mediaSite)} {...extAttrs(service.ctaCard.ctaLink)}>{service.ctaCard.ctaLabel}</a>}
+							{phone && service.ctaCard.phoneNote && <p class="alt">{service.ctaCard.phoneNote} <a href={telHref(phone)}>{phone}</a></p>}
+						</div>
+					)}
+				</div>
+			</div>
+		</section>
+	)}
+
+	{process && (
+		<section class="band ivory" id="process" data-tina-field={tinaField(data, 'process')}>
+			<div class="wrap">
+				{process.eyebrow && <span class="eyebrow red reveal" data-tina-field={tinaField(process, 'eyebrow')}>{process.eyebrow}</span>}
+				{process.heading && <V2Heading text={process.heading} class="display sec reveal" data-tina-field={tinaField(process, 'heading')} />}
+				<div class="rail reveal">
+					<ol data-tina-field={tinaField(process, 'steps')}>
+						{(process.steps ?? []).filter((s) => s !== null).map((step, i) => (
+							<li data-tina-field={tinaField(step)}>
+								<span class="n">{String(i + 1).padStart(2, '0')}</span>
+								<div><b>{step.title}</b><TinaMarkdown content={step.body} components={mdxComponents} /></div>
+							</li>
+						))}
+					</ol>
+				</div>
+				{process.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(process.cta.link), mediaSite)} {...extAttrs(process.cta.link)} data-tina-field={tinaField(process.cta)}>{process.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{record && (
+		<section class="band ink dark" data-tina-field={tinaField(data, 'record')}>
+			<div class="wrap">
+				{record.eyebrow && <span class="eyebrow gold reveal" data-tina-field={tinaField(record, 'eyebrow')}>{record.eyebrow}</span>}
+				{record.heading && <V2Heading text={record.heading} class="display sec reveal" data-tina-field={tinaField(record, 'heading')} />}
+				<div class="rec-split" style="margin-top:52px">
+					<figure class="quote bordered reveal" style="margin:0">
+						<p data-tina-field={tinaField(record, 'quote')}>{record.quote}</p>
+						<figcaption class="src" data-tina-field={tinaField(record, 'quoteSource')}>{record.quoteSource}</figcaption>
+					</figure>
+					<div class="rating reveal">
+						<span class="stars" aria-label="Five star rating">★★★★★</span>
+						{hasRichText(record.ratingText) && (
+							<div data-tina-field={tinaField(record, 'ratingText')}>
+								<TinaMarkdown content={record.ratingText} components={mdxComponents} />
+							</div>
+						)}
+						{record.ratingLink?.link && <a class="link-arrow gold" href={mediaUrl(safeHref(record.ratingLink.link), mediaSite)} style="margin-top:24px" {...extAttrs(record.ratingLink.link)} data-tina-field={tinaField(record.ratingLink)}>{record.ratingLink.label}</a>}
+					</div>
+				</div>
+				<div class="dgrid three reveal" data-tina-field={tinaField(record, 'tiles')}>
+					{(record.tiles ?? []).filter((t) => t !== null).map((t) => {
+						const num = (
+							<span class="num" data-count={t.count ?? undefined} data-prefix={t.prefix ?? undefined} data-suffix={t.suffix ?? undefined}>
+								{t.count != null ? `${t.prefix ?? ''}${t.count.toLocaleString('en-US')}${t.suffix ?? ''}` : t.num}{t.tail && <span>{t.tail}</span>}
+							</span>
+						);
+						return (
+							<div class="dtile" data-tina-field={tinaField(t)}>
+								{mediaUrl(safeHref(t.link), mediaSite) ? <a href={mediaUrl(safeHref(t.link), mediaSite)} {...extAttrs(t.link)}>{num}</a> : num}
+								<span class="slabel">{t.label}</span>
+								{t.source && <span class="ssrc">{t.source}</span>}
+							</div>
+						);
+					})}
+				</div>
+				{record.cta?.link && <p class="sec-cta gold reveal"><a class="link-arrow" href={mediaUrl(safeHref(record.cta.link), mediaSite)} {...extAttrs(record.cta.link)} data-tina-field={tinaField(record.cta)}>{record.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{faq && (
+		<section class="faq" data-tina-field={tinaField(data, 'faq')}>
+			<div class="wrap">
+				{faq.heading && <V2Heading text={faq.heading} class="display sec reveal" data-tina-field={tinaField(faq, 'heading')} />}
+				<div class="faq-list" data-tina-field={tinaField(faq, 'items')}>
+					{(faq.items ?? []).filter((q) => q !== null).filter((q) => q.question?.trim() && hasRichText(q.answer)).map((q) => (
+						<details class="reveal" data-tina-field={tinaField(q)}>
+							<summary>{q.question} <span class="plus">+</span></summary>
+							<TinaMarkdown content={q.answer} components={mdxComponents} />
+						</details>
+					))}
+				</div>
+				{faq.cta?.link && <p class="sec-cta reveal"><a class="link-arrow" href={mediaUrl(safeHref(faq.cta.link), mediaSite)} {...extAttrs(faq.cta.link)} data-tina-field={tinaField(faq.cta)}>{faq.cta.label}</a></p>}
+			</div>
+		</section>
+	)}
+
+	{related && (
+		<section class="band dense flush-top" data-tina-field={tinaField(data, 'related')}>
+			<div class="wrap">
+				{related.heading && <V2Heading text={related.heading} class="display sec reveal" data-tina-field={tinaField(related, 'heading')} />}
+				<div class="chiprow reveal" data-tina-field={tinaField(related, 'chips')}>
+					{(related.chips ?? []).filter((c) => c !== null).map((chip) => (
+						mediaUrl(safeHref(chip.link), mediaSite)
+							? <a class="chip" href={mediaUrl(safeHref(chip.link), mediaSite)} {...extAttrs(chip.link)} data-tina-field={tinaField(chip)}>{chip.label}</a>
+							: <span class="chip" data-tina-field={tinaField(chip)}>{chip.label}</span>
+					))}
+				</div>
+			</div>
+		</section>
+	)}
+
+	{finalCta && (
+		<section class="final dark" data-tina-field={tinaField(data, 'finalCta')}>
+			<div class="reveal">
+				{finalCta.heading && <V2Heading text={finalCta.heading} data-tina-field={tinaField(finalCta, 'heading')} />}
+				{finalCta.body && <p data-tina-field={tinaField(finalCta, 'body')}>{finalCta.body}</p>}
+				<div class="final-actions">
+					{finalCta.primary?.link && <a class="btn" href={mediaUrl(safeHref(finalCta.primary.link), mediaSite)} {...extAttrs(finalCta.primary.link)} data-tina-field={tinaField(finalCta.primary)}>{finalCta.primary.label}</a>}
+					{finalCta.showPhone && phone && <a class="text-link" href={telHref(phone)}>Call {phone} →</a>}
+				</div>
+			</div>
+		</section>
+	)}
+</div>
+)}

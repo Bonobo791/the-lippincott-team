@@ -1,0 +1,76 @@
+---
+interface Props { memberNumber?: string | null; profileUrl?: string | null }
+const { memberNumber, profileUrl } = Astro.props;
+---
+
+<har-review-feed
+	id="har-feed"
+	class="har-widget"
+	style="display:block"
+	data-member-number={memberNumber}
+	data-profile-url={profileUrl}
+	aria-live="polite"
+></har-review-feed>
+
+<script>
+	import { safeHref } from '../../lib/url';
+
+	// HAR uses parser-time document.writeln. Give it its own document, then
+	// adopt only its rendered content so the existing .har-widget CSS applies.
+	// Custom-element callbacks also run for Tina's innerHTML replacements;
+	// scripts in those replacements do not. Never write to/reload the parent.
+	if (!customElements.get('har-review-feed')) {
+		class HarReviewFeed extends HTMLElement {
+			frame: HTMLIFrameElement | null = null;
+
+			connectedCallback() {
+				this.disconnectedCallback();
+				const memberNumber = this.dataset.memberNumber?.trim() ?? '';
+				// Member numbers are digits, never HTML or query-string fragments.
+				if (!/^\d+$/.test(memberNumber)) return;
+				const profileUrl = safeHref(this.dataset.profileUrl);
+				const frame = document.createElement('iframe');
+				this.frame = frame;
+				frame.hidden = true;
+				frame.title = 'Loading HAR client reviews';
+				frame.onload = () => {
+					if (!this.isConnected || this.frame !== frame) return;
+					const body = frame.contentDocument?.body;
+					if (!body) { this.disconnectedCallback(); return; }
+					// Scripts have already run in the child parser. Do not adopt them.
+					body.querySelectorAll('script').forEach((script) => script.remove());
+					body.querySelectorAll('[src], [href], [style]').forEach((node) => {
+						for (const attr of ['src', 'href', 'style']) {
+							const value = node.getAttribute(attr);
+							if (!value) continue;
+							const normalized = attr === 'style'
+								? value.replace(/url\((["']?)\/Realtor-Agent-Rating\//gi, 'url($1https://members.har.com/Realtor-Agent-Rating/')
+								: value.replace(/^\/Realtor-Agent-Rating\//i, 'https://members.har.com/Realtor-Agent-Rating/');
+							node.setAttribute(attr, normalized);
+							if (attr === 'href' && /\/Realtor-Agent-Rating\//i.test(value)) {
+								if (profileUrl) node.setAttribute('href', profileUrl);
+								node.setAttribute('target', '_blank');
+								node.setAttribute('rel', 'noopener');
+							}
+						}
+					});
+					frame.onload = null;
+					this.frame = null;
+					this.replaceChildren(...body.childNodes);
+				};
+				frame.srcdoc = '<!doctype html><html><head><base href="https://members.har.com/"></head><body>'
+					+ '<script src="https://members.har.com/realtor-agent-rating/api/default.cfm?member_number='
+					+ memberNumber + '&amp;bg=e8e3d9&amp;showcat=y&amp;showcomments=y"><\/script></body></html>';
+				this.appendChild(frame);
+			}
+
+			disconnectedCallback() {
+				if (!this.frame) return;
+				this.frame.onload = null;
+				this.frame.remove();
+				this.frame = null;
+			}
+		}
+		customElements.define('har-review-feed', HarReviewFeed);
+	}
+</script>
